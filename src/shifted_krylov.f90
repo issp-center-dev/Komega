@@ -11,9 +11,10 @@ MODULE shifted_krylov_vals
   !
   REAL(8),SAVE :: &
   & threshold, &
-  & zseed, &
+  & z_seed, &
   & rho, &
   & alpha, &
+  & alpha_old, &
   & beta
   !
   REAL(8),ALLOCATABLE,SAVE :: &
@@ -21,9 +22,8 @@ MODULE shifted_krylov_vals
   & v3(:), &
   & pi(:), &
   & pi_old(:), &
-  & pi_save(:), &
+  & pi_save(:,:), &
   & p(:,:), &
-  & v3(:), &
   & alpha_save(:), &
   & beta_save(:), &
   & r_l_save(:,:)
@@ -40,8 +40,8 @@ CONTAINS
 !
 SUBROUTINE CG_R_shiftedeqn(r_l, x)
   !
-  USE shifted_krylov_vals, ONLY : alpha, beta, itermax, nl, nz, &
-  &                               p, pi, pi_old, pi_save, z, zseed
+  USE shifted_krylov_vals, ONLY : alpha, alpha_old, beta, iter, itermax, ndim, nl, nz, &
+  &                               p, pi, pi_old, pi_save, z, z_seed
   USE mathlib, ONLY : daxpy
   !
   IMPLICIT NONE
@@ -54,7 +54,7 @@ SUBROUTINE CG_R_shiftedeqn(r_l, x)
   !
   DO iz = 1, nz
      !
-     pi_new = (1d0 + alpha * (z(iz) - zseed)) * pi(iz) &
+     pi_new = (1d0 + alpha * (z(iz) - z_seed)) * pi(iz) &
      &      - alpha * beta / alpha_old * (pi_old(iz) - pi(iz))
      p(1:nl,iz) = r_l(1:nl) / pi(iz) &
      &          + (pi_old(iz) / pi(iz))**2 * beta * p(1:nl,iz)
@@ -74,29 +74,29 @@ SUBROUTINE CG_R_seed_switch(v2)
   !
   USE mathlib, ONLY : dscal
   USE shifted_krylov_vals, ONLY : alpha, alpha_save, beta_save, &
-  &                               iter, itermax, ndim, nz, pi, pi_old, rho, &
-  &                               v3, zseed
+  &                               iter, itermax, ndim, nz, pi, pi_old, pi_save, rho, &
+  &                               v3, z, z_seed
   !
   IMPLICIT NONE
   !
-  REAL(8),INTENT(INOUT) :: v3(ndim)
+  REAL(8),INTENT(INOUT) :: v2(ndim)
   !
-  INTEGER :: izseed
+  INTEGER :: iz_seed, jter
   REAL(8) :: scale
   !
-  izseed = MINLOC(pi(1:nz), 1)
+  iz_seed = MINLOC(pi(1:nz), 1)
   !
-  IF(ABS(zseed - z(izseed)) > 1d-12) THEN
+  IF(ABS(z_seed - z(iz_seed)) > 1d-12) THEN
      !
-     zseed = z(izseed)
+     z_seed = z(iz_seed)
      !
-     alpha = alpha * pi_old(izseed) / pi(izseed)
-     rho = rho / pi_old(izseed)
+     alpha = alpha * pi_old(iz_seed) / pi(iz_seed)
+     rho = rho / pi_old(iz_seed)
      !
-     scale = 1d0 / pi(izseed)
+     scale = 1d0 / pi(iz_seed)
      CALL dscal(ndim,scale,v2,1)
      CALL dscal(nz,scale,pi,1)
-     scale = 1d0 / pi_old(izseed)
+     scale = 1d0 / pi_old(iz_seed)
      CALL dscal(ndim,scale,v3,1)
      CALL dscal(nz,scale,pi_old,1)
      !
@@ -106,10 +106,10 @@ SUBROUTINE CG_R_seed_switch(v2)
         !
         do jter = 1, iter
            alpha_save(jter) = alpha_save(jter) &
-           &                * pi_save(izseed, jter - 1) / pi_save(izseed,jter) 
+           &                * pi_save(iz_seed, jter - 1) / pi_save(iz_seed,jter) 
            beta_save(jter) = beta_save(jter) &
-           &               * (pi_save(izseed, jter - 2) / pi_save(izseed,jter - 1))**2 
-           scale = 1d0 / pi_save(izseed, jter)
+           &               * (pi_save(iz_seed, jter - 2) / pi_save(iz_seed,jter - 1))**2 
+           scale = 1d0 / pi_save(iz_seed, jter)
            CALL dscal(nz,scale,pi_save(1:nz,jter),1)
         end do
         !
@@ -123,15 +123,19 @@ END SUBROUTINE CG_R_seed_switch
 !
 SUBROUTINE CG_R_init(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconverged)
   !
-  USE shifted_krylov, ONLY : alpha, alpha_save, beta, beta_save, iter, itermax, &
-  &                          ndim, nl, nz, p, pi, pi_old, pi_save, rho, r_l_save, v3, z, zseed 
-  USE mathlib, ONLY : dcopy
+  USE shifted_krylov_vals, ONLY : alpha, alpha_save, beta, beta_save, iter, itermax, &
+  &                               ndim, nl, nz, p, pi, pi_old, pi_save, rho, r_l_save, &
+  &                               threshold, v3, z, z_seed 
+  USE mathlib, ONLY : dcopy, ddot
   !
   IMPLICIT NONE
   !
   INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
-  REAL(8),INTENT(IN) :: z0(nz0), threshold0
+  REAL(8),INTENT(IN) :: z0(nz0), threshold0, v2(ndim)
+  INTEGER,INTENT(OUT) :: lconverged
   REAL(8),INTENT(OUT) :: x(nl0,nz0)
+  !
+  REAL(8) :: res
   !
   ndim = ndim0
   nl = nl0
@@ -149,7 +153,7 @@ SUBROUTINE CG_R_init(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconverge
   rho = 1d0
   alpha = 1d0
   beta = 0d0
-  zseed = 0d0
+  z_seed = 0d0
   iter = 0
   !
   IF(itermax > 0) THEN
@@ -173,28 +177,31 @@ END SUBROUTINE CG_R_init
 ! Restart by input
 !
 SUBROUTINE CG_R_restart(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconverged, &
-&                       iter_old, v12, alpha_save0, beta_save0, zseed0, r_l_save0)
+&                       iter_old, v12, alpha_save0, beta_save0, z_seed0, r_l_save0)
   !
-  USE shifted_krylov_vals, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, iter, iter_max, &
-  &                               ndim, nl, r_l_save, threshold, v3, zseed
-  USE mathlib, ONLY : dcopy, daxpy
+  USE shifted_krylov_vals, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, iter, itermax, &
+  &                               ndim, nl, r_l_save, threshold, v3, z_seed
+  USE mathlib, ONLY : dcopy, ddot
   !
   IMPLICIT NONE
   !
   INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
   REAL(8),INTENT(IN) :: z0(nz0), threshold0
+  REAL(8),INTENT(INOUT) :: v2(ndim)
   REAL(8),INTENT(OUT) :: x(nl0,nz0)
   INTEGER,INTENT(OUT) :: lconverged
   !
   ! For Restarting
   !
-  INTEGER(8),INTENT(IN) :: iter_old
+  INTEGER,INTENT(IN) :: iter_old
   REAL(8),INTENT(IN) :: &
-  & r(ndim), r_old(ndim), alpha_save0(iter_old), beta_save0(iter_old), &
-  & zseed0, r_l_save0(nl,iter_old)
+  & v12(ndim), alpha_save0(iter_old), beta_save0(iter_old), &
+  & z_seed0, r_l_save0(nl,iter_old)
+  !
+  REAL(8) :: res
   !
   CALL CG_R_init(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconverged)
-  zseed = zseed0
+  z_seed = z_seed0
   !
   DO iter = 1, iter_old
      !
@@ -232,7 +239,7 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconve
   !
   IF(res < threshold) THEN
      lconverged = iter
-  ELSE IF(iter == itermax)
+  ELSE IF(iter == itermax) THEN
      lconverged = - iter
   ELSE
      lconverged = 0
@@ -244,7 +251,9 @@ END SUBROUTINE CG_R_restart
 !
 SUBROUTINE CG_R_update(v12, v2, x, r_l, lconverged)
   !
-  USE mathlib, ONLY : daxpy, ddot, dcopy, dscale
+  USE shifted_krylov_vals, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, &
+  &                               iter, itermax, ndim, nl, nz, rho, r_l_save, threshold, v3, z, z_seed
+  USE mathlib, ONLY : ddot, dcopy
   !
   IMPLICIT NONE
   !
@@ -252,15 +261,14 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, lconverged)
   REAL(8),INTENT(IN) :: r_l(nl)
   INTEGER,INTENT(OUT) :: lconverged
   !
-  INTEGER :: iz, izseed
-  REAL(8) :: rho_old, prod, alpha_old, scale, res
+  REAL(8) :: rho_old, prod, res
   !
   iter = iter + 1
   !
   rho_old = rho
   rho = ddot(ndim,v2,1,v2,1)
   beta = rho / rho_old
-  v12(1:ndim) = zseed * v2(1:ndim) - v12(1:ndim)
+  v12(1:ndim) = z_seed * v2(1:ndim) - v12(1:ndim)
   alpha_old = alpha
   prod = ddot(ndim,v2,1,v12,1)
   alpha = rho / (prod - beta * rho / alpha)
@@ -280,7 +288,7 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, lconverged)
   ! Update residual
   !
   v12(1:ndim) = (1d0 + alpha * beta / alpha_old) * v2(1:ndim) &
-  &           - alpha * v12(1:ndim)
+  &           - alpha * v12(1:ndim) &
   &           - alpha * beta / alpha_old * v3(1:ndim)
   CALL dcopy(ndim,v2,1,v3,1)
   CALL dcopy(ndim,v12,1,v2,1)
@@ -294,7 +302,7 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, lconverged)
   res = ddot(ndim,v2,1,v12,1)
   IF(res < threshold) THEN
      lconverged = iter
-  ELSE IF(iter == itermax)
+  ELSE IF(iter == itermax) THEN
      lconverged = -iter
   ELSE
      lconverged = 0
@@ -304,17 +312,17 @@ END SUBROUTINE CG_R_update
 !
 ! Return saved alpha, beta, r_l
 !
-SUBROUTINE CG_R_getcoef(alpha_save0, beta_save0, zseed0, r_l_save0)
+SUBROUTINE CG_R_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
   !
-  USE shifted_krylov, ONLY : alpha_save, beta_save, r_l_save, iter, nl, zseed
+  USE shifted_krylov_vals, ONLY : alpha_save, beta_save, r_l_save, iter, nl, z_seed
   USE mathlib, ONLY : dcopy
   !
   IMPLICIT NONE
   !
-  REAL(8),INTENT(OUT) :: alpha0(iter), beta(iter), zseed0, &
+  REAL(8),INTENT(OUT) :: alpha_save0(iter), beta_save0(iter), z_seed0, &
   &                      r_l_save0(nl,iter)
   !
-  zseed0 = zseed
+  z_seed0 = z_seed
   CALL dcopy(iter,alpha_save,1,alpha_save0,1)
   CALL dcopy(iter,beta_save,1,beta_save0,1)
   CALL dcopy(nl*iter,r_l_save,1,r_l_save0,1)
@@ -325,7 +333,7 @@ END SUBROUTINE CG_R_getcoef
 !
 SUBROUTINE CG_R_getvec(r_old)
   !
-  USE shifted_krylof, ONLY : ndim, v3
+  USE shifted_krylov_vals, ONLY : ndim, v3
   USE mathlib, ONLY : dcopy
   !
   IMPLICIT NONE
@@ -340,7 +348,8 @@ END SUBROUTINE CG_R_getvec
 !
 SUBROUTINE CG_R_finalize()
   !
-  USE shifted_krylov, ONLY : alpha_save, beta_save, r_l_save, pi_save
+  USE shifted_krylov_vals, ONLY : alpha_save, beta_save, itermax, &
+  &                               p, pi, pi_old, pi_save, r_l_save, v3, z
   !
   IMPLICIT NONE
   !
@@ -352,4 +361,4 @@ SUBROUTINE CG_R_finalize()
   !
 END SUBROUTINE CG_R_finalize
 !
-END MODULE syfted_krylov
+END MODULE shifted_krylov

@@ -1,15 +1,20 @@
-MODULE solver_rr_vals
+MODULE solve_rr_vals
   !
   IMPLICIT NONE
   !
-  INTEGER :: &
+  INTEGER,SAVE :: &
   & ndim,    & ! Size of Hilvert space
   & nz,      & ! Number of frequencies
   & nl,      & ! Number of Left vector
   & itermax, & ! Max. number of iteraction
   & iter_old   ! Number of iteraction of previous run
   !
-  REAL(8) :: &
+  REAL(8),SAVE :: &
+  & z_seed ! Seed frequency
+  !
+  REAL(8),ALLOCATABLE,SAVE :: &
+  & ham(:,:), &
+  & rhs(:), &
   & v12(:), v2(:), & ! (ndim): Working vector
   & r_l(:), & ! (nl) : Projeccted residual vector 
   & x(:,:),    & ! (nl,nz) : Projected result 
@@ -17,14 +22,13 @@ MODULE solver_rr_vals
   !
   ! Variables for Restart
   !
-  REAL(8) :: &
-  & zseed, & ! Seed frequency
+  REAL(8),ALLOCATABLE,SAVE :: &
   & alpha(:), beta(:), & ! (iter_old) 
   & r_l_save(:,:) ! (nl,iter_old) Projected residual vectors
   !
-END MODULE solver_rr_vals
+END MODULE solve_rr_vals
 
-MODULE solver_rr_routines
+MODULE solve_rr_routines
   !
   IMPLICIT NONE
   !
@@ -32,13 +36,14 @@ CONTAINS
   !
 SUBROUTINE input_size()
   !
-  USE solver_rr_vals, ONLY : ndim, nz, itermax
+  USE solve_rr_vals, ONLY : ndim, nl, nz, itermax
 
   IMPLICIT NONE
   !
   NAMELIST /input/ ndim, nz, itermax
   !
   read(*,input,err=100)
+  nl = ndim
   !
   WRITE(*,*) "   Dimension of vvector : ", ndim
   WRITE(*,*) "  Number of frequencies : ", nz
@@ -57,7 +62,7 @@ END SUBROUTINE input_size
 !
 SUBROUTINE input_restart()
   !
-  USE solver_rr_vals, ONLY : iter_old, v2, v12, alpha, beta, zseed, r_l_save, nl, ndim
+  USE solve_rr_vals, ONLY : iter_old, v2, v12, alpha, beta, z_seed, r_l_save, nl, ndim
   !
   IMPLICIT NONE
   !
@@ -70,7 +75,7 @@ SUBROUTINE input_restart()
      read(fi,*) iter_old
      !
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
-     read(fi,*) zseed, v2(1:ndim), v12(1:ndim), &
+     read(fi,*) z_seed, v2(1:ndim), v12(1:ndim), &
      &          alpha(1:iter_old), beta(1:iter_old), r_l_save(1:nl, 1:iter_old)
      !
      close(fi)
@@ -87,7 +92,7 @@ END SUBROUTINE input_restart
 !
 SUBROUTINE output_restart()
   !
-  USE solver_rr_vals, ONLY : iter_old, v2, v12, alpha, beta, zseed, r_l_save, nl, ndim
+  USE solve_rr_vals, ONLY : iter_old, v2, v12, alpha, beta, z_seed, r_l_save, nl, ndim
   !
   IMPLICIT NONE
   !
@@ -96,22 +101,25 @@ SUBROUTINE output_restart()
   open(fo, file = 'restart.dat', action = 'write')
   !
   write(fo,*) iter_old
-  write(fo,*) zseed, v2(1:ndim), v12(1:ndim), &
+  write(fo,*) z_seed, v2(1:ndim), v12(1:ndim), &
   &          alpha(1:iter_old), beta(1:iter_old), r_l_save(1:nl, 1:iter_old)
   !
-END SUBROUTINE input_restart
+END SUBROUTINE output_restart
 !
 ! Check Result
 !
 SUBROUTINE output_result()
   !
-  USE solver_rr_vals, ONLY : iter_old, v2, v12, alpha, beta, zseed, r_l_save, nl, ndim
+  USE mathlib, ONLY : dgemv
+  USE solve_rr_vals, ONLY : v2, ndim, x, rhs, z, nz, ham
   !
   IMPLICIT NONE
   !
+  INTEGER :: iz
+  !
   DO iz = 1, nz
      !
-     v2(1:ndim) = z(iz) * x(1:ndim) - rhs(1:ndim)
+     v2(1:ndim) = z(iz) * x(1:ndim,iz) - rhs(1:ndim)
      CALL dgemv("N", ndim, ndim, -1d0, Ham, ndim, x(1:ndim,iz), 1, 1d0, v2, 1)
      write(*,*) v2(1:ndim)
      !
@@ -119,18 +127,23 @@ SUBROUTINE output_result()
   !
 END SUBROUTINE output_result
 !
-END MODULE solver_rr_routines
+END MODULE solve_rr_routines
 !
 !
 !
 PROGRAM solve_rr
   !
-  USE shifted_krilov, ONLY : CG_R_init, CG_R_restart, CG_R_update, &
+  USE shifted_krylov, ONLY : CG_R_init, CG_R_restart, CG_R_update, &
   &                          CG_R_getcoef, CG_R_getvec, CG_R_finalize
-  USE solver_rr_routines, ONLY : input_size, input_restart, &
+  USE solve_rr_routines, ONLY : input_size, input_restart, &
   &                              output_restart, output_result
+  USE solve_rr_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, &
+  &                          rhs, v12, v2, r_l, r_l_save, x, z, z_seed
+  USE mathlib, ONLY : dgemv
   !
   IMPLICIT NONE
+  !
+  ! Variables for Restart
   !
   INTEGER :: &
   & itermin, & ! First iteration in this run
@@ -143,7 +156,7 @@ PROGRAM solve_rr
   !
   CALL input_size()
   !
-  ALLOCATE(v12(ndim), v2(ndim), r_l(nl), x(nl,nz), z(nz), ham(ndim,ndim))
+  ALLOCATE(v12(ndim), v2(ndim), r_l(nl), x(nl,nz), z(nz), ham(ndim,ndim), rhs(ndim))
   READ(*,*) z(1:nz)
   CALL RANDOM_NUMBER(ham(1:ndim, 1:ndim))
   CALL RANDOM_NUMBER(rhs(1:ndim))
@@ -158,7 +171,7 @@ PROGRAM solve_rr
     !
     itermin = iter_old + 1
     CALL CG_R_restart(ndim, nl, nz, v2, x, z, itermax, threshold, lconverged, &
-    &                 iter_old, v12, alpha_save, beta_save, zseed, r_l_save)
+    &                 iter_old, v12, alpha, beta, z_seed, r_l_save)
     !
     ! These vectors were saved in CG_R routine
     !
@@ -208,7 +221,7 @@ PROGRAM solve_rr
   !
   ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
   !
-  CALL CG_R_getcoef(alpha_save, beta_save, zseed, r_l_save)
+  CALL CG_R_getcoef(alpha, beta, z_seed, r_l_save)
   CALL CG_R_getvec(v12)
   !
   ! Deallocate all intrinsic vectors
@@ -221,7 +234,7 @@ PROGRAM solve_rr
   !
   CALL output_result()
   !
-  DEALLOCATE(alpha, beta, zseed, r_l_save)
+  DEALLOCATE(alpha, beta, r_l_save)
   DEALLOCATE(v12, v2, r_l, x, z)
   !
 END PROGRAM solve_rr
