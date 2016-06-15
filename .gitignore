@@ -4,3 +4,7 @@
 doc/ShiftK.pdf
 *.toc
 *~
+*.o
+*.mod
+*.x
+a.out
