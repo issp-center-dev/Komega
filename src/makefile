@@ -1,6 +1,6 @@
 
 F90=ifort
-FFLAGS=-g -traceback -mkl -check all -warn all
+FFLAGS=-g -traceback -mkl -check all -warn all -CB
 
 .SUFFIXES :
 .SUFFIXES : .o .f90

@@ -1,4 +1,8 @@
 \documentclass[12pt,titlepage]{jarticle}
+%\documentclass[12pt,titlepage]{article}
+%\usepackage[whole]{bxcjkjatype}
+%\setminchofont{ipaexm.ttf}
+%\setgothicfont{ipaexg.ttf}
 %\usepackage{fancyhdr}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -69,18 +73,22 @@
 \section{アルゴリズム}
 
 このライブラリは, ${\hat H}$および$z$が複素数のであるか実数であるかに応じて,
-次の4種類の計算をサポートする.
+次の4種類の計算をサポートする(${\hat H}$は複素数の場合はエルミート行列、実数の場合は実対称行列).
 
 \begin{itemize}
-\item ${\hat H}$も$z$も両方複素数の場合 : Shifted Bi-Conjugate Gradient(BiCG)法 \cite{BiCG}
+\item ${\hat H}$も$z$も両方複素数の場合 : Shifted Bi-Conjugate Gradient(BiCG)法 \cite{BiCG} or Shifted Conjugate Orthogonal Conjugate Gradient(COCG)法 \cite{COCG}
 \item ${\hat H}$が実数で$z$が複素数の場合 : Shifted Conjugate Orthogonal Conjugate Gradient(COCG)法 \cite{COCG}
 \item ${\hat H}$が複素数で$z$が実数の場合 : Shifted Conjugate Gradient(CG)法 (複素ベクトル)
 \item ${\hat H}$も$z$も両方実数の場合 : Shifted Conjugate Gradient(CG)法 (実ベクトル)
 \end{itemize}
 いずれの場合も Seed switching を行う.
 
-また, HPhiの計算では左ベクトルを$N_L$個, 右ベクトルを$N_R$個(典型的には1個), 
+HPhiの計算では左ベクトルを$N_L$個, 右ベクトルを$N_R$個(典型的には1個),
+
 $z$を$N_z$個としてGreen関数計算を行うものとする.
+実装にあたっての優先順位は山元氏から提供されたコードをもとにCG法、COCG法の順に行う。具体的には\\
+(${\hat H}$,$z$)=(実数, 実数)$\to$(複素数, 実数)$\to$(実数, 複素数)$\to$ (複素数, 複素数)\\
+の順に対応し、各アルゴリズムに対しては独立した最小単位のライブラリとしても使用できるように考慮する。
 
 %\newpage
 \subsection{Seed switch 付き Shifted BiCG法}
@@ -95,7 +103,7 @@ ${\boldsymbol r}^{\rm old} = {\tilde {\boldsymbol r}}^{\rm old} = {\bf 0}$
 \\\hspace{0.5cm}
 $p_{i k} = 0(i=1 \cdots N_L,\; k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
 \\\hspace{0.5cm}
-$\rho = 1,\; \alpha = 1,\; \beta=0,\; z_{\rm seed}=0$ 
+$\rho = 1,\; \rho^{\rm old} = \infty,\; \alpha = 1,\; z_{\rm seed}=0$ 
 \\\hspace{0.5cm}
 do iteration
 \\\hspace{1.0cm}
@@ -122,6 +130,8 @@ $p_{i k} = \frac{1}{\pi_k} {\boldsymbol \varphi}_i^* \cdot {\boldsymbol r} +
 \left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta p_{i k}$
 \\\hspace{2.0cm}
 $G_{i j}(z_k) = G_{i j}(z_k) + \frac{\pi_k}{\pi_k^{\rm new}} \alpha p_{i k}$
+\\\hspace{2.0cm}
+$\pi_k^{\rm old} = \pi_k$, $\pi_k = \pi_k^{\rm new}$
 \\\hspace{1.5cm}
 end do $i$
 \\\hspace{1.0cm}
@@ -139,18 +149,17 @@ ${\boldsymbol q} = (z_{\rm seed}^* {\hat I} - {\hat H}) {\tilde {\boldsymbol r}}
 $\circ$ Seed switch
 \\\hspace{1.0cm}
 $|\pi_k|$が最も小さい$k$を探す. 
-$\rightarrow z_{\rm seed},\; \pi_{\rm seed}^{\rm new},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
+$\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
 \\\hspace{1.0cm}
-${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed}^{\rm new},\; 
-{\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed},\; 
-{\tilde {\boldsymbol r}} = {\tilde {\boldsymbol r}} / \pi_{\rm seed}^{{\rm new} *},\; 
-{\tilde {\boldsymbol r}}^{\rm old} = {\tilde {\boldsymbol r}}^{\rm old} / \pi_{\rm seed}^*$
+${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed},\; 
+{\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}^{\rm old},\; 
+{\tilde {\boldsymbol r}} = {\tilde {\boldsymbol r}} / \pi_{\rm seed}^{ *},\; 
+{\tilde {\boldsymbol r}}^{\rm old} = {\tilde {\boldsymbol r}}^{\rm old} / \pi_{\rm seed}^{{\rm old}*}$
 \\\hspace{1.0cm}
-$\alpha = (\pi_{\rm seed} / \pi_{\rm seed}^{\rm new}) \alpha$,
-$\beta = |\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}|^2 \beta$,
-$\rho = \rho / |\pi_{\rm seed}|^2$
+$\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
+$\rho = \rho / |\pi_{\rm seed}^{\rm old}|^2$
 \\\hspace{1.0cm}
-$\{\pi_k^{\rm old} = \pi_k / \pi_{\rm seed},\; \pi_k = \pi_k^{\rm new} / \pi_{\rm seed}^{\rm new}\}$
+$\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
 \\\hspace{1.0cm}
 if($|{\boldsymbol r}| < $Threshold) exit
 \\\hspace{0.5cm}
@@ -174,7 +183,7 @@ ${\boldsymbol r}^{\rm old} = {\bf 0}$
 \\\hspace{0.5cm}
 $p_{i k} = 0(i=1 \cdots N_L,\; k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
 \\\hspace{0.5cm}
-$\rho = 1,\; \alpha = 1,\; \beta=0,\; z_{\rm seed}=0$ 
+$\rho = 1,\; \rho^{\rm old} = \infty,\; \alpha = 1,\; z_{\rm seed}=0$ 
 \\\hspace{0.5cm}
 do iteration
 \\\hspace{1.0cm}
@@ -201,6 +210,8 @@ $p_{i k} = \frac{1}{\pi_k} {\boldsymbol \varphi}_i^* \cdot {\boldsymbol r} +
 \left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta p_{i k}$
 \\\hspace{2.0cm}
 $G_{i j}(z_k) = G_{i j}(z_k) + \frac{\pi_k}{\pi_k^{\rm new}} \alpha p_{i k}$
+\\\hspace{2.0cm}
+$\pi_k^{\rm old} = \pi_k$, $\pi_k = \pi_k^{\rm new}$
 \\\hspace{1.5cm}
 end do $i$
 \\\hspace{1.0cm}
@@ -213,16 +224,15 @@ ${\boldsymbol q} = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\bo
 $\circ$ Seed switch
 \\\hspace{1.0cm}
 $|\pi_k|$が最も小さい$k$を探す. 
-$\rightarrow z_{\rm seed},\; \pi_{\rm seed}^{\rm new},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
+$\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
 \\\hspace{1.0cm}
-${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed}^{\rm new},\; 
-{\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}$
+${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed},\; 
+{\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}^{\rm old}$
 \\\hspace{1.0cm}
-$\alpha = (\pi_{\rm seed} / \pi_{\rm seed}^{\rm new}) \alpha$,
-$\beta = |\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}|^2 \beta$,
-$\rho = \rho / |\pi_{\rm seed}|^2$
+$\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
+$\rho = \rho / |\pi_{\rm seed}^{\rm old}|^2$
 \\\hspace{1.0cm}
-$\{\pi_k^{\rm old} = \pi_k/\pi_{\rm seed},\; \pi_k = \pi_k^{\rm new} / \pi_{\rm seed}^{\rm new}\}$
+$\{\pi_k = \pi_k/\pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
 \\\hspace{1.0cm}
 if($|{\boldsymbol r}| < $Threshold) exit
 \\\hspace{0.5cm}
@@ -246,7 +256,7 @@ ${\boldsymbol r}^{\rm old} = {\bf 0}$
 \\\hspace{0.5cm}
 $p_{i k} = 0(i=1 \cdots N_L,\; k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
 \\\hspace{0.5cm}
-$\rho = 1,\; \alpha = 1,\; \beta=0,\; z_{\rm seed}=0$ 
+$\rho = 1,\; \rho^{\rm old} = \infty,\; \alpha = 1,\; z_{\rm seed}=0$ 
 \\\hspace{0.5cm}
 do iteration
 \\\hspace{1.0cm}
@@ -273,6 +283,8 @@ $p_{i k} = \frac{1}{\pi_k} {\boldsymbol \varphi}_i^* \cdot {\boldsymbol r} +
 \left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta p_{i k}$
 \\\hspace{2.0cm}
 $G_{i j}(z_k) = G_{i j}(z_k) + \frac{\pi_k}{\pi_k^{\rm new}} \alpha p_{i k}$
+\\\hspace{2.0cm}
+$\pi_k^{\rm old} = \pi_k$, $\pi_k = \pi_k^{\rm new}$
 \\\hspace{1.5cm}
 end do $i$
 \\\hspace{1.0cm}
@@ -285,16 +297,15 @@ ${\boldsymbol q} = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\bo
 $\circ$ Seed switch
 \\\hspace{1.0cm}
 $|\pi_k|$が最も小さい$k$を探す. 
-$\rightarrow z_{\rm seed},\; \pi_{\rm seed}^{\rm new},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
+$\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
 \\\hspace{1.0cm}
-${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed}^{\rm new},\; 
-{\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}$
+${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed},\; 
+{\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}^{\rm old}$
 \\\hspace{1.0cm}
-$\alpha = (\pi_{\rm seed} / \pi_{\rm seed}^{\rm new}) \alpha$,
-$\beta = |\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}|^2 \beta$,
-$\rho = \rho / |\pi_{\rm seed}|^2$
+$\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
+$\rho = \rho / |\pi_{\rm seed}^{\rm old}|^2$
 \\\hspace{1.0cm}
-$\{\pi_k^{\rm old} = \pi_k/\pi_{\rm seed},\; \pi_k = \pi_k^{\rm new}/\pi_{\rm seed}^{\rm new}\}$
+$\{\pi_k = \pi_k/\pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old}/\pi_{\rm seed}^{\rm old}\}$
 \\\hspace{1.0cm}
 if($|{\boldsymbol r}| < $Threshold) exit
 \\\hspace{0.5cm}
@@ -310,17 +321,17 @@ end do $j$
 ユーザーの用意
 \begin{itemize}
 \item ベクトル(ヒルベルト空間)のサイズ$N_H$, $N_z$個の$z$
-\item サイズ$N_H$のベクトルを2本(メモリ節約なしBiCGの時には4本)Allocateしておく.
+\item サイズ$N_H$のベクトルを2本(BiCGの時には4本)Allocateしておく.
 \item ハミルトニアン-ベクトル積を行う部分
 \item 解ベクトルをAllocateしておく. ただし, これは必ずしも$N_H \times N_z$である必要はない.
   実際前節の場合は$N_L \times N_z$である.この時(双)共役勾配ベクトル${{\bf p}_k}$も
   $N_z$個の$N_L$次元のベクトルである.
   $N_H$次元の残差ベクトルを$N_L$次元へ変換するところはユーザーが行う.
   \begin{align}
-    {\bf r}^{\rm small} = {\hat P}^\dagger {\boldsymbol r}, \qquad
+    {\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol r}, \qquad
     {\hat P} \equiv ({\boldsymbol \varphi}_1, \cdots, {\boldsymbol \varphi}_{N_L})
   \end{align}
-\item 各iterationでの$\alpha, \beta, {\bf r}^{\rm small}$を保存しておき, 
+\item 各iterationでの$\alpha, \beta, {\bf r}^{\rm L}$を保存しておき, 
 あとで利用する場合には最大反復回数\verb|itermax|を設定する.
 \end{itemize}
 ライブラリの各ルーチンの名前は仮に次のようにしておく
@@ -345,7 +356,7 @@ Allocateしたライブラリ内部ベクトルを開放する.
 
 \item \verb|BiCG_getcoef|, \verb|COCG_getcoef|, \verb|CG_getcoef|
 
-各iterationで保存しておいた$\alpha$, $\beta$, $z_{\rm seed}$, ${\bf r}^{\rm small}$を取り出す.
+各iterationで保存しておいた$\alpha$, $\beta$, $z_{\rm seed}$, ${\bf r}^{\rm L}$を取り出す.
 
 \item \verb|BiCG_getvec|, \verb|COCG_getvec|, \verb|CG_getvec|
 
@@ -366,7 +377,7 @@ ${\boldsymbol r}$等も有る場合には
 
 \noindent
 Allocate ${\boldsymbol v}_{1 2}$, ${\boldsymbol v}_{1 3}$, 
-${\boldsymbol v}_2$, ${\boldsymbol v}_3$, $\{{\bf x}_k\}, {\bf r}^{\rm small}$
+${\boldsymbol v}_2$, ${\boldsymbol v}_3$, $\{{\bf x}_k\}, {\bf r}^{\rm L}$
 ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
 \vspace{-1em}
 \begin{leftbar}
@@ -377,14 +388,14 @@ ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
   \\ \hspace{0.5cm}
   Copy $\{z_k\}$
   \\ \hspace{0.5cm}
-  \verb|itermax|$\neq$\verb|0|ならば$\alpha$, $\beta$, ${\bf r}^{\rm small}$を保存する配列を確保する.
+  \verb|itermax|$\neq$\verb|0|ならば$\alpha$, $\beta$, ${\bf r}^{\rm L}$を保存する配列を確保する.
   \\ \hspace{0.5cm}
   ${\boldsymbol v}_3 = {\boldsymbol v}_2$(任意),
   ${\boldsymbol v}_4 = {\boldsymbol v}_5 = {\bf 0}$,
   \\ \hspace{0.5cm}
   ${\bf p}_{k} = {\bf x}_k = {\bf 0}(k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
   \\ \hspace{0.5cm}
-  $\rho = 1,\; \alpha = 1,\; \beta=0,\; z_{\rm seed}=0$ 
+  $\rho = 1,\; \rho^{\rm old} = \infty,\; \alpha = 1,\; z_{\rm seed}=0$ 
   \\ \hspace{0.5cm}
   (
   ${\boldsymbol v}_2 \equiv {\boldsymbol r}$, 
@@ -398,7 +409,7 @@ ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
 \noindent
 do iteration
 \\\hspace{0.5cm}
-${\bf r}^{\rm small} = {\hat P}^\dagger {\boldsymbol v}_2$
+${\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2$
 \\\hspace{0.5cm}
 ${\boldsymbol v}_{1 2} = {\hat H} {\boldsymbol v}_2$, 
   ${\boldsymbol v}_{1 3} = {\hat H} {\boldsymbol v}_3$  
@@ -428,10 +439,12 @@ $[ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 3}) = {\hat H}
   \\\hspace{1.5cm}
   $\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)$
   \\\hspace{1.5cm}
-  ${\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm small} + 
+  ${\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm L} + 
   \left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta {\bf p}_{k}$
   \\\hspace{1.5cm}
   ${\bf x}_{k} = {\bf x}_{k} + \frac{\pi_k}{\pi_k^{\rm new}} \alpha {\bf p}_{k}$
+  \\\hspace{1.5cm}
+  $\pi_k^{\rm old} = \pi_k$, $\pi_k = \pi_k^{\rm new}$
   \\\hspace{1.0cm}
   end do $k$
   \\\hspace{1.0cm}
@@ -448,18 +461,17 @@ $[ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 3}) = {\hat H}
   $\circ$ Seed switch
   \\\hspace{1.0cm}
   $|\pi_k|$が最も小さい$k$を探す. 
-  $\rightarrow z_{\rm seed},\; \pi_{\rm seed}^{\rm new},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
+  $\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
   \\\hspace{1.0cm}
-  ${\boldsymbol v}_2 = {\boldsymbol v}_2 / \pi_{\rm seed}^{\rm new}$,
-  ${\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}^{{\rm new} *}$, 
-  ${\boldsymbol v}_4 = {\boldsymbol v}_4 / \pi_{\rm seed}$,
-  ${\boldsymbol v}_5 = {\boldsymbol v}_5 / \pi_{\rm seed}^{*}$
+  ${\boldsymbol v}_2 = {\boldsymbol v}_2 / \pi_{\rm seed}$,
+  ${\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}^{*}$, 
+  ${\boldsymbol v}_4 = {\boldsymbol v}_4 / \pi_{\rm seed}^{\rm old}$,
+  ${\boldsymbol v}_5 = {\boldsymbol v}_5 / \pi_{\rm seed}^{\rm old *}$
   \\\hspace{1.0cm}
-  $\alpha = (\pi_{\rm seed} / \pi_{\rm seed}^{\rm new}) \alpha$,
-  $\beta = |\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}|^2 \beta$,
-  $\rho = \rho / |\pi_{\rm seed}|^2$
+  $\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
+  $\rho = \rho / |\pi_{\rm seed}^{\rm old}|^2$
   \\\hspace{1.0cm}
-  $\{\pi_k^{\rm old} = \pi_k / \pi_{\rm seed},\; \pi_k = \pi_k^{\rm new} / \pi_{\rm seed}^{\rm new}\}$
+  $\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
   \\\hspace{0.5cm}
 \verb|BiCG_update| finish
 \end{leftbar}
@@ -482,7 +494,7 @@ Deallocate ${\boldsymbol v}_4$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm 
 %%\subsection{Shifted BiCGライブラリの動作イメージ(メモリ節約版)}
 %%
 %%\noindent
-%%Allocate ${\boldsymbol v}_1$, ${\boldsymbol v}_2$, $\{{\bf x}_k\}, {\bf r}^{\rm small}$
+%%Allocate ${\boldsymbol v}_1$, ${\boldsymbol v}_2$, $\{{\bf x}_k\}, {\bf r}^{\rm L}$
 %%\\ 
 %%${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
 %%\begin{leftbar}
@@ -493,7 +505,7 @@ Deallocate ${\boldsymbol v}_4$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm 
 %%  \\ \hspace{0.5cm}
 %%  Copy $\{z_k\}$
 %%  \\ \hspace{0.5cm}
-%%  \verb|itermax|$\neq$\verb|0|ならば$\alpha$, $\beta$, ${\bf r}^{\rm small}$を保存する配列を確保する.
+%%  \verb|itermax|$\neq$\verb|0|ならば$\alpha$, $\beta$, ${\bf r}^{\rm L}$を保存する配列を確保する.
 %%  \\ \hspace{0.5cm}
 %%  ${\boldsymbol v}_3 = {\boldsymbol v}_2$(任意),
 %%  ${\boldsymbol v}_4 = {\boldsymbol v}_5 = {\bf 0}$,
@@ -512,7 +524,7 @@ Deallocate ${\boldsymbol v}_4$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm 
 %%\end{leftbar}
 %%do iteration
 %%\\\hspace{0.5cm}
-%%${\bf r}^{\rm small} = {\hat P}^\dagger {\boldsymbol v}_2$
+%%${\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2$
 %%\\\hspace{0.5cm}
 %%${\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2$
 %%\begin{leftbar}
@@ -536,7 +548,7 @@ Deallocate ${\boldsymbol v}_4$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm 
 %%  \\\hspace{1.5cm}
 %%  $\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)$
 %%  \\\hspace{1.5cm}
-%%  ${\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm small} + 
+%%  ${\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm L} + 
 %%  \left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta {\bf p}_{k}$
 %%  \\\hspace{1.5cm}
 %%  ${\bf x}_{k} = {\bf x}_{k} + \frac{\pi_k}{\pi_k^{\rm new}} \alpha {\bf p}_{k}$
@@ -609,7 +621,7 @@ Deallocate ${\boldsymbol v}_4$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm 
 \subsection{Shifted COCGライブラリの動作イメージ}
 
 \noindent
-Allocate ${\boldsymbol v}_1$, ${\boldsymbol v}_2$, $\{{\bf x}_k\}, {\bf r}^{\rm small}$
+Allocate ${\boldsymbol v}_1$, ${\boldsymbol v}_2$, $\{{\bf x}_k\}, {\bf r}^{\rm L}$
 \\ 
 ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
 \vspace{-1em}
@@ -621,13 +633,13 @@ ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
   \\ \hspace{0.5cm}
   Copy $\{z_k\}$
   \\ \hspace{0.5cm}
-  \verb|itermax|$\neq$\verb|0|ならば$\alpha$, $\beta$, ${\bf r}^{\rm small}$を保存する配列を確保する.
+  \verb|itermax|$\neq$\verb|0|ならば$\alpha$, $\beta$, ${\bf r}^{\rm L}$を保存する配列を確保する.
   \\ \hspace{0.5cm}
   ${\boldsymbol v}_3 = {\bf 0}$,
   \\ \hspace{0.5cm}
   ${\bf p}_{k} = {\bf x}_k = {\bf 0}(k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
   \\ \hspace{0.5cm}
-  $\rho = 1,\; \alpha = 1,\; \beta=0,\; z_{\rm seed}=0$ 
+  $\rho = 1,\; \rho^{\rm old} = \infty,\; \alpha = 1,\; \beta=0,\; z_{\rm seed}=0$ 
   \\ \hspace{0.5cm}
   (
   ${\boldsymbol v}_2 \equiv {\boldsymbol r}$, 
@@ -639,7 +651,7 @@ ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
 \noindent
 do iteration
 \\\hspace{0.5cm}
-${\bf r}^{\rm small} = {\hat P}^\dagger {\boldsymbol v}_2$
+${\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2$
 \\\hspace{0.5cm}
 ${\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2$
 \vspace{-1em}
@@ -665,7 +677,7 @@ ${\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2$
   \\\hspace{1.5cm}
   $\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)$
   \\\hspace{1.5cm}
-  ${\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm small} + 
+  ${\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm L} + 
   \left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta {\bf p}_{k}$
   \\\hspace{1.5cm}
   ${\bf x}_{k} = {\bf x}_{k} + \frac{\pi_k}{\pi_k^{\rm new}} \alpha {\bf p}_{k}$
@@ -683,16 +695,15 @@ ${\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2$
   $\circ$ Seed switch
   \\\hspace{1.0cm}
   $|\pi_k|$が最も小さい$k$を探す. 
-  $\rightarrow z_{\rm seed},\; \pi_{\rm seed}^{\rm new},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
+  $\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
   \\\hspace{1.0cm}
-  ${\boldsymbol v}_2 = {\boldsymbol v}_2 / \pi_{\rm seed}^{\rm new}$,
-  ${\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}$
+  ${\boldsymbol v}_2 = {\boldsymbol v}_2 / \pi_{\rm seed}$,
+  ${\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}^{\rm old}$
   \\\hspace{1.0cm}
-  $\alpha = (\pi_{\rm seed} / \pi_{\rm seed}^{\rm new}) \alpha$,
-  $\beta = |\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}|^2 \beta$,
-  $\rho = \rho / |\pi_{\rm seed}|^2$
+  $\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
+  $\rho = \rho / |\pi_{\rm seed}^{\rm old}|^2$
   \\\hspace{1.0cm}
-  $\{\pi_k^{\rm old} = \pi_k / \pi_{\rm seed},\; \pi_k = \pi_k^{\rm new} / \pi_{\rm seed}^{\rm new}\}$
+  $\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
   \\\hspace{0.5cm}
   \verb|COCG_update| finish
 \end{leftbar}
@@ -718,6 +729,25 @@ end do iteration
 COCGと同様.
 
 \section{使用方法}
+
+各ライブラリともユーザーはライブラリ名および型を指定し、
+\begin{itemize}
+\item 初期設定 (init関数)
+\item アップデート (update関数)
+\item 計算情報出力 (getcoef, getvec関数などを呼び出力)
+\item 終了関数 (finalize関数)
+\end{itemize}
+の手順で関数を使用することで、計算が実施される。
+なお、リスタートを行う場合には
+\begin{itemize}
+\item 初期設定関数(init関数, restart関数)
+\item アップデート (update関数)
+\item 計算情報出力 (getcoef, getvec関数などを呼び出力)
+\item 終了関数 (finalize関数)
+\end{itemize}
+の手順で実行する。
+ 
+以下、代表的な例としてShifted BiCGライブラリの場合の使用方法を記載する。
 
 \subsection{Shifted BiCGライブラリの使用方法}
 

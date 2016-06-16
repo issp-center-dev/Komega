@@ -40,7 +40,7 @@ CONTAINS
 !
 SUBROUTINE CG_R_shiftedeqn(r_l, x)
   !
-  USE shifted_krylov_vals, ONLY : alpha, alpha_old, beta, iter, itermax, ndim, nl, nz, &
+  USE shifted_krylov_vals, ONLY : alpha, alpha_old, beta, iter, itermax, nl, nz, &
   &                               p, pi, pi_old, pi_save, z, z_seed
   USE mathlib, ONLY : daxpy
   !
@@ -58,7 +58,7 @@ SUBROUTINE CG_R_shiftedeqn(r_l, x)
      &      - alpha * beta / alpha_old * (pi_old(iz) - pi(iz))
      p(1:nl,iz) = r_l(1:nl) / pi(iz) &
      &          + (pi_old(iz) / pi(iz))**2 * beta * p(1:nl,iz)
-     CALL daxpy(ndim,pi(iz)/ pi_new * alpha,p(1:nl,iz),1,x(1:nl,iz),1)
+     CALL daxpy(nl,pi(iz)/ pi_new * alpha,p(1:nl,iz),1,x(1:nl,iz),1)
      pi_old(iz) = pi(iz)
      pi(iz) = pi_new
      !

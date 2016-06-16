@@ -44,16 +44,16 @@ SUBROUTINE input_size()
   !
   IMPLICIT NONE
   !
-  NAMELIST /input/ ndim, nz, itermax, threshold, rnd_seed
+  NAMELIST /input/ ndim, nz, itermax, threshold, rnd_seed, nl
   !
   ndim = 5
+  nl = 5
   nz = 1
   itermax = 0
   threshold = 1d-8
   rnd_seed = 1
   !
   READ(*,input,err=100)
-  nl = ndim
   !
   WRITE(*,*)
   WRITE(*,*) "#####  Standard Inputs  #####"
@@ -147,6 +147,8 @@ SUBROUTINE generate_system()
      CALL RANDOM_NUMBER(ham(idim, idim-1))
   END DO
   CALL RANDOM_NUMBER(rhs(1:ndim))
+rhs(1:ndim) = 0d0
+rhs(1) = 1d0
   !
   CALL dgemm("T", "N", ndim, ndim, ndim, 1d0, ham, ndim, ham, ndim, 0d0, ham0, ndim)
   !
@@ -202,26 +204,37 @@ END SUBROUTINE output_restart
 SUBROUTINE output_result()
   !
   USE mathlib, ONLY : dgemv
-  USE solve_rr_vals, ONLY : v2, ndim, x, rhs, z, nz, ham
+  USE solve_rr_vals, ONLY : v2, ndim, nl, x, rhs, z, nz, ham
   !
   IMPLICIT NONE
   !
   INTEGER :: iz
-  CHARACTER(100) :: cndim, form
+  CHARACTER(100) :: cnl, form
   !
-  WRITE(cndim,*) ndim
-  WRITE(form,'(a,a,a)') "(", TRIM(ADJUSTL(cndim)), "e15.5)"
+  WRITE(cnl,*) nl
+  WRITE(form,'(a,a,a)') "(", TRIM(ADJUSTL(cnl)), "e15.5)"
   !
   WRITE(*,*)
   WRITE(*,*) "#####  Check Results  #####"
   WRITE(*,*)
+  !
+  WRITE(*,*) "  Resulting Vector"
+  DO iz = 1, nz
+     write(*,form) x(1:nl,iz)
+  END DO
+  !
+  WRITE(*,*) "  Residual Vector"
+  IF(nl /= ndim) THEN
+     WRITE(*,*) "    Skip.  nl /= ndim."
+     RETURN
+  END IF
   !
   DO iz = 1, nz
      !
      v2(1:ndim) = z(iz) * x(1:ndim,iz) - rhs(1:ndim)
      CALL dgemv("N", ndim, ndim, -1d0, Ham, ndim, x(1:ndim,iz), 1, 1d0, v2, 1)
      !
-     write(*,form) v2(1:ndim)
+     write(*,form) v2(1:nl)
      !
   END DO
   !
@@ -303,7 +316,7 @@ PROGRAM solve_rr
      ! Projection of Residual vector into the space
      ! spaned by left vectors
      !
-     r_l(1:nl) = v2(1:ndim)
+     r_l(1:nl) = v2(1:nl)
      !
      ! Matrix-vector product
      !
