@@ -58,7 +58,7 @@ SUBROUTINE CG_R_shiftedeqn(r_l, x)
      &      - alpha * beta / alpha_old * (pi_old(iz) - pi(iz))
      p(1:nl,iz) = r_l(1:nl) / pi(iz) &
      &          + (pi_old(iz) / pi(iz))**2 * beta * p(1:nl,iz)
-     CALL daxpy(ndim,pi(iz)/ pi_old(iz) * alpha,p(1:nl,iz),1,x(1:nl,iz),1)
+     CALL daxpy(ndim,pi(iz)/ pi_new * alpha,p(1:nl,iz),1,x(1:nl,iz),1)
      pi_old(iz) = pi(iz)
      pi(iz) = pi_new
      !
@@ -70,16 +70,17 @@ END SUBROUTINE CG_R_shiftedeqn
 !
 ! Seed Switching
 !
-SUBROUTINE CG_R_seed_switch(v2)
+SUBROUTINE CG_R_seed_switch(v2,status)
   !
   USE mathlib, ONLY : dscal
   USE shifted_krylov_vals, ONLY : alpha, alpha_save, beta_save, &
   &                               iter, itermax, ndim, nz, pi, pi_old, pi_save, rho, &
-  &                               v3, z, z_seed
+  &                               threshold, v3, z, z_seed
   !
   IMPLICIT NONE
   !
   REAL(8),INTENT(INOUT) :: v2(ndim)
+  INTEGER,INTENT(OUT) :: status
   !
   INTEGER :: iz_seed, jter
   REAL(8) :: scale
@@ -89,6 +90,12 @@ SUBROUTINE CG_R_seed_switch(v2)
   IF(ABS(z_seed - z(iz_seed)) > 1d-12) THEN
      !
      z_seed = z(iz_seed)
+     !
+     IF(abs(pi(iz_seed)) < threshold) THEN
+        status = - iz_seed
+     ELSE
+        status = iz_seed
+     END IF
      !
      alpha = alpha * pi_old(iz_seed) / pi(iz_seed)
      rho = rho / pi_old(iz_seed)
@@ -121,7 +128,7 @@ END SUBROUTINE CG_R_seed_switch
 !
 ! Allocate & initialize variables
 !
-SUBROUTINE CG_R_init(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconverged)
+SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   !
   USE shifted_krylov_vals, ONLY : alpha, alpha_save, beta, beta_save, iter, itermax, &
   &                               ndim, nl, nz, p, pi, pi_old, pi_save, rho, r_l_save, &
@@ -131,11 +138,8 @@ SUBROUTINE CG_R_init(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconverge
   IMPLICIT NONE
   !
   INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
-  REAL(8),INTENT(IN) :: z0(nz0), threshold0, v2(ndim)
-  INTEGER,INTENT(OUT) :: lconverged
+  REAL(8),INTENT(IN) :: z0(nz0), threshold0
   REAL(8),INTENT(OUT) :: x(nl0,nz0)
-  !
-  REAL(8) :: res
   !
   ndim = ndim0
   nl = nl0
@@ -162,22 +166,12 @@ SUBROUTINE CG_R_init(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconverge
      pi_save(1:nz,-1:0) = 1d0
   END IF
   !
-  ! Convergence check
-  !
-  res = ddot(ndim,v2,1,v2,1)
-  !
-  IF(res < threshold) THEN
-     lconverged = 1
-  ELSE
-     lconverged = 0
-  END IF
-  !
 END SUBROUTINE CG_R_init
 !
 ! Restart by input
 !
-SUBROUTINE CG_R_restart(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconverged, &
-&                       iter_old, v12, alpha_save0, beta_save0, z_seed0, r_l_save0)
+SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
+&                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0)
   !
   USE shifted_krylov_vals, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, iter, itermax, &
   &                               ndim, nl, r_l_save, threshold, v3, z_seed
@@ -187,20 +181,20 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconve
   !
   INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
   REAL(8),INTENT(IN) :: z0(nz0), threshold0
-  REAL(8),INTENT(INOUT) :: v2(ndim)
   REAL(8),INTENT(OUT) :: x(nl0,nz0)
-  INTEGER,INTENT(OUT) :: lconverged
+  INTEGER,INTENT(OUT) :: status(3)
   !
   ! For Restarting
   !
   INTEGER,INTENT(IN) :: iter_old
   REAL(8),INTENT(IN) :: &
-  & v12(ndim), alpha_save0(iter_old), beta_save0(iter_old), &
-  & z_seed0, r_l_save0(nl,iter_old)
+  & alpha_save0(iter_old), beta_save0(iter_old), &
+  & z_seed0, r_l_save0(nl0,iter_old)
+  REAL(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
   !
-  REAL(8) :: res
+  status(1:3) = 0
   !
-  CALL CG_R_init(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconverged)
+  CALL CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   z_seed = z_seed0
   !
   DO iter = 1, iter_old
@@ -231,47 +225,59 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, v2, x, z0, itermax0, threshold0, lconve
   !
   ! Seed Switching
   !
-  CALL CG_R_seed_switch(v2)
+  CALL CG_R_seed_switch(v2,status(3))
   !
   ! Convergence check
   !
-  res = ddot(ndim,v2,1,v2,1)
+  v12(1) = ddot(ndim,v2,1,v2,1)
   !
-  IF(res < threshold) THEN
-     lconverged = iter
+  IF(v12(1) < threshold) THEN
+     status(1) = iter
   ELSE IF(iter == itermax) THEN
-     lconverged = - iter
+     status(1) = - iter
   ELSE
-     lconverged = 0
+     status(1) = 0
   END IF
   !
 END SUBROUTINE CG_R_restart
 !
 ! Update x, p, r
 !
-SUBROUTINE CG_R_update(v12, v2, x, r_l, lconverged)
+SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   !
   USE shifted_krylov_vals, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, &
-  &                               iter, itermax, ndim, nl, nz, rho, r_l_save, threshold, v3, z, z_seed
+  &                               iter, itermax, ndim, nl, nz, rho, r_l_save, threshold, v3, z_seed
   USE mathlib, ONLY : ddot, dcopy
   !
   IMPLICIT NONE
   !
   REAL(8),INTENT(INOUT) :: v12(ndim), v2(ndim), x(nl,nz)
   REAL(8),INTENT(IN) :: r_l(nl)
-  INTEGER,INTENT(OUT) :: lconverged
+  INTEGER,INTENT(OUT) :: status(3)
   !
-  REAL(8) :: rho_old, prod, res
+  REAL(8) :: rho_old, alpha_denom
   !
   iter = iter + 1
+  status(1:3) = 0
   !
   rho_old = rho
   rho = ddot(ndim,v2,1,v2,1)
-  beta = rho / rho_old
+  IF(iter == 1) THEN
+     beta = 0d0
+  ELSE
+     beta = rho / rho_old
+  END IF
   v12(1:ndim) = z_seed * v2(1:ndim) - v12(1:ndim)
   alpha_old = alpha
-  prod = ddot(ndim,v2,1,v12,1)
-  alpha = rho / (prod - beta * rho / alpha)
+  alpha_denom = ddot(ndim,v2,1,v12,1) - beta * rho / alpha
+  !
+  IF(abs(alpha_denom) < threshold) THEN
+     status(2) = 1
+     alpha = 1d0
+  ELSE
+     status(2) = 0
+     alpha = rho / alpha_denom
+  END IF
   !
   ! For restarting
   !
@@ -295,17 +301,18 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, lconverged)
   !
   ! Seed Switching
   !
-  CALL CG_R_seed_switch(v2)
+  CALL CG_R_seed_switch(v2,status(3))
   !
   ! Convergence check
   !
-  res = ddot(ndim,v2,1,v12,1)
-  IF(res < threshold) THEN
-     lconverged = iter
+  v12(1) = ddot(ndim,v2,1,v2,1)
+  !
+  IF(v12(1) < threshold) THEN
+     status(1) = iter
   ELSE IF(iter == itermax) THEN
-     lconverged = -iter
+     status(1) = -iter
   ELSE
-     lconverged = 0
+     status(1) = 0
   END IF
   !
 END SUBROUTINE CG_R_update
