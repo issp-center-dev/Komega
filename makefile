@@ -1,5 +1,5 @@
 
-all:lib test
+all:lib tests
 
 lib:
 	cd src;make

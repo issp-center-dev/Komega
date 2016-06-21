@@ -4,8 +4,9 @@ include ../make.sys
 .SUFFIXES : .o .f90
 
 OBJS = \
-mathlib.o \
-shifted_krylov.o
+shifted_krylov.o \
+shifted_krylov_math.o \
+shifted_krylov_vals.o
 
 libshiftk.a:$(OBJS)
 	ar cr $@ $(OBJS)
@@ -16,7 +17,6 @@ libshiftk.a:$(OBJS)
 clean:
 	rm -f *.o *.a *.mod
 
-mathlib.o:mathlib.f90
-shifted_krylov.o:shifted_krylov.f90
-shifted_krylov.o:mathlib.o
+shifted_krylov.o:shifted_krylov_math.o
+shifted_krylov.o:shifted_krylov_vals.o
 

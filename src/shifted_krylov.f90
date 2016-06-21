@@ -1,34 +1,3 @@
-MODULE shifted_krylov_vals
-  !
-  IMPLICIT NONE
-  !
-  INTEGER,SAVE :: &
-  & ndim, &
-  & nl,   &
-  & nz,   &
-  & itermax, &
-  & iter
-  !
-  REAL(8),SAVE :: &
-  & threshold, &
-  & z_seed, &
-  & rho, &
-  & alpha, &
-  & alpha_old, &
-  & beta
-  !
-  REAL(8),ALLOCATABLE,SAVE :: &
-  & z(:), &
-  & v3(:), &
-  & pi(:), &
-  & pi_old(:), &
-  & pi_save(:,:), &
-  & p(:,:), &
-  & alpha_save(:), &
-  & beta_save(:), &
-  & r_l_save(:,:)
-  !
-END MODULE shifted_krylov_vals
 !
 ! Routines for real-valiable CG
 !
@@ -42,7 +11,7 @@ SUBROUTINE CG_R_shiftedeqn(r_l, x)
   !
   USE shifted_krylov_vals, ONLY : alpha, alpha_old, beta, iter, itermax, nl, nz, &
   &                               p, pi, pi_old, pi_save, z, z_seed
-  USE mathlib, ONLY : daxpy
+  USE shifted_krylov_math, ONLY : daxpy
   !
   IMPLICIT NONE
   !
@@ -72,7 +41,7 @@ END SUBROUTINE CG_R_shiftedeqn
 !
 SUBROUTINE CG_R_seed_switch(v2,status)
   !
-  USE mathlib, ONLY : dscal
+  USE shifted_krylov_math, ONLY : dscal
   USE shifted_krylov_vals, ONLY : alpha, alpha_save, beta_save, &
   &                               iter, itermax, ndim, nz, pi, pi_old, pi_save, rho, &
   &                               threshold, v3, z, z_seed
@@ -133,7 +102,7 @@ SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   USE shifted_krylov_vals, ONLY : alpha, alpha_save, beta, beta_save, iter, itermax, &
   &                               ndim, nl, nz, p, pi, pi_old, pi_save, rho, r_l_save, &
   &                               threshold, v3, z, z_seed 
-  USE mathlib, ONLY : dcopy, ddot
+  USE shifted_krylov_math, ONLY : dcopy, ddot
   !
   IMPLICIT NONE
   !
@@ -175,7 +144,7 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   USE shifted_krylov_vals, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, iter, itermax, &
   &                               ndim, nl, r_l_save, threshold, v3, z_seed
-  USE mathlib, ONLY : dcopy, ddot
+  USE shifted_krylov_math, ONLY : dcopy, ddot
   !
   IMPLICIT NONE
   !
@@ -247,7 +216,7 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   !
   USE shifted_krylov_vals, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, &
   &                               iter, itermax, ndim, nl, nz, rho, r_l_save, threshold, v3, z_seed
-  USE mathlib, ONLY : ddot, dcopy
+  USE shifted_krylov_math, ONLY : ddot, dcopy
   !
   IMPLICIT NONE
   !
@@ -322,7 +291,7 @@ END SUBROUTINE CG_R_update
 SUBROUTINE CG_R_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
   !
   USE shifted_krylov_vals, ONLY : alpha_save, beta_save, r_l_save, iter, nl, z_seed
-  USE mathlib, ONLY : dcopy
+  USE shifted_krylov_math, ONLY : dcopy
   !
   IMPLICIT NONE
   !
@@ -341,7 +310,7 @@ END SUBROUTINE CG_R_getcoef
 SUBROUTINE CG_R_getvec(r_old)
   !
   USE shifted_krylov_vals, ONLY : ndim, v3
-  USE mathlib, ONLY : dcopy
+  USE shifted_krylov_math, ONLY : dcopy
   !
   IMPLICIT NONE
   !

@@ -380,3 +380,4 @@ doc/ShiftK.pdf
 *.mod
 *.x
 a.out
+*.a
