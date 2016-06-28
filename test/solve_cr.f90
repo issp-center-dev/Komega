@@ -1,4 +1,4 @@
-MODULE solve_rr_vals
+MODULE solve_cr_vals
   !
   IMPLICIT NONE
   !
@@ -17,7 +17,7 @@ MODULE solve_rr_vals
   REAL(8),ALLOCATABLE,SAVE :: &
   & z(:)         ! (nz): Frequency
   !
-  REAL(8),ALLOCATABLE,SAVE :: &
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
   & ham(:,:), &
   & rhs(:), &
   & v12(:), v2(:), & ! (ndim): Working vector
@@ -29,14 +29,14 @@ MODULE solve_rr_vals
   REAL(8),ALLOCATABLE,SAVE :: &
   & alpha(:), beta(:) ! (iter_old) 
   !
-  REAL(8),ALLOCATABLE,SAVE :: &
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
   & r_l_save(:,:) ! (nl,iter_old) Projected residual vectors
   !
-END MODULE solve_rr_vals
+END MODULE solve_cr_vals
 !
 ! Routines
 !
-MODULE solve_rr_routines
+MODULE solve_cr_routines
   !
   IMPLICIT NONE
   !
@@ -44,7 +44,7 @@ CONTAINS
   !
 SUBROUTINE input_size()
   !
-  USE solve_rr_vals, ONLY : ndim, nl, nz, itermax, threshold, rnd_seed
+  USE solve_cr_vals, ONLY : ndim, nl, nz, itermax, threshold, rnd_seed
   !
   IMPLICIT NONE
   !
@@ -81,7 +81,7 @@ END SUBROUTINE input_size
 !
 SUBROUTINE input_restart()
   !
-  USE solve_rr_vals, ONLY : iter_old, v2, v12, alpha, beta, z_seed, r_l_save, nl, ndim
+  USE solve_cr_vals, ONLY : iter_old, v2, v12, alpha, beta, z_seed, r_l_save, nl, ndim
   !
   IMPLICIT NONE
   !
@@ -123,13 +123,14 @@ END SUBROUTINE input_restart
 !
 SUBROUTINE generate_system()
   !
-  USE solve_rr_vals, ONLY : ndim, nz, ham, rhs, z, rnd_seed
-  USE mathlib, ONLY : dgemm, dcopy
+  USE solve_cr_vals, ONLY : ndim, nz, ham, rhs, z, rnd_seed
+  USE mathlib, ONLY : zgemm, zcopy
   !
   IMPLICIT NONE
   !
   INTEGER :: idim, iz
-  REAL(8) :: ham0(ndim,ndim), rnd(rnd_seed)
+  REAL(8) :: ham_r(ndim,ndim), rhs_r(ndim), ham_i(ndim,ndim), rhs_i(ndim), rnd(rnd_seed)
+  COMPLEX(8) :: ham0(ndim,ndim)
   CHARACTER(100) :: cndim, form
   !
   CALL RANDOM_NUMBER(rnd(1:rnd_seed))
@@ -145,21 +146,27 @@ SUBROUTINE generate_system()
   END DO
   !
   !CALL RANDOM_NUMBER(ham(1:ndim, 1:ndim))
-  ham(1:ndim, 1:ndim)=0d0
-  CALL RANDOM_NUMBER(ham(1, 1))
+  ham_r(1:ndim, 1:ndim) = 0d0
+  ham_i(1:ndim, 1:ndim) = 0d0
+  CALL RANDOM_NUMBER(ham_r(1, 1))
+  CALL RANDOM_NUMBER(ham_i(1, 1))
   DO idim = 2, ndim
-     CALL RANDOM_NUMBER(ham(idim, idim))
-     CALL RANDOM_NUMBER(ham(idim, idim-1))
+     CALL RANDOM_NUMBER(ham_r(idim, idim))
+     CALL RANDOM_NUMBER(ham_r(idim, idim-1))
+     CALL RANDOM_NUMBER(ham_i(idim, idim))
+     CALL RANDOM_NUMBER(ham_i(idim, idim-1))
   END DO
+  ham(1:ndim,1:ndim) = CMPLX(ham_r(1:ndim, 1:ndim), ham_i(1:ndim, 1:ndim), KIND(0d0))
   !
-  CALL dgemm("T", "N", ndim, ndim, ndim, 1d0, ham, ndim, ham, ndim, 0d0, ham0, ndim)
-  CALL dcopy(ndim*ndim,ham0,1,ham,1)
+  CALL zgemm("C", "N", ndim, ndim, ndim, CMPLX(1d0, 0d0, KIND(0d0)), ham, ndim, ham, ndim, CMPLX(0d0, 0d0, KIND(0d0)), ham0, ndim)
+  CALL zcopy(ndim*ndim,ham0,1,ham,1)
   !
-  !CALL RANDOM_NUMBER(rhs(1:ndim))
-  rhs(1:ndim) = 0d0
-  rhs(1) = 1d0
+  CALL RANDOM_NUMBER(rhs_r(1:ndim))
+  CALL RANDOM_NUMBER(rhs_i(1:ndim))
+  rhs(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
+  rhs(1) = CMPLX(1d0, 0d0, KIND(0d0))
   !
-  WRITE(cndim,*) ndim
+  WRITE(cndim,*) ndim * 2
   WRITE(form,'(a,a,a)') "(", TRIM(ADJUSTL(cndim)), "e15.5)"
   !
   WRITE(*,*) 
@@ -178,7 +185,7 @@ END SUBROUTINE generate_system
 !
 SUBROUTINE output_restart()
   !
-  USE solve_rr_vals, ONLY : iter_old, v2, v12, alpha, beta, z_seed, r_l_save, nl, ndim
+  USE solve_cr_vals, ONLY : iter_old, v2, v12, alpha, beta, z_seed, r_l_save, nl, ndim
   !
   IMPLICIT NONE
   !
@@ -209,14 +216,14 @@ END SUBROUTINE output_restart
 SUBROUTINE output_result()
   !
   USE mathlib, ONLY : dgemv
-  USE solve_rr_vals, ONLY : v2, ndim, nl, x, rhs, z, nz, ham
+  USE solve_cr_vals, ONLY : v2, ndim, nl, x, rhs, z, nz, ham
   !
   IMPLICIT NONE
   !
   INTEGER :: iz
   CHARACTER(100) :: cnl, form
   !
-  WRITE(cnl,*) nl
+  WRITE(cnl,*) nl * 2
   WRITE(form,'(a,a,a)') "(", TRIM(ADJUSTL(cnl)), "e15.5)"
   !
   WRITE(*,*)
@@ -237,7 +244,7 @@ SUBROUTINE output_result()
   DO iz = 1, nz
      !
      v2(1:ndim) = z(iz) * x(1:ndim,iz) - rhs(1:ndim)
-     CALL dgemv("N", ndim, ndim, -1d0, Ham, ndim, x(1:ndim,iz), 1, 1d0, v2, 1)
+     CALL zgemv("N", ndim, ndim, CMPLX(-1d0, 0d0, KIND(0d0)), Ham, ndim, x(1:ndim,iz), 1, CMPLX(1d0, 0d0, KIND(0d0)), v2, 1)
      !
      write(*,form) v2(1:nl)
      !
@@ -245,19 +252,19 @@ SUBROUTINE output_result()
   !
 END SUBROUTINE output_result
 !
-END MODULE solve_rr_routines
+END MODULE solve_cr_routines
 !
 !
 !
-PROGRAM solve_rr
+PROGRAM solve_cr
   !
-  USE shifted_cg_r, ONLY : CG_R_init, CG_R_restart, CG_R_update, &
-  &                        CG_R_getcoef, CG_R_getvec, CG_R_finalize
-  USE solve_rr_routines, ONLY : input_size, input_restart, generate_system, &
+  USE shifted_cg_c, ONLY : CG_C_init, CG_C_restart, CG_C_update, &
+  &                        CG_C_getcoef, CG_C_getvec, CG_C_finalize
+  USE solve_cr_routines, ONLY : input_size, input_restart, generate_system, &
   &                              output_restart, output_result
-  USE solve_rr_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, &
+  USE solve_cr_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, &
   &                         rhs, v12, v2, r_l, r_l_save, threshold, x, z, z_seed
-  USE mathlib, ONLY : dgemv
+  USE mathlib, ONLY : zgemv
   !
   IMPLICIT NONE
   !
@@ -289,10 +296,10 @@ PROGRAM solve_rr
     ! When restarting, counter
     !
     itermin = iter_old + 1
-    CALL CG_R_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, status, &
+    CALL CG_C_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, status, &
     &                 iter_old, v2, v12, alpha, beta, z_seed, r_l_save)
     !
-    ! These vectors were saved in CG_R routine
+    ! These vectors were saved in CG_C routine
     !
     DEALLOCATE(alpha, beta, r_l_save)
     !
@@ -306,11 +313,11 @@ PROGRAM solve_rr
      !
      v2(1:ndim) = rhs(1:ndim)
      !
-     CALL CG_R_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     CALL CG_C_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
      !
   END IF
   !
-  ! CG_R Loop
+  ! CG_C Loop
   !
   WRITE(*,*)
   WRITE(*,*) "#####  CG Iteration  #####"
@@ -325,13 +332,13 @@ PROGRAM solve_rr
      !
      ! Matrix-vector product
      !
-     CALL dgemv("N", ndim, ndim, 1d0, Ham, ndim, v2, 1, 0d0, v12, 1)
+     CALL zgemv("N", ndim, ndim, CMPLX(1d0, 0d0, KIND(0d0)), Ham, ndim, v2, 1, CMPLX(0d0, 0d0, KIND(0d0)), v12, 1)
      !
-     ! Update result x with CG_R
+     ! Update result x with CG_C
      !
-     CALL CG_R_update(v12, v2, x, r_l, status)
+     CALL CG_C_update(v12, v2, x, r_l, status)
      !
-     WRITE(*,'(a,4i,e15.5)') "DEBUG : ", iter, status, v12(1)
+     WRITE(*,'(a,4i,e15.5)') "DEBUG : ", iter, status, DBLE(v12(1))
      IF(status(1) /= 0) EXIT
      !
   END DO
@@ -349,8 +356,8 @@ PROGRAM solve_rr
      !
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
      !
-     CALL CG_R_getcoef(alpha, beta, z_seed, r_l_save)
-     CALL CG_R_getvec(v12)
+     CALL CG_C_getcoef(alpha, beta, z_seed, r_l_save)
+     CALL CG_C_getvec(v12)
      !
      CALL output_restart()
      !
@@ -362,7 +369,7 @@ PROGRAM solve_rr
   !
   ! Deallocate all intrinsic vectors
   !
-  CALL CG_R_finalize()
+  CALL CG_C_finalize()
   !
   ! Output to a file
   !
@@ -374,4 +381,4 @@ PROGRAM solve_rr
   WRITE(*,*) "#####  Done  #####"
   WRITE(*,*)
   !
-END PROGRAM solve_rr
+END PROGRAM solve_cr

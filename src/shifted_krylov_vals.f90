@@ -1,4 +1,4 @@
-MODULE shifted_krylov_vals
+MODULE shifted_krylov_parameter
   !
   IMPLICIT NONE
   !
@@ -10,7 +10,17 @@ MODULE shifted_krylov_vals
   & iter
   !
   REAL(8),SAVE :: &
-  & threshold, &
+  & threshold
+  !
+END MODULE shifted_krylov_parameter
+!
+!
+!
+MODULE shifted_krylov_vals_r
+  !
+  IMPLICIT NONE
+  !
+  REAL(8),SAVE :: &
   & z_seed, &
   & rho, &
   & alpha, &
@@ -19,13 +29,59 @@ MODULE shifted_krylov_vals
   !
   REAL(8),ALLOCATABLE,SAVE :: &
   & z(:), &
-  & v3(:), &
   & pi(:), &
   & pi_old(:), &
   & pi_save(:,:), &
-  & p(:,:), &
   & alpha_save(:), &
-  & beta_save(:), &
+  & beta_save(:)
+  !
+END MODULE shifted_krylov_vals_r
+!
+!
+!
+MODULE shifted_krylov_vecs_r
+  !
+  IMPLICIT NONE
+  !
+  REAL(8),ALLOCATABLE,SAVE :: &
+  & v3(:), &
+  & p(:,:), &
   & r_l_save(:,:)
   !
-END MODULE shifted_krylov_vals
+END MODULE shifted_krylov_vecs_r
+!
+!
+!
+MODULE shifted_krylov_vals_c
+  !
+  IMPLICIT NONE
+  !
+  COMPLEX(8),SAVE :: &
+  & z_seed, &
+  & rho, &
+  & alpha, &
+  & alpha_old, &
+  & beta
+  !
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
+  & z(:), &
+  & pi(:), &
+  & pi_old(:), &
+  & pi_save(:,:), &
+  & alpha_save(:), &
+  & beta_save(:)
+  !
+END MODULE shifted_krylov_vals_c
+!
+!
+!
+MODULE shifted_krylov_vecs_c
+  !
+  IMPLICIT NONE
+  !
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
+  & v3(:), &
+  & p(:,:), &
+  & r_l_save(:,:)
+  !
+END MODULE shifted_krylov_vecs_c

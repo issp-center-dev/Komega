@@ -46,7 +46,7 @@
 %
 % Cover
 %
-\title{Shifted Krylov法ライブラリ設計書 ver.0.5}
+\title{Shifted Krylov法ライブラリ設計書 ver.0.6}
 \author{東京大学物性研究所 ソフトウェア高度化推進チーム}
 \date{\today}
 \maketitle
@@ -127,7 +127,7 @@ $\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alph
 do $i = 1 \cdots N_L$
 \\\hspace{2.0cm}
 $p_{i k} = \frac{1}{\pi_k} {\boldsymbol \varphi}_i^* \cdot {\boldsymbol r} + 
-\left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta p_{i k}$
+\frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta p_{i k}$
 \\\hspace{2.0cm}
 $G_{i j}(z_k) = G_{i j}(z_k) + \frac{\pi_k}{\pi_k^{\rm new}} \alpha p_{i k}$
 \\\hspace{2.0cm}
@@ -157,7 +157,7 @@ ${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed},\;
 {\tilde {\boldsymbol r}}^{\rm old} = {\tilde {\boldsymbol r}}^{\rm old} / \pi_{\rm seed}^{{\rm old}*}$
 \\\hspace{1.0cm}
 $\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
-$\rho = \rho / |\pi_{\rm seed}^{\rm old}|^2$
+$\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})$
 \\\hspace{1.0cm}
 $\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
 \\\hspace{1.0cm}
@@ -207,7 +207,7 @@ $\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alph
 do $i = 1 \cdots N_L$
 \\\hspace{2.0cm}
 $p_{i k} = \frac{1}{\pi_k} {\boldsymbol \varphi}_i^* \cdot {\boldsymbol r} + 
-\left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta p_{i k}$
+\frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta p_{i k}$
 \\\hspace{2.0cm}
 $G_{i j}(z_k) = G_{i j}(z_k) + \frac{\pi_k}{\pi_k^{\rm new}} \alpha p_{i k}$
 \\\hspace{2.0cm}
@@ -230,7 +230,7 @@ ${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed},\;
 {\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}^{\rm old}$
 \\\hspace{1.0cm}
 $\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
-$\rho = \rho / |\pi_{\rm seed}^{\rm old}|^2$
+$\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})$
 \\\hspace{1.0cm}
 $\{\pi_k = \pi_k/\pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
 \\\hspace{1.0cm}
@@ -280,7 +280,7 @@ $\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alph
 do $i = 1 \cdots N_L$
 \\\hspace{2.0cm}
 $p_{i k} = \frac{1}{\pi_k} {\boldsymbol \varphi}_i^* \cdot {\boldsymbol r} + 
-\left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta p_{i k}$
+\left(\frac{\pi^{\rm old}_k}{\pi_k } \right)^2 \beta p_{i k}$
 \\\hspace{2.0cm}
 $G_{i j}(z_k) = G_{i j}(z_k) + \frac{\pi_k}{\pi_k^{\rm new}} \alpha p_{i k}$
 \\\hspace{2.0cm}
@@ -303,7 +303,7 @@ ${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed},\;
 {\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}^{\rm old}$
 \\\hspace{1.0cm}
 $\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
-$\rho = \rho / |\pi_{\rm seed}^{\rm old}|^2$
+$\rho = \rho / {\pi_{\rm seed}^{\rm old}}^2$
 \\\hspace{1.0cm}
 $\{\pi_k = \pi_k/\pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old}/\pi_{\rm seed}^{\rm old}\}$
 \\\hspace{1.0cm}
@@ -440,7 +440,7 @@ $[ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 3}) = {\hat H}
   $\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)$
   \\\hspace{1.5cm}
   ${\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm L} + 
-  \left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta {\bf p}_{k}$
+  \frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta {\bf p}_{k}$
   \\\hspace{1.5cm}
   ${\bf x}_{k} = {\bf x}_{k} + \frac{\pi_k}{\pi_k^{\rm new}} \alpha {\bf p}_{k}$
   \\\hspace{1.5cm}
@@ -469,7 +469,7 @@ $[ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 3}) = {\hat H}
   ${\boldsymbol v}_5 = {\boldsymbol v}_5 / \pi_{\rm seed}^{\rm old *}$
   \\\hspace{1.0cm}
   $\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
-  $\rho = \rho / |\pi_{\rm seed}^{\rm old}|^2$
+  $\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})$
   \\\hspace{1.0cm}
   $\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
   \\\hspace{0.5cm}
@@ -678,7 +678,7 @@ ${\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2$
   $\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)$
   \\\hspace{1.5cm}
   ${\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm L} + 
-  \left|\frac{\pi^{\rm old}_k}{\pi_k } \right|^2 \beta {\bf p}_{k}$
+  \frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta {\bf p}_{k}$
   \\\hspace{1.5cm}
   ${\bf x}_{k} = {\bf x}_{k} + \frac{\pi_k}{\pi_k^{\rm new}} \alpha {\bf p}_{k}$
   \\\hspace{1.5cm}
@@ -701,7 +701,7 @@ ${\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2$
   ${\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}^{\rm old}$
   \\\hspace{1.0cm}
   $\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
-  $\rho = \rho / |\pi_{\rm seed}^{\rm old}|^2$
+  $\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})$
   \\\hspace{1.0cm}
   $\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
   \\\hspace{0.5cm}

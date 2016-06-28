@@ -6,7 +6,12 @@ include ../make.sys
 LIB = -L ../src -lshiftk
 INCLUDE = -I ../src
 
-solve_rr.x:solve_rr.o 
+all:solve_rr.x solve_cr.x
+
+solve_cr.x:solve_cr.o ../src/libshiftk.a
+	$(F90) $< -o $@ $(FFLAGS) $(LIB)
+
+solve_rr.x:solve_rr.o ../src/libshiftk.a
 	$(F90) $< -o $@ $(FFLAGS) $(LIB)
 
 .f90.o:
@@ -15,5 +20,8 @@ solve_rr.x:solve_rr.o
 clean:
 	rm -f *.o *.x *.mod
 
+solve_cr.o:mathlib.o
+solve_cr.o:../src/libshiftk.a
 solve_rr.o:mathlib.o
+solve_rr.o:../src/libshiftk.a
 

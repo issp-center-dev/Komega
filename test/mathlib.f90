@@ -51,6 +51,13 @@ MODULE mathlib
        DOUBLE PRECISION   a( lda, * ), x( * ), y( * )
      END SUBROUTINE dgemv
      !
+     SUBROUTINE zgemv ( trans, m, n, alpha, a, lda, x, incx, beta, y, incy )
+       COMPLEX*16         alpha, beta
+       INTEGER            incx, incy, lda, m, n
+       CHARACTER*1        trans
+       COMPLEX*16         a( lda, * ), x( * ), y( * )
+     END subroutine zgemv
+     !
      SUBROUTINE dgemm ( transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc )
        CHARACTER*1        transa, transb
        INTEGER            m, n, k, lda, ldb, ldc
