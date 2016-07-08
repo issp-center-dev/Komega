@@ -56,8 +56,8 @@ SUBROUTINE input_filename()
   !
   NAMELIST /filename/ inham, invec
   !
-  inham = ""
-  invec = ""
+  inham = "zvo_Ham.dat"
+  invec = "zvo_Excited.dat"
   !
   READ(*,filename,err=100)
   !
@@ -111,10 +111,10 @@ SUBROUTINE input_parameter()
   WRITE(*,*) "           Num. of Omega : ", nomega
   WRITE(*,*) "  Maximum number of loop : ", maxloops
   WRITE(*,*) "   Convergence Threshold : ", threshold
-  WRITE(*,*) "        Calculation type : ", calctype
+  WRITE(*,'(a,a)') "         Calculation type : ", calctype
   !
   ALLOCATE(z(nomega))
-  z(iomega) = omegamin
+  z(1) = omegamin
   DO iomega = 2, nomega
      z(iomega) = omegamin + (omegamax - omegamin) * DBLE(iomega - 1) / DBLE(nomega - 1)
   END DO
@@ -358,7 +358,8 @@ SUBROUTINE output_result()
      v2(1:ndim) = z(iz) * x(1:ndim,iz) - rhs(1:ndim)
      CALL zgemv("N", ndim, ndim, CMPLX(-1d0, 0d0, KIND(0d0)), Ham, ndim, x(1:ndim,iz), 1, CMPLX(1d0, 0d0, KIND(0d0)), v2, 1)
      !
-     write(*,form) v2(1:ndim)
+     !write(*,form) v2(1:ndim)
+     write(*,*) "DEBUG", dble(dot_product(v2,v2))
      !
   END DO
   !
@@ -427,9 +428,9 @@ PROGRAM shiftk
      v2(1:ndim) = rhs(1:ndim)
      !
      IF(outrestart == .TRUE.) THEN
-        CALL CG_C_init(ndim, ndim, nomega, x, z, maxloops, threshold)
+        CALL CG_C_init(ndim, ndim, nomega, x, z, maxloops, threshold, status)
      ELSE
-        CALL CG_C_init(ndim, ndim, nomega, x, z, 0,        threshold)
+        CALL CG_C_init(ndim, ndim, nomega, x, z, 0,        threshold, status)
      END IF
      !
   ELSE

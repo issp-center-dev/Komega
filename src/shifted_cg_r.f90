@@ -56,7 +56,7 @@ SUBROUTINE CG_R_seed_switch(v2,status)
   INTEGER :: iz_seed, jter
   REAL(8) :: scale
   !
-  iz_seed = MINLOC(pi(1:nz), 1)
+  iz_seed = MINLOC(ABS(pi(1:nz)), 1)
   !
   IF(ABS(z_seed - z(iz_seed)) > 1d-12) THEN
      !
@@ -99,7 +99,7 @@ END SUBROUTINE CG_R_seed_switch
 !
 ! Allocate & initialize variables
 !
-SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold
   USE shifted_krylov_vals_r, ONLY : alpha, alpha_save, beta, beta_save, pi, &
@@ -112,6 +112,9 @@ SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
   REAL(8),INTENT(IN) :: z0(nz0), threshold0
   REAL(8),INTENT(OUT) :: x(nl0,nz0)
+  INTEGER,INTENT(OUT) :: status(3)
+  !
+  status(1:3) = 0
   !
   ndim = ndim0
   nl = nl0
@@ -165,9 +168,7 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   REAL(8),INTENT(IN) :: r_l_save0(nl0,iter_old)
   REAL(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
   !
-  status(1:3) = 0
-  !
-  CALL CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+  CALL CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
   z_seed = z_seed0
   !
   DO iter = 1, iter_old
@@ -202,7 +203,7 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   ! Convergence check
   !
-  v12(1) = ddot(ndim,v2,1,v2,1)
+  v12(1) = ddot(ndim,v2,1,v2,1) / DBLE(ndim)
   !
   IF(v12(1) < threshold) THEN
      status(1) = iter
@@ -280,7 +281,7 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   !
   ! Convergence check
   !
-  v12(1) = ddot(ndim,v2,1,v2,1)
+  v12(1) = ddot(ndim,v2,1,v2,1) / DBLE(ndim)
   !
   IF(v12(1) < threshold) THEN
      status(1) = iter

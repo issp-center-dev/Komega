@@ -313,7 +313,7 @@ PROGRAM solve_cr
      !
      v2(1:ndim) = rhs(1:ndim)
      !
-     CALL CG_C_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     CALL CG_C_init(ndim, nl, nz, x, z, max(0,itermax), threshold, status)
      !
   END IF
   !

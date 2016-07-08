@@ -35,6 +35,7 @@ SUBROUTINE CG_C_shiftedeqn(r_l, x)
      IF(itermax > 0) pi_save(iz,iter) = pi_new
      !
   END DO
+  !write(*,'(a,100e15.5)') "DEBUG2 : ", pi
   !
 END SUBROUTINE CG_C_shiftedeqn
 !
@@ -56,7 +57,7 @@ SUBROUTINE CG_C_seed_switch(v2,status)
   INTEGER :: iz_seed, jter
   REAL(8) :: scale
   !
-  iz_seed = MINLOC(pi(1:nz), 1)
+  iz_seed = MINLOC(ABS(pi(1:nz)), 1)
   !
   IF(ABS(z_seed - z(iz_seed)) > 1d-12) THEN
      !
@@ -99,7 +100,7 @@ END SUBROUTINE CG_C_seed_switch
 !
 ! Allocate & initialize variables
 !
-SUBROUTINE CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+SUBROUTINE CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold
   USE shifted_krylov_vals_r, ONLY : alpha, alpha_save, beta, beta_save, pi, &
@@ -112,6 +113,9 @@ SUBROUTINE CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
   REAL(8),INTENT(IN) :: z0(nz0), threshold0
   COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
+  INTEGER,INTENT(OUT) :: status(3)
+  !
+  status(1:3) = 0
   !
   ndim = ndim0
   nl = nl0
@@ -165,9 +169,7 @@ SUBROUTINE CG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   COMPLEX(8),INTENT(IN) :: r_l_save0(nl0,iter_old)
   COMPLEX(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
   !
-  status(1:3) = 0
-  !
-  CALL CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+  CALL CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
   z_seed = z_seed0
   !
   DO iter = 1, iter_old
@@ -202,7 +204,7 @@ SUBROUTINE CG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   ! Convergence check
   !
-  v12(1) = zdotc(ndim,v2,1,v2,1)
+  v12(1) = zdotc(ndim,v2,1,v2,1) / DBLE(ndim)
   !
   IF(DBLE(v12(1)) < threshold) THEN
      status(1) = iter
@@ -228,12 +230,12 @@ SUBROUTINE CG_C_update(v12, v2, x, r_l, status)
   !
   COMPLEX(8),INTENT(INOUT) :: v12(ndim), v2(ndim), x(nl,nz)
   COMPLEX(8),INTENT(IN) :: r_l(nl)
-  INTEGER,INTENT(OUT) :: status(3)
+  INTEGER,INTENT(INOUT) :: status(3)
   !
   REAL(8) :: rho_old, alpha_denom
   !
   iter = iter + 1
-  status(1:3) = 0
+  !status(1:3) = 0
   !
   rho_old = rho
   rho = DBLE(zdotc(ndim,v2,1,v2,1))
@@ -280,7 +282,7 @@ SUBROUTINE CG_C_update(v12, v2, x, r_l, status)
   !
   ! Convergence check
   !
-  v12(1) = zdotc(ndim,v2,1,v2,1)
+  v12(1) = zdotc(ndim,v2,1,v2,1) / DBLE(ndim)
   !
   IF(DBLE(v12(1)) < threshold) THEN
      status(1) = iter
