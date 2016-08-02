@@ -6,6 +6,7 @@ include ../make.sys
 OBJS = \
 shifted_cg_c.o \
 shifted_cg_r.o \
+shifted_cocg.o \
 shifted_krylov_math.o \
 shifted_krylov_vals.o
 

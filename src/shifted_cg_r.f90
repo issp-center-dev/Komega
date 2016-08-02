@@ -62,7 +62,7 @@ SUBROUTINE CG_R_seed_switch(v2,status)
      !
      z_seed = z(iz_seed)
      !
-     IF(abs(pi(iz_seed)) < threshold) THEN
+     IF(ABS(pi(iz_seed)) < threshold) THEN
         status = - iz_seed
      ELSE
         status = iz_seed
@@ -110,7 +110,8 @@ SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
   IMPLICIT NONE
   !
   INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
-  REAL(8),INTENT(IN) :: z0(nz0), threshold0
+  REAL(8),INTENT(IN) :: threshold0
+  REAL(8),INTENT(IN) :: z0(nz0)
   REAL(8),INTENT(OUT) :: x(nl0,nz0)
   INTEGER,INTENT(OUT) :: status(3)
   !
@@ -156,7 +157,8 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   IMPLICIT NONE
   !
   INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
-  REAL(8),INTENT(IN) :: z0(nz0), threshold0
+  REAL(8),INTENT(IN) :: threshold0
+  REAL(8),INTENT(IN) :: z0(nz0)
   REAL(8),INTENT(OUT) :: x(nl0,nz0)
   INTEGER,INTENT(OUT) :: status(3)
   !

@@ -14,6 +14,11 @@ MODULE shifted_krylov_math
        INTEGER        incx,incy,n
      END FUNCTION zdotc
      !
+     DOUBLE COMPLEX FUNCTION zdotu(n,zx,incx,zy,incy)
+       DOUBLE COMPLEX zx(*),zy(*)
+       INTEGER        incx,incy,n
+     END FUNCTION zdotu
+     !
      SUBROUTINE  dscal(n,da,dx,incx)
        DOUBLE PRECISION da,dx(*)
        INTEGER          incx,n
