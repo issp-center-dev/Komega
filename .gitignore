@@ -381,3 +381,5 @@ doc/ShiftK.pdf
 *.x
 a.out
 *.a
+doc/software/ShiftKSoft.pdf
+doc/library/ShiftK.pdf

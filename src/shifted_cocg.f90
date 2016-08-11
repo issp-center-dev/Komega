@@ -35,7 +35,6 @@ SUBROUTINE COCG_shiftedeqn(r_l, x)
      IF(itermax > 0) pi_save(iz,iter) = pi_new
      !
   END DO
-  !write(*,'(a,100e15.5)',advance="no") "DEBUG2 : ", abs(pi)
   !
 END SUBROUTINE COCG_shiftedeqn
 !
@@ -43,10 +42,10 @@ END SUBROUTINE COCG_shiftedeqn
 !
 SUBROUTINE COCG_seed_switch(v2,status)
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nz, threshold
+  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nz, nl, threshold
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_save, beta_save, pi, pi_old, &
   &                               pi_save, rho, z, z_seed
-  USE shifted_krylov_vecs_c, ONLY : v3
+  USE shifted_krylov_vecs_c, ONLY : v3, r_l_save
   USE shifted_krylov_math, ONLY : dscal, zscal
   !
   IMPLICIT NONE
@@ -58,6 +57,7 @@ SUBROUTINE COCG_seed_switch(v2,status)
   COMPLEX(8) :: scale
   !
   iz_seed = MINLOC(ABS(pi(1:nz)), 1)
+  status = iz_seed
   !
   IF(ABS(z_seed - z(iz_seed)) > 1d-12) THEN
      !
@@ -83,14 +83,22 @@ SUBROUTINE COCG_seed_switch(v2,status)
      !
      IF(itermax > 0) THEN
         !
-        do jter = 1, iter
+        DO jter = 1, iter
+           !
            alpha_save(jter) = alpha_save(jter) &
            &                * pi_save(iz_seed, jter - 1) / pi_save(iz_seed,jter) 
            beta_save(jter) = beta_save(jter) &
            &               * (pi_save(iz_seed, jter - 2) / pi_save(iz_seed,jter - 1))**2 
+           !
+           scale = 1d0 / pi_save(iz_seed, jter - 1)
+           CALL zscal(nl, scale, r_l_save(1:nl,jter), 1)
+           !
+        END DO
+        !
+        DO jter = 1, iter
            scale = 1d0 / pi_save(iz_seed, jter)
            CALL zscal(nz,scale,pi_save(1:nz,jter),1)
-        end do
+        END DO
         !
      END IF
      !
@@ -131,16 +139,16 @@ SUBROUTINE COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
   x(1:nl,1:nz) = CMPLX(0d0, 0d0, KIND(0d0))
   pi(1:nz) = CMPLX(1d0, 0d0, KIND(0d0))
   pi_old(1:nz) = CMPLX(1d0, 0d0, KIND(0d0))
-  rho = CMPLX(1d0, 0d0)
-  alpha = CMPLX(1d0, 0d0)
-  beta = CMPLX(0d0, 0d0)
-  z_seed = CMPLX(0d0, 0d0)
+  rho = CMPLX(1d0, 0d0, KIND(0d0))
+  alpha = CMPLX(1d0, 0d0, KIND(0d0))
+  beta = CMPLX(0d0, 0d0, KIND(0d0))
+  z_seed = CMPLX(0d0, 0d0, KIND(0d0))
   iter = 0
   !
   IF(itermax > 0) THEN
      ALLOCATE(alpha_save(itermax), beta_save(itermax), &
      &        r_l_save(nl,itermax), pi_save(nz,-1:itermax))
-     pi_save(1:nz,-1:0) = CMPLX(1d0, 0d0)
+     pi_save(1:nz,-1:0) = CMPLX(1d0, 0d0, KIND(0d0))
   END IF
   !
 END SUBROUTINE COCG_init

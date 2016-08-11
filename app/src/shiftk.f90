@@ -9,10 +9,12 @@ MODULE shiftk_vals
   & iter_old   ! Number of iteraction of previous run
   !
   REAL(8),SAVE :: &
-  & z_seed, & ! Seed frequency
   & threshold ! Convergence Threshold
   !
-  REAL(8),ALLOCATABLE,SAVE :: &
+  COMPLEX(8),SAVE :: &
+  & z_seed ! Seed frequency
+  !
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
   & z(:)         ! (nomega): Frequency
   !
   COMPLEX(8),ALLOCATABLE,SAVE :: &
@@ -24,7 +26,7 @@ MODULE shiftk_vals
   !
   ! Variables for Restart
   !
-  REAL(8),ALLOCATABLE,SAVE :: &
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
   & alpha(:), beta(:) ! (iter_old) 
   !
   COMPLEX(8),ALLOCATABLE,SAVE :: &
@@ -84,18 +86,15 @@ SUBROUTINE input_parameter()
   IMPLICIT NONE
   !
   INTEGER :: convfactor, iomega
-  REAL(8) :: omegamax, omegamin, omegaimmax, omegaimmin
-  NAMELIST /parameter/ omegamax, omegamin, omegaimmax, omegaimmin, nomega, maxloops, calctype, &
-  &                    convfactor, outrestart
+  COMPLEX(8) :: omegamax, omegamin
+  NAMELIST /parameter/ omegamax, omegamin, nomega, maxloops, calctype, convfactor, outrestart
   !
   maxloops = ndim
   calctype = "normal"
   convfactor = 8
   nomega = 10
-  omegamin = 0d0
-  omegamax = 10d0
-  omegaimmax = 0d0
-  omegaimmin = 0d0
+  omegamin = CMPLX(0d0, 1d0, KIND(0d0))
+  omegamax = CMPLX(1d0, 1d0, KIND(0d0))
   outrestart = .FALSE.
   !
   READ(*,parameter,err=100)
@@ -106,8 +105,6 @@ SUBROUTINE input_parameter()
   WRITE(*,*)
   WRITE(*,*) "           Max. of Omega : ", omegamax
   WRITE(*,*) "           Min. of Omega : ", omegamin
-  WRITE(*,*) "        Max. of Omega_Im : ", omegaimmax
-  WRITE(*,*) "       Min. of  Omega Im : ", omegaimmin
   WRITE(*,*) "           Num. of Omega : ", nomega
   WRITE(*,*) "  Maximum number of loop : ", maxloops
   WRITE(*,*) "   Convergence Threshold : ", threshold
@@ -208,8 +205,9 @@ SUBROUTINE input_restart_parameter()
   !
   IMPLICIT NONE
   !
-  INTEGER :: fi = 10, iter
-  !REAL(8) :: z_seed_r, z_seed_i, alpha_r, alpha_i, beta_r, beta_i
+  INTEGER :: fi = 10, iter, idim
+  REAL(8) :: z_seed_r, z_seed_i, alpha_r, alpha_i, beta_r, beta_i
+  REAL(8) :: r_l_save_r, r_l_save_i
   !
   WRITE(*,*)
   WRITE(*,*) "##########  Input Restart Parameter  ##########"
@@ -222,15 +220,24 @@ SUBROUTINE input_restart_parameter()
   !
   ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(ndim, iter_old))
   !
-  READ(fi,*) z_seed !_r, z_seed_i
-  WRITE(*,*) "  Previous Omega_Seed : ", z_seed !_r, z_seed_i
-  !z_seed = CMPLX(z_seed_r, z_seed_i, KIND(0d0))
+  READ(fi,*) z_seed_r, z_seed_i
+  WRITE(*,*) "  Previous Omega_Seed : ", z_seed_r, z_seed_i
+  z_seed = CMPLX(z_seed_r, z_seed_i, KIND(0d0))
   !
   DO iter = 1, iter_old
      !
-     READ(fi,*) alpha(iter) , beta(iter) !alpha_r, alpha_i, beta_r, beta_i
-     !alpha(iter) = CMPLX(alpha_r, alpha_i, KIND(0d0))
-     !beta(iter) = CMPLX(beta_r, beta_i, KIND(0d0))
+     READ(fi,*) alpha_r, alpha_i, beta_r, beta_i
+     alpha(iter) = CMPLX(alpha_r, alpha_i, KIND(0d0))
+     beta(iter) = CMPLX(beta_r, beta_i, KIND(0d0))
+     !
+  END DO
+  !
+  DO iter = 1, iter_old
+     !
+     DO idim = 1, ndim
+        READ(fi,*) r_l_save_r, r_l_save_i
+        r_l_save(idim,iter) = CMPLX(r_l_save_r, r_l_save_i, KIND(0d0))
+     END DO
      !
   END DO
   !
@@ -277,11 +284,11 @@ END SUBROUTINE input_restart_vector
 !
 SUBROUTINE output_restart_parameter()
   !
-  USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed
+  USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed, r_l_save, ndim
   !
   IMPLICIT NONE
   !
-  INTEGER :: fo = 20, iter
+  INTEGER :: fo = 20, iter, idim
   !
   WRITE(*,*)
   WRITE(*,*) "##########  Output Restart Parameter  ##########"
@@ -292,12 +299,20 @@ SUBROUTINE output_restart_parameter()
   WRITE(fo,*) iter_old
   WRITE(*,*) "  Num. of Iteration (Current Run) : ", iter_old
   !
-  WRITE(*,'(a,1e15.5)') "   Current Omega_Seed : ", z_seed
+  WRITE(*,'(a,2e13.5)') "   Current Omega_Seed : ", z_seed
   WRITE(fo,'(2e25.16)') z_seed
   !
   DO iter = 1, iter_old
      !
-     WRITE(fo,'(2e25.16)') alpha(iter), beta(iter)
+     WRITE(fo,'(4e25.16)') alpha(iter), beta(iter)
+     !
+  END DO
+  !
+  DO iter = 1, iter_old
+     !
+     DO idim = 1, ndim
+        WRITE(fo,'(2e25.16)') r_l_save(idim,iter)
+     END DO
      !
   END DO
   !
@@ -321,7 +336,7 @@ SUBROUTINE output_restart_vector()
   !
   OPEN(fo, file = 'ResVec.dat')
   !
-  READ(fo,*) ndim
+  WRITE(fo,*) ndim
   WRITE(*,*) "  Dim. of Residual vector : ", ndim
   !
   DO idim = 1, ndim
@@ -345,7 +360,7 @@ SUBROUTINE output_result()
   CHARACTER(100) :: cndim, form
   !
   WRITE(cndim,*) ndim * 2
-  WRITE(form,'(a,a,a)') "(", TRIM(ADJUSTL(cndim)), "e15.5)"
+  WRITE(form,'(a,a,a)') "(", TRIM(ADJUSTL(cndim)), "e13.5)"
   !
   WRITE(*,*)
   WRITE(*,*) "#####  Check Results  #####"
@@ -359,7 +374,8 @@ SUBROUTINE output_result()
      CALL zgemv("N", ndim, ndim, CMPLX(-1d0, 0d0, KIND(0d0)), Ham, ndim, x(1:ndim,iz), 1, CMPLX(1d0, 0d0, KIND(0d0)), v2, 1)
      !
      !write(*,form) v2(1:ndim)
-     write(*,*) "DEBUG", dble(dot_product(v2,v2))
+     write(*,'(a,i5,a,2e13.5,a,e13.5,a,2e13.5)') "DEBUG (", iz, "), omega = ", z(iz), &
+     &            ", Res. = ", dble(dot_product(v2,v2)), ", <rhs|x> = ", dot_product(rhs,x(1:ndim,iz))
      !
   END DO
   !
@@ -371,8 +387,8 @@ END MODULE shiftk_routines
 !
 PROGRAM shiftk
   !
-  USE shifted_cg_c, ONLY : CG_C_init, CG_C_restart, CG_C_update, &
-  &                        CG_C_getcoef, CG_C_getvec, CG_C_finalize
+  USE shifted_cocg, ONLY : COCG_init, COCG_restart, COCG_update, &
+  &                        COCG_getcoef, COCG_getvec, COCG_finalize
   USE shiftk_routines, ONLY : input_filename, input_hamiltonian, input_rhs_vector, &
   &                           input_parameter, input_restart_parameter, input_restart_vector, &
   &                           output_result, output_restart_parameter, output_restart_vector
@@ -409,10 +425,10 @@ PROGRAM shiftk
      WRITE(*,*)
      !
      IF(outrestart == .TRUE.) THEN
-        CALL CG_C_restart(ndim, ndim, nomega, x, z, maxloops, threshold, status, &
+        CALL COCG_restart(ndim, ndim, nomega, x, z, maxloops, threshold, status, &
         &                 iter_old, v2, v12, alpha, beta, z_seed, r_l_save)
      ELSE
-        CALL CG_C_restart(ndim, ndim, nomega, x, z, 0,        threshold, status, &
+        CALL COCG_restart(ndim, ndim, nomega, x, z, 0,        threshold, status, &
         &                 iter_old, v2, v12, alpha, beta, z_seed, r_l_save)
      END IF
      DEALLOCATE(alpha, beta, r_l_save)
@@ -428,9 +444,9 @@ PROGRAM shiftk
      v2(1:ndim) = rhs(1:ndim)
      !
      IF(outrestart == .TRUE.) THEN
-        CALL CG_C_init(ndim, ndim, nomega, x, z, maxloops, threshold, status)
+        CALL COCG_init(ndim, ndim, nomega, x, z, maxloops, threshold, status)
      ELSE
-        CALL CG_C_init(ndim, ndim, nomega, x, z, 0,        threshold, status)
+        CALL COCG_init(ndim, ndim, nomega, x, z, 0,        threshold, status)
      END IF
      !
   ELSE
@@ -440,7 +456,7 @@ PROGRAM shiftk
      !
   END IF
   !
-  ! CG_C Loop
+  ! COCG Loop
   !
   WRITE(*,*)
   WRITE(*,*) "#####  CG Iteration  #####"
@@ -457,11 +473,11 @@ PROGRAM shiftk
      !
      CALL zgemv("N", ndim, ndim, CMPLX(1d0, 0d0, KIND(0d0)), Ham, ndim, v2, 1, CMPLX(0d0, 0d0, KIND(0d0)), v12, 1)
      !
-     ! Update result x with CG_C
+     ! Update result x with COCG
      !
-     CALL CG_C_update(v12, v2, x, r_l, status)
+     CALL COCG_update(v12, v2, x, r_l, status)
      !
-     WRITE(*,'(a,4i,e15.5)') "  DEBUG : ", iter, status, DBLE(v12(1))
+     WRITE(*,'(a,4i,e13.5)') "  DEBUG : ", iter, status, DBLE(v12(1))
      IF(status(1) /= 0) EXIT
      !
   END DO
@@ -481,8 +497,8 @@ PROGRAM shiftk
      !
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(ndim, iter_old))
      !
-     CALL CG_C_getcoef(alpha, beta, z_seed, r_l_save)
-     CALL CG_C_getvec(v12)
+     CALL COCG_getcoef(alpha, beta, z_seed, r_l_save)
+     CALL COCG_getvec(v12)
      !
      CALL output_restart_parameter()
      CALL output_restart_vector()
@@ -493,7 +509,7 @@ PROGRAM shiftk
   !
   ! Deallocate all intrinsic vectors
   !
-  CALL CG_C_finalize()
+  CALL COCG_finalize()
   !
   ! Output to a file
   !

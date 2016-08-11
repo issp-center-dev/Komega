@@ -42,10 +42,10 @@ END SUBROUTINE CG_R_shiftedeqn
 !
 SUBROUTINE CG_R_seed_switch(v2,status)
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nz, threshold
+  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold
   USE shifted_krylov_vals_r, ONLY : alpha, alpha_save, beta_save, pi, pi_old, &
   &                               pi_save, rho, z, z_seed
-  USE shifted_krylov_vecs_r, ONLY : v3
+  USE shifted_krylov_vecs_r, ONLY : v3, r_l_save
   USE shifted_krylov_math, ONLY : dscal
   !
   IMPLICIT NONE
@@ -57,6 +57,7 @@ SUBROUTINE CG_R_seed_switch(v2,status)
   REAL(8) :: scale
   !
   iz_seed = MINLOC(ABS(pi(1:nz)), 1)
+  status = iz_seed
   !
   IF(ABS(z_seed - z(iz_seed)) > 1d-12) THEN
      !
@@ -82,14 +83,22 @@ SUBROUTINE CG_R_seed_switch(v2,status)
      !
      IF(itermax > 0) THEN
         !
-        do jter = 1, iter
+        DO jter = 1, iter
+           !
            alpha_save(jter) = alpha_save(jter) &
            &                * pi_save(iz_seed, jter - 1) / pi_save(iz_seed,jter) 
            beta_save(jter) = beta_save(jter) &
            &               * (pi_save(iz_seed, jter - 2) / pi_save(iz_seed,jter - 1))**2 
+           !
+           scale = 1d0 / pi_save(iz_seed, jter - 1)
+           CALL dscal(nl, scale, r_l_save(1:nl,jter),1)
+           !
+        END DO
+        !
+        DO jter = 1, iter
            scale = 1d0 / pi_save(iz_seed, jter)
            CALL dscal(nz,scale,pi_save(1:nz,jter),1)
-        end do
+        END DO
         !
      END IF
      !
