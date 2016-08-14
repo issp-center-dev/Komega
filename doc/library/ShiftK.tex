@@ -382,16 +382,16 @@ ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
 \vspace{-1em}
 \begin{leftbar}
   \noindent
-  \verb|BiCG_init(N_H, N_L, N_z, v_2, v_3, x, z, itermax)| start
+  \verb|BiCG_init(N_H, N_L, N_z, v_2, v_4, x, z, itermax)| start
   \\ \hspace{0.5cm}
-  Allocate ${\boldsymbol v}_4$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm old}\}$, $\{{\bf p}_k\}$
+  Allocate ${\boldsymbol v}_3$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm old}\}$, $\{{\bf p}_k\}$
   \\ \hspace{0.5cm}
   Copy $\{z_k\}$
   \\ \hspace{0.5cm}
   \verb|itermax|$\neq$\verb|0|ならば$\alpha$, $\beta$, ${\bf r}^{\rm L}$を保存する配列を確保する.
   \\ \hspace{0.5cm}
-  ${\boldsymbol v}_3 = {\boldsymbol v}_2$(任意),
-  ${\boldsymbol v}_4 = {\boldsymbol v}_5 = {\bf 0}$,
+  ${\boldsymbol v}_4 = {\boldsymbol v}_2^*$(任意),
+  ${\boldsymbol v}_3 = {\boldsymbol v}_5 = {\bf 0}$,
   \\ \hspace{0.5cm}
   ${\bf p}_{k} = {\bf x}_k = {\bf 0}(k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
   \\ \hspace{0.5cm}
@@ -399,8 +399,8 @@ ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
   \\ \hspace{0.5cm}
   (
   ${\boldsymbol v}_2 \equiv {\boldsymbol r}$, 
-  ${\boldsymbol v}_3 \equiv {\tilde {\boldsymbol r}}$, 
-  ${\boldsymbol v}_4 \equiv {\boldsymbol r}^{\rm old}$,
+  ${\boldsymbol v}_3 \equiv {\boldsymbol r}^{\rm old}$,
+  ${\boldsymbol v}_4 \equiv {\tilde {\boldsymbol r}}$, 
   ${\boldsymbol v}_5 \equiv {\tilde {\boldsymbol r}}^{\rm old}$. )
   \\
   \verb|BiCG_init| finish
@@ -412,23 +412,23 @@ do iteration
 ${\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2$
 \\\hspace{0.5cm}
 ${\boldsymbol v}_{1 2} = {\hat H} {\boldsymbol v}_2$, 
-  ${\boldsymbol v}_{1 3} = {\hat H} {\boldsymbol v}_3$  
-$[ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 3}) = {\hat H}
-  ({\boldsymbol v}_2, {\boldsymbol v}_3)とも書ける]$
+${\boldsymbol v}_{1 4} = {\hat H} {\boldsymbol v}_4$  
+$ [ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H}
+  ({\boldsymbol v}_2, {\boldsymbol v}_4)とも書ける]$
 \vspace{-1em}
 \begin{leftbar}
   \noindent
   \hspace{0.5cm}
-  \verb|BiCG_update(v_12, v_13, v_2, v_3, x, r_small)| start
+  \verb|BiCG_update(v_12, v_14, v_2, v_4, x, r_small)| start
   \\\hspace{1.0cm}
   $\circ$シード方程式
   \\\hspace{1.0cm}
-  $\rho^{\rm old} = \rho,\; \rho = {\boldsymbol v}_3^* \cdot {\boldsymbol v}_2$
+  $\rho^{\rm old} = \rho,\; \rho = {\boldsymbol v}_4^* \cdot {\boldsymbol v}_2$
   \\\hspace{1.0cm}
   $\beta = \rho / \rho^{\rm old}$
   \\\hspace{1.0cm}
   ${\boldsymbol v}_{1 2} = z_{\rm seed} {\boldsymbol v}_2 - {\boldsymbol v}_{1 2}$, 
-  ${\boldsymbol v}_{1 3} = z_{\rm seed}^* {\boldsymbol v}_3 - {\boldsymbol v}_{1 3}$
+  ${\boldsymbol v}_{1 4} = z_{\rm seed}^* {\boldsymbol v}_4 - {\boldsymbol v}_{1 4}$
   \\\hspace{1.0cm}
   $\alpha^{\rm old} = \alpha,\; 
   \alpha = \frac{\rho}{{\boldsymbol v}_3^* \cdot {\boldsymbol v}_{1 2} - \beta \rho / \alpha }$
@@ -449,14 +449,14 @@ $[ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 3}) = {\hat H}
   end do $k$
   \\\hspace{1.0cm}
   ${\boldsymbol v}_{1 2} = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\boldsymbol v}_2
-  - \alpha {\boldsymbol v}_{1 2} - \frac{\alpha \beta}{\alpha^{\rm old}} {\boldsymbol v}_4$, 
-  ${\boldsymbol v}_4 = {\boldsymbol v}_2,\;
+  - \alpha {\boldsymbol v}_{1 2} - \frac{\alpha \beta}{\alpha^{\rm old}} {\boldsymbol v}_3$, 
+  ${\boldsymbol v}_3 = {\boldsymbol v}_2,\;
   {\boldsymbol v}_2 = {\boldsymbol v}_{1 2}$
   \\\hspace{1.0cm}
-  ${\boldsymbol v}_{1 3} = \left( 1 + \frac{\alpha^* \beta^*}{\alpha^{{\rm old} *}} \right) {\boldsymbol v}_3
-  - \alpha^* {\boldsymbol v}_{1 3} - \frac{\alpha^* \beta^*}{\alpha^{{\rm old} *}} {\boldsymbol v}_5$, 
-  ${\boldsymbol v}_5 = {\boldsymbol v}_3,\; 
-  {\boldsymbol v}_3 = {\boldsymbol v}_{1 3}$
+  ${\boldsymbol v}_{1 4} = \left( 1 + \frac{\alpha^* \beta^*}{\alpha^{{\rm old} *}} \right) {\boldsymbol v}_4
+  - \alpha^* {\boldsymbol v}_{1 4} - \frac{\alpha^* \beta^*}{\alpha^{{\rm old} *}} {\boldsymbol v}_5$, 
+  ${\boldsymbol v}_5 = {\boldsymbol v}_4,\; 
+  {\boldsymbol v}_4 = {\boldsymbol v}_{1 4}$
   \\\hspace{1.0cm}
   $\circ$ Seed switch
   \\\hspace{1.0cm}
@@ -464,8 +464,8 @@ $[ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 3}) = {\hat H}
   $\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
   \\\hspace{1.0cm}
   ${\boldsymbol v}_2 = {\boldsymbol v}_2 / \pi_{\rm seed}$,
-  ${\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}^{*}$, 
-  ${\boldsymbol v}_4 = {\boldsymbol v}_4 / \pi_{\rm seed}^{\rm old}$,
+  ${\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}^{\rm old}$,
+  ${\boldsymbol v}_4 = {\boldsymbol v}_4 / \pi_{\rm seed}^{*}$, 
   ${\boldsymbol v}_5 = {\boldsymbol v}_5 / \pi_{\rm seed}^{\rm old *}$
   \\\hspace{1.0cm}
   $\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
@@ -775,7 +775,7 @@ PROGRAM my_prog
   & threshold, & ! Convergence Threshold
   !
   COMPLEX(8) :: &
-  & v12(:), v13(:), v2(:), v3(:), & ! (ndim): Working vector
+  & v12(:), v14(:), v2(:), v3(:), & ! (ndim): Working vector
   & rsmall(:), & ! (nl) : Projeccted residual vector 
   & x(:,:),    & ! (nl,nz) : Projected result 
   & z(:)         ! (nz): Frequency
@@ -795,7 +795,7 @@ PROGRAM my_prog
   !
   CALL input_size(ndim,nz,nl,itermax)
   !
-  ALLOCATE(v12(ndim), v13(ndim), v2(ndim), v3(ndim), &
+  ALLOCATE(v12(ndim), v14(ndim), v2(ndim), v3(ndim), &
   &        rsmall(nl), x(nl,nz), z(nz)               )
   !
   ! Generate Right Hand Side Vector
@@ -837,11 +837,11 @@ PROGRAM my_prog
     ! Matrix-vector product
     !
     CALL matrix_product(v2, v12)
-    CALL matrix_product(v3, v13)
+    CALL matrix_product(v3, v14)
     !
     ! Update result x with BiCG
     !
-    CALL BiCG_update(v12, v13, v2, v3, x, rsmall, lconverged)
+    CALL BiCG_update(v12, v14, v2, v3, x, rsmall, lconverged)
     !
     IF(lconverged == .true.) EXIT
     !
@@ -867,7 +867,7 @@ PROGRAM my_prog
   CALL output_result(z,x)
   !
   DEALLOCATE(r, r_old, r_tilde, r_old, alpha, beta, zseed, rsmall_save)
-  DEALLOCATE(v12, v13, v2, v3, rsmall, x, z)
+  DEALLOCATE(v12, v14, v2, v3, rsmall, x, z)
   !
 END PROGRAM my_prog
 \end{lstlisting}

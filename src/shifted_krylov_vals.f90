@@ -81,6 +81,7 @@ MODULE shifted_krylov_vecs_c
   !
   COMPLEX(8),ALLOCATABLE,SAVE :: &
   & v3(:), &
+  & v5(:), &
   & p(:,:), &
   & r_l_save(:,:)
   !

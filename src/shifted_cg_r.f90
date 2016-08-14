@@ -70,7 +70,7 @@ SUBROUTINE CG_R_seed_switch(v2,status)
      END IF
      !
      alpha = alpha * pi_old(iz_seed) / pi(iz_seed)
-     rho = rho / pi_old(iz_seed)
+     rho = rho / pi_old(iz_seed)**2
      !
      scale = 1d0 / pi(iz_seed)
      CALL dscal(ndim, scale, v2, 1)
@@ -292,13 +292,14 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   !
   ! Convergence check
   !
-  v12(1) = ddot(ndim,v2,1,v2,1) / DBLE(ndim)
+  rho_old = ddot(ndim,v2,1,v2,1) / DBLE(ndim)
   !
-  IF(v12(1) < threshold) THEN
+  IF(rho_old < threshold) THEN
      status(1) = iter
   ELSE IF(iter == itermax) THEN
      status(1) = -iter
   ELSE
+     v12(1) = rho_old
      status(1) = 0
   END IF
   !
