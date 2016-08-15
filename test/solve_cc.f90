@@ -161,7 +161,7 @@ SUBROUTINE generate_system()
      CALL RANDOM_NUMBER(ham_i(idim, idim))
      CALL RANDOM_NUMBER(ham_i(idim, idim-1))
   END DO
-  ham_i(1:ndim, 1:ndim) = 0d0 !debug
+!  ham_i(1:ndim, 1:ndim) = 0d0 !debug
   ham(1:ndim,1:ndim) = CMPLX(ham_r(1:ndim, 1:ndim), ham_i(1:ndim, 1:ndim), KIND(0d0))
   !
   CALL zgemm("C", "N", ndim, ndim, ndim, CMPLX(1d0, 0d0, KIND(0d0)), ham, ndim, ham, ndim, CMPLX(0d0, 0d0, KIND(0d0)), ham0, ndim)
@@ -321,6 +321,7 @@ PROGRAM solve_cc
      !
      v2(1:ndim) = rhs(1:ndim)
      v4(1:ndim) = CONJG(v2(1:ndim))
+     !v4(1:ndim) = v2(1:ndim)
      !
      CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold, status)
      !

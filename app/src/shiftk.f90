@@ -3,6 +3,7 @@ MODULE shiftk_vals
   IMPLICIT NONE
   !
   INTEGER,SAVE :: &
+  & nham,    & ! Non-zero elements of compressed Hamiltonian
   & ndim,    & ! Size of Hilvert space
   & nomega,      & ! Number of frequencies
   & maxloops, & ! Max. number of iteraction
@@ -14,11 +15,14 @@ MODULE shiftk_vals
   COMPLEX(8),SAVE :: &
   & z_seed ! Seed frequency
   !
+  INTEGER,ALLOCATABLE,SAVE :: &
+  & ham_indx(:,:) ! row & column index of Hamiltonian
+  !
   COMPLEX(8),ALLOCATABLE,SAVE :: &
   & z(:)         ! (nomega): Frequency
   !
   COMPLEX(8),ALLOCATABLE,SAVE :: &
-  & ham(:,:), &
+  & ham(:), & ! Compressed Hamiltonian
   & rhs(:), &
   & v12(:), v2(:), & ! (ndim): Working vector
   & r_l(:), & ! (ndim) : Projeccted residual vector 
@@ -124,15 +128,15 @@ SUBROUTINE input_parameter()
   !
 END SUBROUTINE input_parameter
 !
-!
+! Input Hamiltonian with the Matrix Market Format
 !
 SUBROUTINE input_hamiltonian()
   !
-  USE shiftk_vals, ONLY : ndim, ham, inham
+  USE shiftk_vals, ONLY : ndim, ham, ham_indx, nham, inham
   !
   IMPLICIT NONE
   !
-  INTEGER :: fi = 10, ndim2, nelem, ielem, ii, jj
+  INTEGER :: fi = 10, ndim2, iham
   REAL(8) :: ham_r, ham_i
   CHARACTER(100) :: ctmp
   !
@@ -142,28 +146,27 @@ SUBROUTINE input_hamiltonian()
   !
   OPEN(fi, file = TRIM(inham))
   READ(fi, *) ctmp
-  READ(fi,*) ndim, ndim2, nelem
+  READ(fi,*) ndim, ndim2, nham
   WRITE(*,*) "          Dim. of Hamiltonian : ", ndim, ndim2
-  WRITE(*,*) "  Num. of Non-Zero Components : ", nelem
+  WRITE(*,*) "  Num. of Non-Zero Components : ", nham
   !
   IF(ndim2 /= ndim) THEN
      WRITE(*,*) "ERROR ! Hamiltonian is not square."
      STOP
   END IF
   !
-  ALLOCATE(ham(ndim, ndim))
+  ALLOCATE(ham(nham), ham_indx(2,nham))
   !
-  ham(1:ndim, 1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
-  DO ielem = 1, nelem
-     READ(fi,*) ii, jj, ham_r, ham_i
-     ham(ii,jj) = CMPLX(ham_r, ham_i, KIND(0d0))
+  DO iham = 1, nham
+     READ(fi,*) ham_indx(1,iham), ham_indx(2,iham), ham_r, ham_i
+     ham(iham) = CMPLX(ham_r, ham_i, KIND(0d0))
   END DO
   !
   CLOSE(fi)
   !
 END SUBROUTINE input_hamiltonian
 !
-!
+! Input Excited State
 !
 SUBROUTINE input_rhs_vector()
   !
@@ -280,6 +283,27 @@ SUBROUTINE input_restart_vector()
   !
 END SUBROUTINE input_restart_vector
 !
+! Hamiltonian-vector product
+!
+SUBROUTINE ham_prod(veci,veco)
+  !
+  USE shiftk_vals, ONLY : ndim, nham, ham, ham_indx
+  !
+  IMPLICIT NONE
+  !
+  COMPLEX(8),INTENT(IN) :: veci(ndim)
+  COMPLEX(8),INTENT(OUT) :: veco(ndim)
+  !
+  INTEGER :: iham
+  !
+  veco(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
+  !
+  DO iham = 1, nham
+     veco(ham_indx(1,iham)) = ham(iham) * veci(ham_indx(2,iham))
+  END DO
+  !
+END SUBROUTINE ham_prod
+!
 ! Input restart variables from file
 !
 SUBROUTINE output_restart_parameter()
@@ -352,7 +376,7 @@ END SUBROUTINE output_restart_vector
 SUBROUTINE output_result()
   !
   USE mathlib, ONLY : dgemv
-  USE shiftk_vals, ONLY : v2, ndim, x, rhs, z, nomega, ham
+  USE shiftk_vals, ONLY : v2, ndim, x, rhs, z, nomega
   !
   IMPLICIT NONE
   !
@@ -370,8 +394,8 @@ SUBROUTINE output_result()
   !
   DO iz = 1, nomega
      !
-     v2(1:ndim) = z(iz) * x(1:ndim,iz) - rhs(1:ndim)
-     CALL zgemv("N", ndim, ndim, CMPLX(-1d0, 0d0, KIND(0d0)), Ham, ndim, x(1:ndim,iz), 1, CMPLX(1d0, 0d0, KIND(0d0)), v2, 1)
+     CALL ham_prod(x(1:ndim,iz), v2)
+     v2(1:ndim) = z(iz) * x(1:ndim,iz) - v2(1:ndim) - rhs(1:ndim)
      !
      !write(*,form) v2(1:ndim)
      write(*,'(a,i5,a,2e13.5,a,e13.5,a,2e13.5)') "DEBUG (", iz, "), omega = ", z(iz), &
@@ -389,10 +413,10 @@ PROGRAM shiftk
   !
   USE shifted_cocg, ONLY : COCG_init, COCG_restart, COCG_update, &
   &                        COCG_getcoef, COCG_getvec, COCG_finalize
-  USE shiftk_routines, ONLY : input_filename, input_hamiltonian, input_rhs_vector, &
+  USE shiftk_routines, ONLY : input_filename, input_hamiltonian, input_rhs_vector, ham_prod, &
   &                           input_parameter, input_restart_parameter, input_restart_vector, &
   &                           output_result, output_restart_parameter, output_restart_vector
-  USE shiftk_vals, ONLY : alpha, beta, calctype, ndim, nomega, maxloops, iter_old, ham, &
+  USE shiftk_vals, ONLY : alpha, beta, calctype, ndim, nomega, maxloops, iter_old, &
   &                       outrestart, rhs, v12, v2, r_l, r_l_save, threshold, x, z, z_seed
   USE mathlib, ONLY : zgemv
   !
@@ -471,7 +495,7 @@ PROGRAM shiftk
      !
      ! Matrix-vector product
      !
-     CALL zgemv("N", ndim, ndim, CMPLX(1d0, 0d0, KIND(0d0)), Ham, ndim, v2, 1, CMPLX(0d0, 0d0, KIND(0d0)), v12, 1)
+     CALL ham_prod(v2, v12)
      !
      ! Update result x with COCG
      !
