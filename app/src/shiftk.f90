@@ -5,6 +5,7 @@ MODULE shiftk_vals
   INTEGER,SAVE :: &
   & nham,    & ! Non-zero elements of compressed Hamiltonian
   & ndim,    & ! Size of Hilvert space
+  & nl,      & ! Dimention of x
   & nomega,      & ! Number of frequencies
   & maxloops, & ! Max. number of iteraction
   & iter_old   ! Number of iteraction of previous run
@@ -25,8 +26,9 @@ MODULE shiftk_vals
   & ham(:), & ! Compressed Hamiltonian
   & rhs(:), &
   & v12(:), v2(:), & ! (ndim): Working vector
-  & r_l(:), & ! (ndim) : Projeccted residual vector 
-  & x(:,:) ! (ndim,nomega) : Projected result 
+  & v14(:), v4(:), & ! (ndim): Working vector
+  & r_l(:), & ! (nl) : Projeccted residual vector 
+  & x(:,:) ! (nl,nomega) : Projected result 
   !
   ! Variables for Restart
   !
@@ -34,7 +36,7 @@ MODULE shiftk_vals
   & alpha(:), beta(:) ! (iter_old) 
   !
   COMPLEX(8),ALLOCATABLE,SAVE :: &
-  & r_l_save(:,:) ! (ndim,iter_old) Projected residual vectors
+  & r_l_save(:,:) ! (nl,iter_old) Projected residual vectors
   !
   CHARACTER(256),SAVE :: &
   & inham, &
@@ -42,6 +44,7 @@ MODULE shiftk_vals
   & calctype
   !
   LOGICAL,SAVE :: &
+  lBiCG, &
   outrestart
   !
 END MODULE shiftk_vals
@@ -132,7 +135,7 @@ END SUBROUTINE input_parameter
 !
 SUBROUTINE input_hamiltonian()
   !
-  USE shiftk_vals, ONLY : ndim, ham, ham_indx, nham, inham
+  USE shiftk_vals, ONLY : ndim, ham, ham_indx, nham, inham, lBiCG
   !
   IMPLICIT NONE
   !
@@ -163,6 +166,14 @@ SUBROUTINE input_hamiltonian()
   END DO
   !
   CLOSE(fi)
+  !
+  IF(MAXVAL(ABS(AIMAG(ham(1:nham)))) > 1d-8) THEN
+     WRITE(*,*) "  BiCG mathod is used."
+     lBiCG = .TRUE.
+  ELSE
+     WRITE(*,*) "  COCG mathod is used."
+     lBiCG = .FALSE.
+  END IF
   !
 END SUBROUTINE input_hamiltonian
 !
@@ -204,11 +215,11 @@ END SUBROUTINE input_rhs_vector
 !
 SUBROUTINE input_restart_parameter()
   !
-  USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed, ndim, r_l_save
+  USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed, nl, r_l_save
   !
   IMPLICIT NONE
   !
-  INTEGER :: fi = 10, iter, idim
+  INTEGER :: fi = 10, iter, il
   REAL(8) :: z_seed_r, z_seed_i, alpha_r, alpha_i, beta_r, beta_i
   REAL(8) :: r_l_save_r, r_l_save_i
   !
@@ -221,7 +232,7 @@ SUBROUTINE input_restart_parameter()
   READ(fi,*) iter_old
   WRITE(*,*) "  Num. of Iteration (Previous Run) : ", iter_old
   !
-  ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(ndim, iter_old))
+  ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl, iter_old))
   !
   READ(fi,*) z_seed_r, z_seed_i
   WRITE(*,*) "  Previous Omega_Seed : ", z_seed_r, z_seed_i
@@ -237,9 +248,9 @@ SUBROUTINE input_restart_parameter()
   !
   DO iter = 1, iter_old
      !
-     DO idim = 1, ndim
+     DO il = 1, nl
         READ(fi,*) r_l_save_r, r_l_save_i
-        r_l_save(idim,iter) = CMPLX(r_l_save_r, r_l_save_i, KIND(0d0))
+        r_l_save(il,iter) = CMPLX(r_l_save_r, r_l_save_i, KIND(0d0))
      END DO
      !
   END DO
@@ -252,7 +263,7 @@ END SUBROUTINE input_restart_parameter
 !
 SUBROUTINE input_restart_vector()
   !
-  USE shiftk_vals, ONLY : ndim, v2, v12
+  USE shiftk_vals, ONLY : ndim, v2, v12, v4, v14, lBiCG
   !
   IMPLICIT NONE
   !
@@ -279,6 +290,12 @@ SUBROUTINE input_restart_vector()
      v12(idim) = CMPLX(v12_r, v12_i, KIND(0d0))
   END DO
   !
+  IF(lBiCG) THEN
+     READ(fi,*) v2_r, v2_i, v12_r, v12_i
+     v4(idim) = CMPLX(v2_r, v2_i, KIND(0d0))
+     v14(idim) = CMPLX(v12_r, v12_i, KIND(0d0))
+  END IF
+  !
   CLOSE(fi)
   !
 END SUBROUTINE input_restart_vector
@@ -299,7 +316,8 @@ SUBROUTINE ham_prod(veci,veco)
   veco(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
   !
   DO iham = 1, nham
-     veco(ham_indx(1,iham)) = ham(iham) * veci(ham_indx(2,iham))
+     veco(ham_indx(1,iham)) = veco(ham_indx(1,iham)) &
+     &          + ham(iham) * veci(ham_indx(2,iham))
   END DO
   !
 END SUBROUTINE ham_prod
@@ -308,11 +326,11 @@ END SUBROUTINE ham_prod
 !
 SUBROUTINE output_restart_parameter()
   !
-  USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed, r_l_save, ndim
+  USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed, r_l_save, nl
   !
   IMPLICIT NONE
   !
-  INTEGER :: fo = 20, iter, idim
+  INTEGER :: fo = 20, iter, il
   !
   WRITE(*,*)
   WRITE(*,*) "##########  Output Restart Parameter  ##########"
@@ -334,8 +352,8 @@ SUBROUTINE output_restart_parameter()
   !
   DO iter = 1, iter_old
      !
-     DO idim = 1, ndim
-        WRITE(fo,'(2e25.16)') r_l_save(idim,iter)
+     DO il = 1, nl
+        WRITE(fo,'(2e25.16)') r_l_save(il,iter)
      END DO
      !
   END DO
@@ -348,7 +366,7 @@ END SUBROUTINE output_restart_parameter
 !
 SUBROUTINE output_restart_vector()
   !
-  USE shiftk_vals, ONLY : ndim, v2, v12
+  USE shiftk_vals, ONLY : ndim, v2, v12, v4, v14, lBiCG
   !
   IMPLICIT NONE
   !
@@ -367,6 +385,12 @@ SUBROUTINE output_restart_vector()
      WRITE(fo,'(4e25.16)') v2(idim), v12(idim)
   END DO
   !
+  IF(lBiCG) THEN
+     DO idim = 1, ndim
+        WRITE(fo,'(4e25.16)') v4(idim), v14(idim)
+     END DO
+  END IF
+  !
   CLOSE(fo)
   !
 END SUBROUTINE output_restart_vector
@@ -375,13 +399,35 @@ END SUBROUTINE output_restart_vector
 !
 SUBROUTINE output_result()
   !
-  USE mathlib, ONLY : dgemv
+  USE shiftk_vals, ONLY : x, z, nomega
+  !
+  IMPLICIT NONE
+  !
+  INTEGER :: iz, fo = 20
+  !
+  OPEN(fo, file = "dynamicalG.dat")
+  !
+  DO iz = 1, nomega
+     !
+     write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(x(1,iz)), AIMAG(x(1,iz))
+     !
+  END DO
+  !
+  CLOSE(fo)
+  !
+END SUBROUTINE output_result
+!
+! Check Result
+!
+SUBROUTINE output_result_debug()
+  !
   USE shiftk_vals, ONLY : v2, ndim, x, rhs, z, nomega
   !
   IMPLICIT NONE
   !
-  INTEGER :: iz
+  INTEGER :: iz, fo = 20
   CHARACTER(100) :: cndim, form
+  COMPLEX(8) :: Gii
   !
   WRITE(cndim,*) ndim * 2
   WRITE(form,'(a,a,a)') "(", TRIM(ADJUSTL(cndim)), "e13.5)"
@@ -398,12 +444,23 @@ SUBROUTINE output_result()
      v2(1:ndim) = z(iz) * x(1:ndim,iz) - v2(1:ndim) - rhs(1:ndim)
      !
      !write(*,form) v2(1:ndim)
-     write(*,'(a,i5,a,2e13.5,a,e13.5,a,2e13.5)') "DEBUG (", iz, "), omega = ", z(iz), &
-     &            ", Res. = ", dble(dot_product(v2,v2)), ", <rhs|x> = ", dot_product(rhs,x(1:ndim,iz))
+     write(*,'(a,i5,a,2e13.5,a,e13.5)') "DEBUG (", iz, "), omega = ", z(iz), &
+     &            ", Res. = ", dble(dot_product(v2,v2))
      !
   END DO
   !
-END SUBROUTINE output_result
+  OPEN(fo, file = "dynamicalG.dat")
+  !
+  DO iz = 1, nomega
+     !
+     Gii = dot_product(rhs,x(1:ndim,iz))
+     write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(Gii), AIMAG(Gii)
+     !
+  END DO
+  !
+  CLOSE(fo)
+  !
+END SUBROUTINE output_result_debug
 !
 END MODULE shiftk_routines
 !
@@ -413,12 +470,13 @@ PROGRAM shiftk
   !
   USE shifted_cocg, ONLY : COCG_init, COCG_restart, COCG_update, &
   &                        COCG_getcoef, COCG_getvec, COCG_finalize
+  USE shifted_bicg, ONLY : BiCG_init, BiCG_restart, BiCG_update, &
+  &                        BiCG_getcoef, BiCG_getvec, BiCG_finalize
   USE shiftk_routines, ONLY : input_filename, input_hamiltonian, input_rhs_vector, ham_prod, &
   &                           input_parameter, input_restart_parameter, input_restart_vector, &
-  &                           output_result, output_restart_parameter, output_restart_vector
-  USE shiftk_vals, ONLY : alpha, beta, calctype, ndim, nomega, maxloops, iter_old, &
-  &                       outrestart, rhs, v12, v2, r_l, r_l_save, threshold, x, z, z_seed
-  USE mathlib, ONLY : zgemv
+  &                           output_result, output_result_debug, output_restart_parameter, output_restart_vector
+  USE shiftk_vals, ONLY : alpha, beta, calctype, ndim, nomega, maxloops, iter_old, lBiCG, nl, &
+  &                       outrestart, rhs, v12, v2, v14, v4, rhs, r_l, r_l_save, threshold, x, z, z_seed
   !
   IMPLICIT NONE
   !
@@ -434,9 +492,12 @@ PROGRAM shiftk
   CALL input_hamiltonian()
   CALL input_rhs_vector()
   !
+  !nl = 1
+  nl = ndim
   CALL input_parameter()
   !
-  ALLOCATE(v12(ndim), v2(ndim), r_l(ndim), x(ndim,nomega))
+  ALLOCATE(v12(ndim), v2(ndim), r_l(nl), x(nl,nomega))
+  IF(lBiCG) ALLOCATE(v14(ndim), v4(ndim))
   !
   IF(TRIM(calctype) == "recalc" .OR. TRIM(calctype) == "restart") THEN
      !
@@ -449,11 +510,21 @@ PROGRAM shiftk
      WRITE(*,*)
      !
      IF(outrestart == .TRUE.) THEN
-        CALL COCG_restart(ndim, ndim, nomega, x, z, maxloops, threshold, status, &
-        &                 iter_old, v2, v12, alpha, beta, z_seed, r_l_save)
+        IF(lBiCG) THEN
+           CALL BiCG_restart(ndim, nl, nomega, x, z, maxloops, threshold, status, &
+           &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+        ELSE
+           CALL COCG_restart(ndim, nl, nomega, x, z, maxloops, threshold, status, &
+           &                 iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+        END IF
      ELSE
-        CALL COCG_restart(ndim, ndim, nomega, x, z, 0,        threshold, status, &
-        &                 iter_old, v2, v12, alpha, beta, z_seed, r_l_save)
+        IF(lBiCG) THEN
+           CALL BiCG_restart(ndim, nl, nomega, x, z, 0,        threshold, status, &
+           &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+        ELSE
+           CALL COCG_restart(ndim, nl, nomega, x, z, 0,        threshold, status, &
+           &                 iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+        END IF
      END IF
      DEALLOCATE(alpha, beta, r_l_save)
      !
@@ -468,9 +539,17 @@ PROGRAM shiftk
      v2(1:ndim) = rhs(1:ndim)
      !
      IF(outrestart == .TRUE.) THEN
-        CALL COCG_init(ndim, ndim, nomega, x, z, maxloops, threshold, status)
+        IF(lBiCG) THEN
+           CALL BiCG_init(ndim, nl, nomega, x, z, maxloops, threshold, status)
+        ELSE
+           CALL COCG_init(ndim, nl, nomega, x, z, maxloops, threshold, status)
+        END IF
      ELSE
-        CALL COCG_init(ndim, ndim, nomega, x, z, 0,        threshold, status)
+        IF(lBiCG) THEN
+           CALL BiCG_init(ndim, nl, nomega, x, z, 0,        threshold, status)
+        ELSE
+           CALL COCG_init(ndim, nl, nomega, x, z, 0,        threshold, status)
+        END IF
      END IF
      !
   ELSE
@@ -480,10 +559,10 @@ PROGRAM shiftk
      !
   END IF
   !
-  ! COCG Loop
+  ! COCG/BiCG Loop
   !
   WRITE(*,*)
-  WRITE(*,*) "#####  CG Iteration  #####"
+  WRITE(*,*) "#####  BiCG Iteration  #####"
   WRITE(*,*)
   !
   DO iter = 1, maxloops
@@ -491,15 +570,24 @@ PROGRAM shiftk
      ! Projection of Residual vector into the space
      ! spaned by left vectors
      !
-     r_l(1:ndim) = v2(1:ndim)
+     IF(ndim == nl) THEN
+        r_l(1:ndim) = v2(1:ndim)
+     ELSE
+        r_l(1) = DOT_PRODUCT(rhs, v2)
+     END IF
      !
      ! Matrix-vector product
      !
      CALL ham_prod(v2, v12)
+     IF(lBiCG) CALL ham_prod(v4, v14)
      !
      ! Update result x with COCG
      !
-     CALL COCG_update(v12, v2, x, r_l, status)
+     IF(lBiCG) THEN
+        CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
+     ELSE
+        CALL COCG_update(v12, v2,          x, r_l, status)
+     END IF
      !
      WRITE(*,'(a,4i,e13.5)') "  DEBUG : ", iter, status, DBLE(v12(1))
      IF(status(1) /= 0) EXIT
@@ -521,8 +609,13 @@ PROGRAM shiftk
      !
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(ndim, iter_old))
      !
-     CALL COCG_getcoef(alpha, beta, z_seed, r_l_save)
-     CALL COCG_getvec(v12)
+     IF(lBiCG) THEN
+        CALL BiCG_getcoef(alpha, beta, z_seed, r_l_save)
+        CALL BiCG_getvec(v12,v14)
+     ELSE
+        CALL COCG_getcoef(alpha, beta, z_seed, r_l_save)
+        CALL COCG_getvec(v12)
+     END IF
      !
      CALL output_restart_parameter()
      CALL output_restart_vector()
@@ -533,13 +626,22 @@ PROGRAM shiftk
   !
   ! Deallocate all intrinsic vectors
   !
-  CALL COCG_finalize()
+  IF(lBiCG) THEN
+     CALL BiCG_finalize()
+  ELSE
+     CALL COCG_finalize()
+  END IF
   !
   ! Output to a file
   !
-  CALL output_result()
+  IF(ndim == nl) THEN
+     CALL output_result_debug()
+  ELSE
+     CALL output_result()
+  END IF
   !
   DEALLOCATE(v12, v2, r_l, x, z)
+  IF(lBiCG) DEALLOCATE(v14, v4)
   !
   WRITE(*,*)
   WRITE(*,*) "#####  Done  #####"

@@ -17,6 +17,5 @@ shiftk.x:shiftk.o ../../src/libshiftk.a
 clean:
 	rm -f *.o *.x *.mod
 
-shiftk.o:mathlib.o
 shiftk.o:../../src/libshiftk.a
 

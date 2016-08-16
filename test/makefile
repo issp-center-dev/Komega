@@ -3,7 +3,7 @@ include ../make.sys
 .SUFFIXES :
 .SUFFIXES : .o .f90
 
-LIB = -L ../src -lshiftk
+LIB = -L ../src -lshiftk mathlib.o
 INCLUDE = -I ../src
 
 all:solve_rr.x solve_cr.x solve_rc.x solve_cc.x
