@@ -492,8 +492,8 @@ PROGRAM shiftk
   CALL input_hamiltonian()
   CALL input_rhs_vector()
   !
-  !nl = 1
-  nl = ndim
+  nl = 1
+  !nl = ndim
   CALL input_parameter()
   !
   ALLOCATE(v12(ndim), v2(ndim), r_l(nl), x(nl,nomega))
@@ -607,7 +607,7 @@ PROGRAM shiftk
   !
   IF(outrestart == .TRUE.) THEN
      !
-     ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(ndim, iter_old))
+     ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl, iter_old))
      !
      IF(lBiCG) THEN
         CALL BiCG_getcoef(alpha, beta, z_seed, r_l_save)
