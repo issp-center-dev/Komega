@@ -6,10 +6,17 @@ include ../../make.sys
 LIB = -L ../../src/ -lshiftk
 INCLUDE = -I ../../src/
 
+OBJS= \
+dyn_mod.o \
+ham_prod.o \
+shiftk.o \
+shiftk_io.o \
+shiftk_vals.o \
+
 all:shiftk.x
 
-shiftk.x:shiftk.o ../../src/libshiftk.a
-	$(F90) $< -o $@ $(FFLAGS) $(LIB)
+shiftk.x:$(OBJS) ../../src/libshiftk.a
+	$(F90) $(OBJS) -o $@ $(FFLAGS) $(LIB)
 
 .f90.o:
 	$(F90) -c $< $(FFLAGS) $(INCLUDE)
@@ -17,5 +24,12 @@ shiftk.x:shiftk.o ../../src/libshiftk.a
 clean:
 	rm -f *.o *.x *.mod
 
-shiftk.o:../../src/libshiftk.a
-
+shiftk.o:shiftk_io.o
+shiftk.o:dyn_mod.o
+ham_prod.o:shiftk_vals.o
+shiftk_io.o:shiftk_vals.o
+shiftk_io.o:ham_prod.o
+dyn_mod.o:../../src/libshiftk.a
+dyn_mod.o:shiftk_io.o
+dyn_mod.o:shiftk_vals.o
+dyn_mod.o:ham_prod.o
