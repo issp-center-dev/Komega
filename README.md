@@ -19,7 +19,7 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
      * `shiftk_io.f90`: 入出力関連のサブルーチン群
      * `shiftk_vals.f90`: ミニアプリ内部共通変数モジュール
    * `test/`: ミニアプリテスト用ディレクトリ
-     * `shift.in`: ミニアプリテスト用入力パラメーターファイル
+     * `namelist.def`: ミニアプリテスト用入力パラメーターファイル
      * `zvo_Excited.dat`: テスト用励起ベクトルファイル(入力)
      * `zvo_Ham.dat`: テスト用Hamiltonianファイル(入力)
  * `doc/`: ドキュメント用ディレクトリ
@@ -60,6 +60,25 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
  * `$ ../src/shiftk.x < shift.in`とやる.
  * `dynamicalG.dat`などが作られると成功.
  * `shift.in`の書式はマニュアル参照
+
+# ライブラリの使用方法
+
+## プログラム内での各ルーチンの呼び出し方
+
+### fortran/C/C++の場合
+
+マニュアル参照(作成中)
+
+## ライブラリのリンク方法
+
+### fortranの場合
+
+```
+$ ifort myprog.f90 -L パス/src -lshiftk
+```
+等
+
+### C/C++の場合
 
 # ライブラリのテスト(Optional)
 
