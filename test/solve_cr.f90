@@ -338,7 +338,7 @@ PROGRAM solve_cr
      !
      CALL CG_C_update(v12, v2, x, r_l, status)
      !
-     WRITE(*,'(a,4i,e15.5)') "DEBUG : ", iter, status, DBLE(v12(1))
+     WRITE(*,'(a,i8,3i5,e15.5)') "DEBUG : ", iter, status, DBLE(v12(1))
      IF(status(1) /= 0) EXIT
      !
   END DO

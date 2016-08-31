@@ -250,7 +250,7 @@ SUBROUTINE COCG_update(v12, v2, x, r_l, status)
   rho_old = rho
   rho = zdotu(ndim,v2,1,v2,1)
   IF(iter == 1) THEN
-     beta = CMPLX(0d0, 0d0)
+     beta = CMPLX(0d0, 0d0, KIND(0d0))
   ELSE
      beta = rho / rho_old
   END IF

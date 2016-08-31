@@ -1,3 +1,10 @@
+#
+# intel
+#
 F90=ifort
 FFLAGS=-g -traceback -mkl -check all -warn all
-
+#
+# gfortran
+#
+F90=gfortran
+FFLAGS=-g -lblas -Wall

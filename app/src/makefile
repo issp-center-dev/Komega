@@ -13,16 +13,16 @@ shiftk.o \
 shiftk_io.o \
 shiftk_vals.o \
 
-all:shiftk.x
+all:ShiftK.out
 
-shiftk.x:$(OBJS) ../../src/libshiftk.a
-	$(F90) $(OBJS) -o $@ $(FFLAGS) $(LIB)
+ShiftK.out:$(OBJS) ../../src/libshiftk.a
+	$(F90) $(OBJS) -o $@ $(LIB) $(FFLAGS)
 
 .f90.o:
 	$(F90) -c $< $(FFLAGS) $(INCLUDE)
 
 clean:
-	rm -f *.o *.x *.mod
+	rm -f *.o ShiftK.out *.mod
 
 shiftk.o:shiftk_io.o
 shiftk.o:dyn_mod.o

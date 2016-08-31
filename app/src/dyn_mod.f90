@@ -31,7 +31,7 @@ SUBROUTINE dyn()
   CALL input_rhs_vector()
   !
   nl = 1
-  !nl = ndim
+  nl = ndim
   CALL input_parameter()
   !
   ALLOCATE(v12(ndim), v2(ndim), r_l(nl), x(nl,nomega))
@@ -47,7 +47,7 @@ SUBROUTINE dyn()
      WRITE(*,*) "##########  CG Restart  ##########"
      WRITE(*,*)
      !
-     IF(outrestart == .TRUE.) THEN
+     IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
            CALL BiCG_restart(ndim, nl, nomega, x, z, maxloops, threshold, status, &
            &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
@@ -76,7 +76,7 @@ SUBROUTINE dyn()
      !
      v2(1:ndim) = rhs(1:ndim)
      !
-     IF(outrestart == .TRUE.) THEN
+     IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
            CALL BiCG_init(ndim, nl, nomega, x, z, maxloops, threshold, status)
         ELSE
@@ -127,7 +127,7 @@ SUBROUTINE dyn()
         CALL COCG_update(v12, v2,          x, r_l, status)
      END IF
      !
-     WRITE(*,'(a,4i,e13.5)') "  DEBUG : ", iter, status, DBLE(v12(1))
+     WRITE(*,'(a,i8,3i5,2e13.5)') "  DEBUG : ", iter, status, DBLE(v12(1)), ABS(r_l(1))
      IF(status(1) /= 0) EXIT
      !
   END DO
@@ -143,7 +143,7 @@ SUBROUTINE dyn()
   !
   ! Get these vectors for restart in the Next run
   !
-  IF(outrestart == .TRUE.) THEN
+  IF(outrestart .EQV. .TRUE.) THEN
      !
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl, iter_old))
      !

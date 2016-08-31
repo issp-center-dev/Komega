@@ -5,6 +5,8 @@ PROGRAM shiftk
   !
   IMPLICIT NONE
   !
+  CALL system("mkdir -p output")
+  !
   CALL input_filename()
   !
   CALL dyn()

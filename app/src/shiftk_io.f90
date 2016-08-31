@@ -177,7 +177,7 @@ SUBROUTINE input_restart_parameter()
   WRITE(*,*) "##########  Input Restart Parameter  ##########"
   WRITE(*,*)
   !
-  OPEN(fi, file = 'TriDiagComp.dat')
+  OPEN(fi, file = 'output/TriDiagComp.dat')
   !
   READ(fi,*) iter_old
   WRITE(*,*) "  Num. of Iteration (Previous Run) : ", iter_old
@@ -224,7 +224,7 @@ SUBROUTINE input_restart_vector()
   WRITE(*,*) "##########  Input Restart Vector  ##########"
   WRITE(*,*)
   !
-  OPEN(fi, file = 'ResVec.dat')
+  OPEN(fi, file = 'output/ResVec.dat')
   !
   READ(fi,*) ndim2
   WRITE(*,*) "  Dim. of Residual vector : ", ndim2
@@ -264,7 +264,7 @@ SUBROUTINE output_restart_parameter()
   WRITE(*,*) "##########  Output Restart Parameter  ##########"
   WRITE(*,*)
   !
-  OPEN(fo, file = 'TriDiagComp.dat')
+  OPEN(fo, file = 'output/TriDiagComp.dat')
   !
   WRITE(fo,*) iter_old
   WRITE(*,*) "  Num. of Iteration (Current Run) : ", iter_old
@@ -304,7 +304,7 @@ SUBROUTINE output_restart_vector()
   WRITE(*,*) "##########  Output Restart Vector  ##########"
   WRITE(*,*)
   !
-  OPEN(fo, file = 'ResVec.dat')
+  OPEN(fo, file = 'output/ResVec.dat')
   !
   WRITE(fo,*) ndim
   WRITE(*,*) "  Dim. of Residual vector : ", ndim
@@ -333,7 +333,7 @@ SUBROUTINE output_result()
   !
   INTEGER :: iz, fo = 20
   !
-  OPEN(fo, file = "dynamicalG.dat")
+  OPEN(fo, file = "output/dynamicalG.dat")
   !
   DO iz = 1, nomega
      !
@@ -378,7 +378,7 @@ SUBROUTINE output_result_debug()
      !
   END DO
   !
-  OPEN(fo, file = "dynamicalG.dat")
+  OPEN(fo, file = "output/dynamicalG.dat")
   !
   DO iz = 1, nomega
      !

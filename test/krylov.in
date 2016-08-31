@@ -1,9 +1,13 @@
 &input
       ndim = 10
-        nl = 1
-        nz = 1
+        nl = 10
+        nz = 5
    itermax = 100
  threshold = 1d-8
   rnd_seed = 100
 /
+(-2d0, 1d0)
+(-1d0, 1d0)
+(0d0, 1d0)
 (1d0, 1d0)
+(2d0, 1d0)
