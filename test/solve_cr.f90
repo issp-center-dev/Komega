@@ -354,11 +354,13 @@ test_r(1:ndim,iter) = v2(1:ndim)
   END IF
   iter_old = abs(status(1))
   !
+  ! Check the orthogonalization
+  !
   DO iter = 1, iter_old
      DO jter = 1, iter_old
-        write(*,'(e15.5)',advance="no") abs(dot_product(test_r(1:ndim,jter), test_r(1:ndim,iter)) )
+        !write(*,'(e15.5)',advance="no") abs(dot_product(test_r(1:ndim,jter), test_r(1:ndim,iter)) )
      END DO
-     write(*,*)
+     !write(*,*)
   END DO
   !
   ! Get these vectors for restart in the Next run

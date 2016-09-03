@@ -1,9 +1,9 @@
 &input
-      ndim = 10
-        nl = 10
+      ndim = 5
+        nl = 5
         nz = 5
-   itermax = 100
- threshold = 1d-8
+   itermax = 5
+ threshold = 1d-3
   rnd_seed = 100
 /
 (-2d0, 1d0)

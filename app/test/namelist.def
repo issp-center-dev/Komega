@@ -3,12 +3,12 @@
   invec = "zvo_Excited.dat"
 /
 &parameter
-  maxloops = 20
+  maxloops = 10
   calctype = "normal"
   convfactor = 6
-  nomega = 1
-  omegamin = (-2d0, 2.1d0)
-  omegamax = ( 1d0, 2.1d0)
+  nomega = 5
+  omegamin = (-2d0, 0.1d0)
+  omegamax = ( 1d0, 0.1d0)
 !  omegamin = (2d0, 0d0)
 !  omegamax = (3d0, 0d0)
   outrestart = .TRUE.

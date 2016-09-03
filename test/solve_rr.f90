@@ -324,7 +324,7 @@ PROGRAM solve_rr
      ! Projection of Residual vector into the space
      ! spaned by left vectors
      !
-test_r(1:ndim,iter) = v2(1:ndim)
+     test_r(1:ndim,iter) = v2(1:ndim)
      r_l(1:nl) = v2(1:nl)
      !
      ! Matrix-vector product
@@ -348,11 +348,13 @@ test_r(1:ndim,iter) = v2(1:ndim)
   END IF
   iter_old = abs(status(1))
   !
+  ! Print Orthogonalization of residual
+  !
   DO iter = 1, iter_old
      DO jter = 1, iter_old
-        write(*,'(e15.5)',advance="no") dot_product(test_r(1:ndim,jter), test_r(1:ndim,iter)) 
+        !write(*,'(e15.5)',advance="no") dot_product(test_r(1:ndim,jter), test_r(1:ndim,iter)) 
      END DO
-     write(*,*)
+     !write(*,*)
   END DO
   !
   ! Get these vectors for restart in the Next run

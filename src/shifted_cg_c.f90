@@ -214,7 +214,7 @@ SUBROUTINE CG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   ! Convergence check
   !
-  v12(1) = zdotc(ndim,v2,1,v2,1) / DBLE(ndim)
+  v12(1) = CMPLX(MAXVAL(ABS(v2(1:ndim))), 0d0, KIND(0d0))
   !
   IF(DBLE(v12(1)) < threshold) THEN
      status(1) = iter
@@ -292,14 +292,14 @@ SUBROUTINE CG_C_update(v12, v2, x, r_l, status)
   !
   ! Convergence check
   !
-  rho_old = DBLE(zdotc(ndim,v2,1,v2,1) / DBLE(ndim))
+  rho_old = MAXVAL(ABS(v2(1:ndim)))
   !
   IF(rho_old < threshold) THEN
      status(1) = iter
   ELSE IF(iter == itermax) THEN
      status(1) = -iter
   ELSE
-     v12(1) = rho_old
+     v12(1) = CMPLX(rho_old, 0d0, KIND(0d0))
      status(1) = 0
   END IF
   !

@@ -226,7 +226,7 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   ! Convergence check
   !
-  v12(1) = zdotc(ndim,v2,1,v2,1) / DBLE(ndim)
+  v12(1) = CMPLX(MAXVAL(ABS(v2(1:ndim))), 0d0, KIND(0d0))
   !
   IF(DBLE(v12(1)) < threshold) THEN
      status(1) = iter
@@ -310,11 +310,11 @@ SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
   !
   ! Seed Switching
   !
-  CALL BiCG_seed_switch(v2,v4,status(3))
+  !CALL BiCG_seed_switch(v2,v4,status(3))
   !
   ! Convergence check
   !
-  rho_old = zdotc(ndim,v2,1,v2,1) / DBLE(ndim)
+  rho_old = CMPLX(MAXVAL(ABS(v2(1:ndim))), 0d0, KIND(0d0))
   !
   IF(DBLE(rho_old) < threshold) THEN
      status(1) = iter

@@ -214,7 +214,7 @@ SUBROUTINE COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   ! Convergence check
   !
-  v12(1) = zdotc(ndim,v2,1,v2,1) / DBLE(ndim)
+  v12(1) = CMPLX(MAXVAL(ABS(v2(1:ndim))), 0d0, KIND(0d0))
   !
   IF(DBLE(v12(1)) < threshold) THEN
      status(1) = iter
@@ -296,7 +296,7 @@ SUBROUTINE COCG_update(v12, v2, x, r_l, status)
   !
   ! Convergence check
   !
-  rho_old = zdotc(ndim,v2,1,v2,1) / DBLE(ndim)
+  rho_old = CMPLX(MAXVAL(ABS(v2(1:ndim))), 0d0, KIND(0d0))
   !
   IF(DBLE(rho_old) < threshold) THEN
      status(1) = iter
