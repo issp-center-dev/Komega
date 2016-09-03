@@ -6,10 +6,10 @@
   maxloops = 20
   calctype = "normal"
   convfactor = 6
-  nomega = 10
+  nomega = 1
   omegamin = (-2d0, 2.1d0)
   omegamax = ( 1d0, 2.1d0)
 !  omegamin = (2d0, 0d0)
 !  omegamax = (3d0, 0d0)
-  outrestart = .FALSE.
+  outrestart = .TRUE.
 /

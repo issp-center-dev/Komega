@@ -142,7 +142,7 @@ SUBROUTINE CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
   rho = 1d0
   alpha = 1d0
   beta = 0d0
-  z_seed = 0d0
+  z_seed = z(1)
   iter = 0
   !
   IF(itermax > 0) THEN

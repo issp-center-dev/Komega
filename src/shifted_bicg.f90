@@ -152,7 +152,7 @@ SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
   rho = CMPLX(1d0, 0d0, KIND(0d0))
   alpha = CMPLX(1d0, 0d0, KIND(0d0))
   beta = CMPLX(0d0, 0d0, KIND(0d0))
-  z_seed = CMPLX(0d0, 0d0, KIND(0d0))
+  z_seed = z(1)
   iter = 0
   !
   IF(itermax > 0) THEN

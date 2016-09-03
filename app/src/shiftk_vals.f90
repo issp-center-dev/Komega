@@ -3,6 +3,7 @@ MODULE shiftk_vals
   IMPLICIT NONE
   !
   INTEGER,SAVE :: &
+  & ndiag,   & ! Diagonal components
   & nham,    & ! Non-zero elements of compressed Hamiltonian
   & ndim,    & ! Size of Hilvert space
   & nl,      & ! Dimention of x

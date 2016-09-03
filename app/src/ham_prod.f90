@@ -8,7 +8,7 @@ CONTAINS
 !
 SUBROUTINE ham_prod_compress(veci,veco)
   !
-  USE shiftk_vals, ONLY : ndim, nham, ham, ham_indx
+  USE shiftk_vals, ONLY : ndim, nham, ndiag, ham, ham_indx
   !
   IMPLICIT NONE
   !
@@ -19,9 +19,16 @@ SUBROUTINE ham_prod_compress(veci,veco)
   !
   veco(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
   !
-  DO iham = 1, nham
+  DO iham = 1, ndiag
      veco(ham_indx(1,iham)) = veco(ham_indx(1,iham)) &
      &          + ham(iham) * veci(ham_indx(2,iham))
+  END DO
+  !
+  DO iham = ndiag + 1, nham
+     veco(ham_indx(1,iham)) = veco(ham_indx(1,iham)) &
+     &          + ham(iham) * veci(ham_indx(2,iham))
+     veco(ham_indx(2,iham)) = veco(ham_indx(2,iham)) &
+     &   + CONJG(ham(iham)) * veci(ham_indx(1,iham))
   END DO
   !
 END SUBROUTINE ham_prod_compress

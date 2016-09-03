@@ -272,14 +272,17 @@ PROGRAM solve_cr
   !
   INTEGER :: &
   & itermin, & ! First iteration in this run
-  & iter,    & ! Counter for Iteration
+  & iter, jter,   & ! Counter for Iteration
   & status(3)
+  !
+  COMPLEX(8),allocatable :: test_r(:,:) 
   !
   ! Input Size of vectors
   !
   CALL input_size()
   !
   ALLOCATE(v12(ndim), v2(ndim), r_l(nl), x(nl,nz), z(nz), ham(ndim,ndim), rhs(ndim))
+  ALLOCATE(test_r(ndim,ndim))
   !
   CALL generate_system()
   !
@@ -328,6 +331,7 @@ PROGRAM solve_cr
      ! Projection of Residual vector into the space
      ! spaned by left vectors
      !
+test_r(1:ndim,iter) = v2(1:ndim)
      r_l(1:nl) = v2(1:nl)
      !
      ! Matrix-vector product
@@ -349,6 +353,13 @@ PROGRAM solve_cr
      WRITE(*,*) "  Not Converged in iteration ", -status(1)
   END IF
   iter_old = abs(status(1))
+  !
+  DO iter = 1, iter_old
+     DO jter = 1, iter_old
+        write(*,'(e15.5)',advance="no") abs(dot_product(test_r(1:ndim,jter), test_r(1:ndim,iter)) )
+     END DO
+     write(*,*)
+  END DO
   !
   ! Get these vectors for restart in the Next run
   !

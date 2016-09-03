@@ -85,12 +85,13 @@ END SUBROUTINE input_parameter
 !
 SUBROUTINE input_hamiltonian()
   !
-  USE shiftk_vals, ONLY : ndim, ham, ham_indx, nham, inham, lBiCG
+  USE shiftk_vals, ONLY : ndim, ham, ham_indx, nham, ndiag, inham, lBiCG
   !
   IMPLICIT NONE
   !
-  INTEGER :: fi = 10, ndim2, iham
+  INTEGER :: fi = 10, ndim2, iham, ham_indx0(2)
   REAL(8) :: ham_r, ham_i
+  COMPLEX(8) :: ham0
   CHARACTER(100) :: ctmp
   !
   WRITE(*,*)
@@ -113,6 +114,25 @@ SUBROUTINE input_hamiltonian()
   DO iham = 1, nham
      READ(fi,*) ham_indx(1,iham), ham_indx(2,iham), ham_r, ham_i
      ham(iham) = CMPLX(ham_r, ham_i, KIND(0d0))
+  END DO
+  !
+  ndiag = 0
+  DO iham = 1, nham
+     !
+     IF(ham_indx(1,iham) == ham_indx(2,iham)) THEN
+        !
+        ndiag = ndiag + 1
+        !
+        ham_indx0(1:2) = ham_indx(1:2,iham)
+        ham_indx(1:2,iham) = ham_indx(1:2,ndiag)
+        ham_indx(1:2,ndiag) = ham_indx0(1:2)
+        !
+        ham0 = ham(iham)
+        ham(iham) = ham(ndiag)
+        ham(ndiag) = ham0
+        !
+     END IF
+     !
   END DO
   !
   CLOSE(fi)
