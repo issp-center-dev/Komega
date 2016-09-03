@@ -70,7 +70,7 @@ SUBROUTINE BiCG_seed_switch(v2, v4, status)
      END IF
      !
      alpha = alpha * pi_old(iz_seed) / pi(iz_seed)
-     rho = rho / pi_old(iz_seed)
+     rho = rho / pi_old(iz_seed)**2
      !
      scale = 1d0 / pi(iz_seed)
      CALL zscal(ndim, scale, v2, 1)
@@ -310,7 +310,7 @@ SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
   !
   ! Seed Switching
   !
-  !CALL BiCG_seed_switch(v2,v4,status(3))
+  CALL BiCG_seed_switch(v2,v4,status(3))
   !
   ! Convergence check
   !

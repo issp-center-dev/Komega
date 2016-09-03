@@ -35,7 +35,7 @@ SUBROUTINE dyn()
   !nl = 1
   nl = ndim
   CALL input_parameter()
-  lBiCG = .TRUE.
+  !lBiCG = .TRUE.
   !
   ALLOCATE(v12(ndim), v2(ndim), r_l(nl), x(nl,nomega))
   IF(lBiCG) ALLOCATE(v14(ndim), v4(ndim))
@@ -113,8 +113,12 @@ SUBROUTINE dyn()
      ! Projection of Residual vector into the space
      ! spaned by left vectors
      !
-test_r(1:ndim,iter,1) = v2(1:ndim)
-test_r(1:ndim,iter,2) = v4(1:ndim)
+     test_r(1:ndim,iter,1) = v2(1:ndim)
+     IF(lBiCG) THEN
+        test_r(1:ndim,iter,2) = v4(1:ndim)
+     ELSE
+        test_r(1:ndim,iter,2) = v2(1:ndim)
+     END IF
      IF(ndim == nl) THEN
         r_l(1:ndim) = v2(1:ndim)
      ELSE
