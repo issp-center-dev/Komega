@@ -207,6 +207,7 @@ SUBROUTINE CG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   iter = iter_old 
   !
   CALL zcopy(ndim,v12,1,v3,1)
+  rho = DBLE(zdotc(ndim,v3,1,v3,1))
   !
   ! Seed Switching
   !

@@ -161,7 +161,7 @@ SUBROUTINE COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, threshold
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, z_seed
   USE shifted_krylov_vecs_c, ONLY : r_l_save, v3
-  USE shifted_krylov_math, ONLY : zcopy, zdotc
+  USE shifted_krylov_math, ONLY : zcopy, zdotu
   !
   IMPLICIT NONE
   !
@@ -207,6 +207,7 @@ SUBROUTINE COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   iter = iter_old 
   !
   CALL zcopy(ndim,v12,1,v3,1)
+  rho = zdotu(ndim,v3,1,v3,1)
   !
   ! Seed Switching
   !
@@ -234,7 +235,7 @@ SUBROUTINE COCG_update(v12, v2, x, r_l, status)
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_old, alpha_save, &
   &                               beta, beta_save, rho, z_seed
   USE shifted_krylov_vecs_c, ONLY : r_l_save, v3
-  USE shifted_krylov_math, ONLY : zdotu, zcopy, zdotc
+  USE shifted_krylov_math, ONLY : zdotu, zcopy
   !
   IMPLICIT NONE
   !

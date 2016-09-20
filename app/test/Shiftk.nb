@@ -10,45 +10,57 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[      5012,        147]
-NotebookOptionsPosition[      4720,        132]
-NotebookOutlinePosition[      5077,        148]
-CellTagsIndexPosition[      5034,        145]
+NotebookDataLength[      6786,        186]
+NotebookOptionsPosition[      6490,        171]
+NotebookOutlinePosition[      6850,        187]
+CellTagsIndexPosition[      6807,        184]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
 Cell[BoxData[
  RowBox[{"Exit", "[", "]"}]], "Input",
- CellChangeTimes->{{3.6832674514880753`*^9, 3.683267453435673*^9}}],
+ CellChangeTimes->{{3.6832674514880753`*^9, 3.683267453435673*^9}, {
+  3.683329136740926*^9, 3.6833291433332696`*^9}, {3.683329226180128*^9, 
+  3.6833292274812546`*^9}, {3.683343137887512*^9, 3.683343161260872*^9}, {
+  3.6833432430888443`*^9, 3.683343244811705*^9}}],
 
-Cell[BoxData[{
+Cell[BoxData[{"\"\<Hamiltonian\>\"", "\[IndentingNewLine]", 
  RowBox[{"ham", "=", 
   RowBox[{"Import", "[", 
    RowBox[{
    "\"\<C:\\\\Users\\\\kawamuura\\\\xubuntu\\\\programs\\\\ShiftK\\\\app\\\\\
 test\\\\zvo_Ham.dat\>\"", ",", "\"\<MTX\>\""}], 
-   "]"}]}], "\[IndentingNewLine]", 
+   "]"}]}], "\[IndentingNewLine]", "\"\<RHS vector input\>\"", "\
+\[IndentingNewLine]", 
  RowBox[{"rhs0", "=", 
   RowBox[{
   "Import", "[", 
    "\"\<C:\\\\Users\\\\kawamuura\\\\xubuntu\\\\programs\\\\ShiftK\\\\app\\\\\
-test\\\\zvo_Excited.dat\>\"", "]"}]}], "\[IndentingNewLine]", 
+test\\\\zvo_Excited.dat\>\"", 
+   "]"}]}], "\[IndentingNewLine]", "\"\<\\eta\>\"", "\[IndentingNewLine]", 
  RowBox[{"eta", "=", 
-  RowBox[{"1", "/", "10"}]}], "\[IndentingNewLine]", 
- RowBox[{"nomega", "=", "10"}], "\[IndentingNewLine]", 
- RowBox[{"HermitianMatrixQ", "[", "ham", "]"}], "\[IndentingNewLine]", 
+  RowBox[{
+  "1", "/", 
+   "10"}]}], "\[IndentingNewLine]", "\"\<nomega\>\"", "\[IndentingNewLine]", 
+ RowBox[{"nomega", "=", 
+  "10"}], "\[IndentingNewLine]", "\"\<Check hermitian\>\"", "\
+\[IndentingNewLine]", 
+ RowBox[{"HermitianMatrixQ", "[", "ham", 
+  "]"}], "\[IndentingNewLine]", "\"\<Dimension\>\"", "\[IndentingNewLine]", 
+ RowBox[{"ndim", "=", 
+  RowBox[{"rhs0", "[", 
+   RowBox[{"[", 
+    RowBox[{"1", ",", "1"}], "]"}], 
+   "]"}]}], "\[IndentingNewLine]", "\"\<RHS vector\>\"", \
+"\[IndentingNewLine]", 
  RowBox[{"rhs", "=", 
   RowBox[{
    RowBox[{"rhs0", "[", 
     RowBox[{"[", 
      RowBox[{
       RowBox[{"2", ";;", 
-       RowBox[{
-        RowBox[{"rhs0", "[", 
-         RowBox[{"[", 
-          RowBox[{"1", ",", "1"}], "]"}], "]"}], "+", "1"}]}], ",", "1"}], 
-     "]"}], "]"}], "+", 
+       RowBox[{"ndim", "+", "1"}]}], ",", "1"}], "]"}], "]"}], "+", 
    RowBox[{"I", " ", 
     RowBox[{"rhs0", "[", 
      RowBox[{"[", 
@@ -58,80 +70,107 @@ test\\\\zvo_Excited.dat\>\"", "]"}]}], "\[IndentingNewLine]",
          RowBox[{"rhs0", "[", 
           RowBox[{"[", 
            RowBox[{"1", ",", "1"}], "]"}], "]"}], "+", "1"}]}], ",", "2"}], 
-      "]"}], "]"}]}]}]}], "\[IndentingNewLine]", 
- RowBox[{"rhs0", "[", 
-  RowBox[{"[", 
-   RowBox[{"1", ",", "1"}], "]"}], "]"}], "\[IndentingNewLine]", 
+      "]"}], "]"}]}]}]}], "\[IndentingNewLine]", "\"\<Eigen values\>\"", "\
+\[IndentingNewLine]", 
  RowBox[{"eval", "=", 
-  RowBox[{"Eigenvalues", "[", "ham", "]"}]}], "\[IndentingNewLine]", 
- RowBox[{"evec", "=", 
   RowBox[{
-   RowBox[{"Conjugate", "[", 
-    RowBox[{"Eigenvectors", "[", "ham", "]"}], "]"}], ".", 
-   "rhs"}]}], "\[IndentingNewLine]", 
+  "Eigenvalues", "[", "ham", 
+   "]"}]}], "\[IndentingNewLine]", "\"\<E_max\>\"", "\[IndentingNewLine]", 
  RowBox[{"xmax", "=", 
-  RowBox[{"Max", "[", "eval", "]"}]}], "\[IndentingNewLine]", 
+  RowBox[{
+  "Max", "[", "eval", 
+   "]"}]}], "\[IndentingNewLine]", "\"\<E_min\>\"", "\[IndentingNewLine]", 
  RowBox[{"xmin", "=", 
-  RowBox[{"Min", "[", "eval", "]"}]}], "\[IndentingNewLine]", 
- RowBox[{"green", "=", 
-  RowBox[{"DiagonalMatrix", "[", 
-   RowBox[{"1", "/", 
-    RowBox[{"(", 
-     RowBox[{"x", "+", 
-      RowBox[{"I", " ", "eta"}], "-", "eval"}], ")"}]}], 
-   "]"}]}], "\[IndentingNewLine]", 
+  RowBox[{
+  "Min", "[", "eval", 
+   "]"}]}], "\[IndentingNewLine]", "\"\<Green's function\>\"", "\
+\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"green", "=", 
+   RowBox[{"Inverse", "[", 
+    RowBox[{
+     RowBox[{"DiagonalMatrix", "[", 
+      RowBox[{"Table", "[", 
+       RowBox[{
+        RowBox[{"x", "+", 
+         RowBox[{"eta", " ", "I"}]}], ",", "ndim"}], "]"}], "]"}], "-", 
+     "ham"}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", "\"\<Plot real part\>\"", \
+"\[IndentingNewLine]", 
  RowBox[{"Plot", "[", 
   RowBox[{
    RowBox[{"Re", "[", 
     RowBox[{
-     RowBox[{"Conjugate", "[", "evec", "]"}], ".", "green", ".", "evec"}], 
+     RowBox[{"Conjugate", "[", "rhs", "]"}], ".", "green", ".", "rhs"}], 
     "]"}], ",", 
    RowBox[{"{", 
     RowBox[{"x", ",", "xmin", ",", "xmax"}], "}"}]}], 
-  "]"}], "\[IndentingNewLine]", 
+  "]"}], "\[IndentingNewLine]", "\"\<Plot imaginary part\>\"", "\
+\[IndentingNewLine]", 
  RowBox[{"Plot", "[", 
   RowBox[{
    RowBox[{"Im", "[", 
     RowBox[{
-     RowBox[{"Conjugate", "[", "evec", "]"}], ".", "green", ".", "evec"}], 
+     RowBox[{"Conjugate", "[", "rhs", "]"}], ".", "green", ".", "rhs"}], 
     "]"}], ",", 
    RowBox[{"{", 
     RowBox[{"x", ",", "xmin", ",", "xmax"}], "}"}]}], 
-  "]"}], "\[IndentingNewLine]", 
- RowBox[{"N", "[", 
-  RowBox[{"Re", "[", 
-   RowBox[{
+  "]"}], "\[IndentingNewLine]", "\"\<Compute on grid\>\"", "\
+\[IndentingNewLine]", 
+ RowBox[{"MatrixForm", "[", 
+  RowBox[{"Transpose", "[", "\[IndentingNewLine]", 
+   RowBox[{"{", 
     RowBox[{
-     RowBox[{"Conjugate", "[", "evec", "]"}], ".", "green", ".", "evec"}], "/.", 
-    RowBox[{"x", "->", 
-     RowBox[{"Subdivide", "[", 
-      RowBox[{"xmin", ",", "xmax", ",", 
-       RowBox[{"nomega", "-", "1"}]}], "]"}]}]}], "]"}], 
-  "]"}], "\[IndentingNewLine]", 
- RowBox[{"N", "[", 
-  RowBox[{"Im", "[", 
-   RowBox[{
-    RowBox[{
-     RowBox[{"Conjugate", "[", "evec", "]"}], ".", "green", ".", "evec"}], "/.", 
-    RowBox[{"x", "->", 
-     RowBox[{"Subdivide", "[", 
-      RowBox[{"xmin", ",", "xmax", ",", 
-       RowBox[{"nomega", "-", "1"}]}], "]"}]}]}], "]"}], "]"}]}], "Input",
+     RowBox[{"N", "[", 
+      RowBox[{"Subdivide", "[", 
+       RowBox[{"xmin", ",", "xmax", ",", 
+        RowBox[{"nomega", "-", "1"}]}], "]"}], "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"N", "[", 
+      RowBox[{"Table", "[", 
+       RowBox[{"eta", ",", "nomega"}], "]"}], "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"N", "[", 
+      RowBox[{"Re", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"Conjugate", "[", "rhs", "]"}], ".", "green", ".", "rhs"}], "/.", 
+        RowBox[{"x", "->", 
+         RowBox[{"Subdivide", "[", 
+          RowBox[{"xmin", ",", "xmax", ",", 
+           RowBox[{"nomega", "-", "1"}]}], "]"}]}]}], "]"}], "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"N", "[", 
+      RowBox[{"Im", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"Conjugate", "[", "rhs", "]"}], ".", "green", ".", "rhs"}], "/.", 
+        RowBox[{"x", "->", 
+         RowBox[{"Subdivide", "[", 
+          RowBox[{"xmin", ",", "xmax", ",", 
+           RowBox[{"nomega", "-", "1"}]}], "]"}]}]}], "]"}], "]"}]}], "}"}], 
+   "\[IndentingNewLine]", "]"}], "]"}]}], "Input",
  CellChangeTimes->{{3.683264139725651*^9, 3.683264218352672*^9}, {
-  3.683267423536478*^9, 3.6832674273604665`*^9}, {3.68326754153153*^9, 
-  3.683267542320128*^9}, {3.6832676793864617`*^9, 3.6832676902031703`*^9}, {
-  3.683290931828396*^9, 3.6832909427587852`*^9}, {3.6832910274280596`*^9, 
-  3.6832910302480803`*^9}, {3.6832914152164764`*^9, 3.6832914493779497`*^9}, {
-  3.683291481443017*^9, 3.683291545770013*^9}, {3.6832916229553537`*^9, 
-  3.683291627897066*^9}, {3.683291661527526*^9, 3.683291671598114*^9}, {
-  3.6833190502240696`*^9, 3.683319059744994*^9}, {3.683320889592182*^9, 
-  3.6833208899300203`*^9}, {3.683322692524852*^9, 3.683322765175623*^9}, {
-  3.683323067759309*^9, 3.6833230766906815`*^9}, {3.6833232054626684`*^9, 
-  3.6833232099931583`*^9}, {3.683323277110729*^9, 3.6833233112664437`*^9}, {
-  3.68332335204751*^9, 3.6833233584145966`*^9}}]
+   3.683267423536478*^9, 3.6832674273604665`*^9}, {3.68326754153153*^9, 
+   3.683267542320128*^9}, {3.6832676793864617`*^9, 3.6832676902031703`*^9}, {
+   3.683290931828396*^9, 3.6832909427587852`*^9}, {3.6832910274280596`*^9, 
+   3.6832910302480803`*^9}, {3.6832914152164764`*^9, 
+   3.6832914493779497`*^9}, {3.683291481443017*^9, 3.683291545770013*^9}, {
+   3.6832916229553537`*^9, 3.683291627897066*^9}, {3.683291661527526*^9, 
+   3.683291671598114*^9}, {3.6833190502240696`*^9, 3.683319059744994*^9}, {
+   3.683320889592182*^9, 3.6833208899300203`*^9}, {3.683322692524852*^9, 
+   3.683322765175623*^9}, {3.683323067759309*^9, 3.6833230766906815`*^9}, {
+   3.6833232054626684`*^9, 3.6833232099931583`*^9}, {3.683323277110729*^9, 
+   3.6833233112664437`*^9}, {3.68332335204751*^9, 3.6833233584145966`*^9}, {
+   3.6833259135075135`*^9, 3.68332593507513*^9}, 3.68332597112341*^9, {
+   3.6833287963564215`*^9, 3.6833289643677716`*^9}, {3.6833323036003895`*^9, 
+   3.6833323203684187`*^9}, 3.6833369946674495`*^9, {3.6833422481967754`*^9, 
+   3.683342306350979*^9}, {3.683342371585476*^9, 3.6833424048244877`*^9}, {
+   3.683342597542859*^9, 3.683342625404174*^9}, {3.683342662229726*^9, 
+   3.683342719510007*^9}, 3.6833429061536403`*^9}]
 },
-WindowSize->{1440, 877},
-WindowMargins->{{-8, Automatic}, {Automatic, -8}},
+WindowSize->{1920, 1117},
+WindowMargins->{{2152, Automatic}, {Automatic, -8}},
 FrontEndVersion->"10.4 for Microsoft Windows (64-bit) (2016\:5e742\:670828\
 \:65e5)",
 StyleDefinitions->"Default.nb"
@@ -147,8 +186,8 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 120, 2, 68, "Input"],
-Cell[681, 24, 4035, 106, 803, "Input"]
+Cell[558, 20, 319, 5, 68, "Input"],
+Cell[880, 27, 5606, 142, 1349, "Input"]
 }
 ]
 *)

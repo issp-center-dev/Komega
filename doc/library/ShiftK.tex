@@ -62,8 +62,8 @@
 本資料はKrylov部分空間法に基づくシフト線形方程式群ソルバーに関するマニュアルである.
 本ライブラリは, (射影付き)シフト線形問題
 \begin{align}
-  G_{i j}(z) = \langle i | (z-{\hat H})^{-1}| j \rangle \equiv 
-  {\boldsymbol \varphi}_i^{*} \cdot (z-{\hat H})^{-1} {\boldsymbol \varphi}_j
+  G_{i j}(z) = \langle i | (z {\hat I} -{\hat H})^{-1}| j \rangle \equiv 
+  {\boldsymbol \varphi}_i^{*} \cdot (z{\hat I}-{\hat H})^{-1} {\boldsymbol \varphi}_j
 \end{align}
 を, Krylov部分空間法を用いて解くためのルーチンを提供する.
 言語はfortranを用いる. 
@@ -71,8 +71,8 @@
 
 \section{アルゴリズム}
 
-このライブラリは, ${\hat H}$および$z$が複素数のであるか実数であるかに応じて,
-次の4種類の計算をサポートする(${\hat H}$は複素数の場合はエルミート行列、実数の場合は実対称行列).
+このライブラリは, ${\hat H}$および$z$が複素数であるか実数であるかに応じて,
+次の4種類の計算をサポートする(${\hat H}$は複素数の場合はエルミート行列, 実数の場合は実対称行列).
 
 \begin{itemize}
 \item ${\hat H}$も$z$も両方複素数の場合 : Shifted Bi-Conjugate Gradient(BiCG)法 \cite{BiCG} or Shifted Conjugate Orthogonal Conjugate Gradient(COCG)法 \cite{COCG}
@@ -81,8 +81,7 @@
 \item ${\hat H}$も$z$も両方実数の場合 : Shifted Conjugate Gradient(CG)法 (実ベクトル)
 \end{itemize}
 いずれの場合も Seed switching を行う.
-
-左ベクトルを$N_L$個, 右ベクトルを$N_R$個(典型的には1個),
+左ベクトルが$N_L$個, 右ベクトルが$N_R$個(典型的には1個)あるとする.
 
 %\newpage
 \subsection{Seed switch 付き Shifted BiCG法}
@@ -307,12 +306,12 @@ end do iteration
 \\
 end do $j$
 
-\section{プログラム内でのライブラリの使用方法}
+\section{プログラム内でのライブラリの動作イメージ}
 
 以下では$N_R$のループは省略する(各右辺ベクトルごとに同じ事をすればいいので).
 また$G_{i j}(z_k)$の代わりに$N_z$個の$N_L$次元の解ベクトル${\bf x}_{k}$を求める.
 
-ユーザーの用意
+ユーザーが用意するもの.
 \begin{itemize}
 \item ベクトル(ヒルベルト空間)のサイズ$N_H$, $N_z$個の$z$
 \item サイズ$N_H$のベクトルを2本(BiCGの時には4本)Allocateしておく.
@@ -331,11 +330,11 @@ end do $j$
 ライブラリの各ルーチンの名前は仮に次のようにしておく
 
 \begin{itemize}
-\item \verb|BiCG_init|, \verb|COCG_init|, \verb|CG_init|
+\item \verb|BiCG_init|, \verb|COCG_init|, \verb|CG_C_init|, \verb|CG_R_init|
 
 ライブラリ内部で使う(ユーザーの目に触れない)変数のAllocateや初期値設定を行う.
 
-\item \verb|BiCG_update|, \verb|COCG_update|, \verb|CG_update|
+\item \verb|BiCG_update|, \verb|COCG_update|, \verb|CG_C_update|, \verb|CG_R_update|
 
 Iteration の中で呼び出される. 解ベクトル群の更新等を行う.
 
@@ -344,25 +343,25 @@ Iteration の中で呼び出される. 解ベクトル群の更新等を行う.
 %%BiCGで, ベクトルの本数を1本減らしてメモリを節約したいときに\verb|BiCG_update|の代わりに用いる.
 %%この場合には\verb|BiCG_init|の代わりに\verb|BiCG_init0|を使う.
 
-\item \verb|BiCG_finalize|, \verb|COCG_finalize|, \verb|CG_finalize|
+\item \verb|BiCG_finalize|, \verb|COCG_finalize|, \verb|CG_C_finalize|, \verb|CG_R_finalize|
 
 Allocateしたライブラリ内部ベクトルを開放する.
 
-\item \verb|BiCG_getcoef|, \verb|COCG_getcoef|, \verb|CG_getcoef|
+\item \verb|BiCG_getcoef|, \verb|COCG_getcoef|, \verb|CG_C_getcoef|, \verb|CG_R_getcoef|
 
 各iterationで保存しておいた$\alpha$, $\beta$, $z_{\rm seed}$, ${\bf r}^{\rm L}$を取り出す.
 
-\item \verb|BiCG_getvec|, \verb|COCG_getvec|, \verb|CG_getvec|
+\item \verb|BiCG_getvec|, \verb|COCG_getvec|, \verb|CG_C_getvec|, \verb|CG_R_getvec|
 
 ${\boldsymbol r}$, ${\boldsymbol r}^{\rm old}$, 
 ${\tilde {\boldsymbol r}}$, ${\tilde {\boldsymbol r}}^{\rm old}$
 を取り出す.
 
-\item \verb|BiCG_restart|, \verb|COCG_restart|, \verb|CG_restart|
+\item \verb|BiCG_restart|, \verb|COCG_restart|, \verb|CG_C_restart|, \verb|CG_R_restart|
 
 保存しておいた$\alpha$等を用いて, 新規の$z$での計算を行う.
 ${\boldsymbol r}$等も有る場合には
-\verb|BiCG_init|, \verb|COCG_init|, \verb|CG_init|
+\verb|BiCG_init|, \verb|COCG_init|, \verb|CG_C_init|, \verb|CG_R_init|
 の代わりに用いてリスタートすることもできる.
 
 \end{itemize}
@@ -597,26 +596,345 @@ COCGと同様.
 
 \section{使用方法}
 
-各ライブラリともユーザーはライブラリ名および型を指定し、
+各ライブラリともユーザーはライブラリ名および型を指定し, 
 \begin{itemize}
 \item 初期設定 (init関数)
 \item アップデート (update関数)
 \item 計算情報出力 (getcoef, getvec関数などを呼び出力)
 \item 終了関数 (finalize関数)
 \end{itemize}
-の手順で関数を使用することで、計算が実施される。
-なお、リスタートを行う場合には
+の手順で関数を使用することで, 計算が実施される. 
+なお, リスタートを行う場合には
 \begin{itemize}
-\item 初期設定関数(init関数, restart関数)
+\item 初期設定関数(restart関数)
 \item アップデート (update関数)
 \item 計算情報出力 (getcoef, getvec関数などを呼び出力)
 \item 終了関数 (finalize関数)
 \end{itemize}
-の手順で実行する。
- 
-以下、代表的な例としてShifted BiCGライブラリの場合の使用方法を記載する。
+の手順で実行する. 
 
-\subsection{Shifted BiCGライブラリの使用方法}
+\subsection{各ルーチンの説明}
+
+\subsubsection{\texttt{?\_init}}
+
+ライブラリ内部変数の割り付けおよび初期化を行う.
+シフト線形方程式を解く前に, 一番初めに実行する.
+
+\noindent 構文
+
+\noindent Fortran
+\begin{verbatim}
+CALL CG_R_init(ndim, nl, nz, x, z, itermax, threshold, status)
+CALL CG_C_init(ndim, nl, nz, x, z, itermax, threshold, status)
+CALL COCG_init(ndim, nl, nz, x, z, itermax, threshold, status)
+CALL BiCG_init(ndim, nl, nz, x, z, itermax, threshold, status)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+
+\item \verb|ndim|
+
+  INTEGER. スカラー. 入力. 線形方程式の次元.
+
+\item \verb|nl|
+
+  INTEGER. スカラー. 入力. 射影された解ベクトルの次元.
+
+\item \verb|nz|
+
+  INTEGER. スカラー. 入力. シフト点の数.
+
+\item \verb|x|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_init|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ \verb|nl*nz|の配列. 出力.
+  解ベクトル. \verb|0|ベクトルが返される.
+
+\item \verb|z|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_init|, \verb|CG_C_init|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|nz|の配列. 入力. シフト点.
+
+\item \verb|itermax|
+
+  \verb|INTEGER|. スカラー. 入力. リスタート用配列の割り付けのための最大反復回数.
+  これを\verb|0|にした場合にはリスタート用配列を割りつけない(したがって後述のリスタート用変数の出力を行えない)
+
+\item \verb|threshold|
+
+  \verb|DOUBLE PRECISION|. スカラー. 入力. 収束判定用しきい値.
+  シード方程式の残差ベクトルの各成分の絶対値の中で最大のものがこの値を下回った時に収束したと判定する.
+
+\item \verb|status|
+
+  \verb|INTEGER|. 長さ\verb|3|の配列. 出力. エラーコードを返す.
+  現在のところこのルーチンでは使われていない.
+    
+\end{itemize}
+
+\subsubsection{\texttt{?\_restart}}
+
+  リスタートを行う場合に\verb|?_init|の代わりに用いる.
+  ライブラリ内部変数の割り付けおよび初期化を行う.
+  シフト線形方程式を解く前に, 一番初めに実行する.
+
+  \noindent 構文
+
+  \noindent Fortran
+  
+\begin{verbatim}
+CALL CG_R_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL CG_C_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL COCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+&                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
+&                 z_seed, r_l_save)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+
+\item \verb|ndim, nl, nz, x, z, itermax, threshold, status|
+
+  \verb|?_init|と同様.
+
+\item \verb|iter_old|
+
+  \verb|INTEGER|. スカラー. 入力. 先行する計算での反復回数.
+
+\item \verb|v2|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|ndim|の配列. 入力.
+  先行する計算での最後の残差ベクトル.
+
+\item \verb|v12|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|ndim|の配列. 入力.
+  先行する計算での最後から2番目の残差ベクトル.
+
+\item \verb|alpha_save|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のパラメーター$\alpha$.
+
+\item \verb|beta_save|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のパラメーター$\beta$.
+
+\item \verb|z_seed|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  スカラー. 入力. 先行する計算でのシードシフト.
+
+\item \verb|r_l_save|
+  
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|nl*iter_old|の配列. 入力.
+  先行する計算での各反復での射影された残差ベクトル.
+
+\item \verb|v4|
+
+  \verb|BiCG_restart|の場合のみ使用.
+  \verb|DOUBLE COMPLEX|.
+  長さ\verb|ndim|の配列. 入力.
+  先行する計算での最後の影の残差ベクトル.
+
+\item \verb|v14|
+
+  \verb|BiCG_restart|の場合のみ使用.
+  \verb|DOUBLE COMPLEX|.
+  長さ\verb|ndim|の配列. 入力.
+  先行する計算での最後から2番目の影の残差ベクトル.
+
+\end{itemize}
+
+\subsubsection{\texttt{?\_update}}
+
+ループ内で行列ベクトル積と交互に呼ばれて解を更新する.
+
+\noindent 構文
+
+\noindent Fortran
+\begin{verbatim}
+CALL CG_R_update(v12, v2, x, r_l, status)
+CALL CG_C_update(v12, v2, x, r_l, status)
+CALL COCG_update(v12, v2, x, r_l, status)
+CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+
+\item \verb|v12|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_update|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|ndim|の配列. 入出力.
+  入力は残差ベクトル(\verb|v2|)と行列の積.
+  出力は, 更新された残差ベクトルの各要素の絶対値のなかで最大のものが,
+  先頭の要素に格納される(これは収束の具合を表示して調べる時などに用いる).
+
+\item \verb|v2|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_update|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|ndim|の配列. 入出力.
+  入力は残差ベクトル.
+  出力は更新された残差ベクトル.
+
+\item \verb|v14|
+  
+  \verb|BiCG_update|の場合のみ使用. \verb|DOUBLE COMPLEX|.
+  長さ\verb|ndim|の配列. 入力.
+  影の残差ベクトル(\verb|v4|)と行列の積.
+  
+\item \verb|v4|
+  
+  \verb|BiCG_update|の場合のみ使用. \verb|DOUBLE COMPLEX|.
+  長さ\verb|ndim|の配列. 入出力.
+  入力は影の残差ベクトル.
+  出力は更新された影の残差ベクトル.
+
+\item \verb|status|
+
+  \verb|INTEGER|. 長さ\verb|3|の配列. 出力. エラーコードを返す.
+  \begin{description}
+  \item [第一成分(\texttt{status(1)})]
+    解が収束した場合には現在の総反復回数が返される.
+    \verb|?_init|ルーチンで, \verb|itermax|を有限にして, かつ\verb|itermax|回の反復で
+    収束に達しなかった場合には\verb|-itermax|が返される.
+    それ以外の場合には\verb|0|が返される.
+    
+  \item [第二成分(\texttt{status(2)})]
+    $\alpha$が発散した場合には\verb|1|が返される.
+    \verb|COCG_update|もしくは\verb|BiCG_update|で,
+    残差ベクトルと影の残差ベクトルが直交した場合には\verb|2|が返される.
+    それ以外の場合には\verb|0|が返される.
+    \verb|status(1)|と\verb|status(2)|の両方が\verb|0|の時のみ反復を続行できる.
+    それ以外の場合は反復を進めても有意な結果は得られない.
+
+  \item [第三成分(\texttt{status(3)})]
+    シード点のindexが返される.
+  \end{description}
+
+\end{itemize}
+
+\subsubsection{\texttt{?\_getcoef}}
+
+後でリスタートを刷るときに必要な係数を取得する.
+このルーチンを呼び出すためには,
+\verb|?_init|ルーチンで\verb|itermax|を\verb|0|以外の値にしておく必要がある.
+
+\noindent 構文
+
+\noindent Fortran
+\begin{verbatim}
+CALL CG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL CG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+\item \verb|alpha_save|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のパラメーター$\alpha$.
+
+\item \verb|beta_save|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のパラメーター$\beta$.
+
+\item \verb|z_seed|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  スカラー. 出力. シードシフト.
+
+\item \verb|r_l_save|
+  
+  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  \verb|nl|$\times$総反復回数の長さ配列. 出力.
+  各反復での射影された残差ベクトル.
+\end{itemize}
+
+\subsubsection{\texttt{?\_getvec}}
+
+後でリスタートをするときに必要な残差ベクトルを取得する.
+このルーチンを呼び出すためには,
+\verb|?_init|ルーチンで\verb|itermax|を\verb|0|以外の値にしておく必要がある.
+
+\noindent 構文
+
+\noindent Fortran
+\begin{verbatim}
+CALL CG_R_getvec(r_old)
+CALL CG_C_getvec(r_old)
+CALL COCG_getvec(r_old)
+CALL BiCG_getvec(r_old, r_tilde_old)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+  
+\item \verb|r_old|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_getvec|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|ndim|の配列. 出力.
+  先行する計算での最後から2番目の残差ベクトル.
+
+\item \verb|r_tilde_old|
+
+  \verb|BiCG_getvec|の場合のみ使用.
+  \verb|DOUBLE COMPLEX|.
+  長さ\verb|ndim|の配列. 出力.
+  先行する計算での最後から2番目の影の残差ベクトル.
+
+\end{itemize}
+
+\subsubsection{\texttt{?\_finalize}}
+
+ライブラリ内部で割りつけた配列のメモリを解放する.
+
+\noindent 構文
+
+\noindent Fortran
+\begin{verbatim}
+CALL CG_R_finalize()
+CALL CG_C_finalize()
+CALL COCG_finalize()
+CALL BiCG_finalize()
+\end{verbatim}
+
+\subsection{Shifted BiCGライブラリを使用したソースコードの例}
+
+以下, 代表的な例としてShifted BiCGライブラリの場合の使用方法を記載する. 
 
 \begin{lstlisting}
 PROGRAM my_prog
@@ -674,7 +992,8 @@ PROGRAM my_prog
   !
   CALL input_size(ndim,nl,nz)
   !
-  ALLOCATE(v12(ndim), v2(ndim), v14(ndim), v4(ndim), r_l(nl), x(nl,nz), z(nz), ham(ndim,ndim), rhs(ndim))
+  ALLOCATE(v12(ndim), v2(ndim), v14(ndim), v4(ndim), r_l(nl), &
+  &        x(nl,nz), z(nz), ham(ndim,ndim), rhs(ndim))
   !
   CALL generate_system(ndim, ham, rhs, z)
   !
@@ -691,8 +1010,9 @@ PROGRAM my_prog
     ! When restarting, counter
     !
     itermin = iter_old + 1
-    CALL BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, status, &
-    &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+    CALL BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
+    &                 status, iter_old, v2, v12, v4, v14, alpha, &
+    &                 beta, z_seed, r_l_save)
     !
     ! These vectors were saved in BiCG routine
     !
@@ -710,7 +1030,8 @@ PROGRAM my_prog
      v4(1:ndim) = CONJG(v2(1:ndim))
      !v4(1:ndim) = v2(1:ndim)
      !
-     CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold, status)
+     CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), &
+     &              threshold, status)
      !
   END IF
   !
@@ -759,7 +1080,8 @@ PROGRAM my_prog
      CALL BiCG_getcoef(alpha, beta, z_seed, r_l_save)
      CALL BiCG_getvec(v12,v14)
      !
-     CALL output_restart(iter_old, z_seed, alpha, beta, r_l_save, v12, v14)
+     CALL output_restart(iter_old, z_seed, alpha, beta, &
+     &                   r_l_save, v12, v14)
      !
      DEALLOCATE(alpha, beta, r_l_save)
      !     

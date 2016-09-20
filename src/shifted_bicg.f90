@@ -219,6 +219,7 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   CALL zcopy(ndim,v12,1,v3,1)
   CALL zcopy(ndim,v14,1,v5,1)
+  rho = zdotc(ndim,v5,1,v3,1)
   !
   ! Seed Switching
   !
