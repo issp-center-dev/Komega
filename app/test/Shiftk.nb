@@ -1,0 +1,155 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.4' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      5012,        147]
+NotebookOptionsPosition[      4720,        132]
+NotebookOutlinePosition[      5077,        148]
+CellTagsIndexPosition[      5034,        145]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{"Exit", "[", "]"}]], "Input",
+ CellChangeTimes->{{3.6832674514880753`*^9, 3.683267453435673*^9}}],
+
+Cell[BoxData[{
+ RowBox[{"ham", "=", 
+  RowBox[{"Import", "[", 
+   RowBox[{
+   "\"\<C:\\\\Users\\\\kawamuura\\\\xubuntu\\\\programs\\\\ShiftK\\\\app\\\\\
+test\\\\zvo_Ham.dat\>\"", ",", "\"\<MTX\>\""}], 
+   "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"rhs0", "=", 
+  RowBox[{
+  "Import", "[", 
+   "\"\<C:\\\\Users\\\\kawamuura\\\\xubuntu\\\\programs\\\\ShiftK\\\\app\\\\\
+test\\\\zvo_Excited.dat\>\"", "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"eta", "=", 
+  RowBox[{"1", "/", "10"}]}], "\[IndentingNewLine]", 
+ RowBox[{"nomega", "=", "10"}], "\[IndentingNewLine]", 
+ RowBox[{"HermitianMatrixQ", "[", "ham", "]"}], "\[IndentingNewLine]", 
+ RowBox[{"rhs", "=", 
+  RowBox[{
+   RowBox[{"rhs0", "[", 
+    RowBox[{"[", 
+     RowBox[{
+      RowBox[{"2", ";;", 
+       RowBox[{
+        RowBox[{"rhs0", "[", 
+         RowBox[{"[", 
+          RowBox[{"1", ",", "1"}], "]"}], "]"}], "+", "1"}]}], ",", "1"}], 
+     "]"}], "]"}], "+", 
+   RowBox[{"I", " ", 
+    RowBox[{"rhs0", "[", 
+     RowBox[{"[", 
+      RowBox[{
+       RowBox[{"2", ";;", 
+        RowBox[{
+         RowBox[{"rhs0", "[", 
+          RowBox[{"[", 
+           RowBox[{"1", ",", "1"}], "]"}], "]"}], "+", "1"}]}], ",", "2"}], 
+      "]"}], "]"}]}]}]}], "\[IndentingNewLine]", 
+ RowBox[{"rhs0", "[", 
+  RowBox[{"[", 
+   RowBox[{"1", ",", "1"}], "]"}], "]"}], "\[IndentingNewLine]", 
+ RowBox[{"eval", "=", 
+  RowBox[{"Eigenvalues", "[", "ham", "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"evec", "=", 
+  RowBox[{
+   RowBox[{"Conjugate", "[", 
+    RowBox[{"Eigenvectors", "[", "ham", "]"}], "]"}], ".", 
+   "rhs"}]}], "\[IndentingNewLine]", 
+ RowBox[{"xmax", "=", 
+  RowBox[{"Max", "[", "eval", "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"xmin", "=", 
+  RowBox[{"Min", "[", "eval", "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"green", "=", 
+  RowBox[{"DiagonalMatrix", "[", 
+   RowBox[{"1", "/", 
+    RowBox[{"(", 
+     RowBox[{"x", "+", 
+      RowBox[{"I", " ", "eta"}], "-", "eval"}], ")"}]}], 
+   "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"Plot", "[", 
+  RowBox[{
+   RowBox[{"Re", "[", 
+    RowBox[{
+     RowBox[{"Conjugate", "[", "evec", "]"}], ".", "green", ".", "evec"}], 
+    "]"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"x", ",", "xmin", ",", "xmax"}], "}"}]}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"Plot", "[", 
+  RowBox[{
+   RowBox[{"Im", "[", 
+    RowBox[{
+     RowBox[{"Conjugate", "[", "evec", "]"}], ".", "green", ".", "evec"}], 
+    "]"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"x", ",", "xmin", ",", "xmax"}], "}"}]}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"N", "[", 
+  RowBox[{"Re", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Conjugate", "[", "evec", "]"}], ".", "green", ".", "evec"}], "/.", 
+    RowBox[{"x", "->", 
+     RowBox[{"Subdivide", "[", 
+      RowBox[{"xmin", ",", "xmax", ",", 
+       RowBox[{"nomega", "-", "1"}]}], "]"}]}]}], "]"}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"N", "[", 
+  RowBox[{"Im", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Conjugate", "[", "evec", "]"}], ".", "green", ".", "evec"}], "/.", 
+    RowBox[{"x", "->", 
+     RowBox[{"Subdivide", "[", 
+      RowBox[{"xmin", ",", "xmax", ",", 
+       RowBox[{"nomega", "-", "1"}]}], "]"}]}]}], "]"}], "]"}]}], "Input",
+ CellChangeTimes->{{3.683264139725651*^9, 3.683264218352672*^9}, {
+  3.683267423536478*^9, 3.6832674273604665`*^9}, {3.68326754153153*^9, 
+  3.683267542320128*^9}, {3.6832676793864617`*^9, 3.6832676902031703`*^9}, {
+  3.683290931828396*^9, 3.6832909427587852`*^9}, {3.6832910274280596`*^9, 
+  3.6832910302480803`*^9}, {3.6832914152164764`*^9, 3.6832914493779497`*^9}, {
+  3.683291481443017*^9, 3.683291545770013*^9}, {3.6832916229553537`*^9, 
+  3.683291627897066*^9}, {3.683291661527526*^9, 3.683291671598114*^9}, {
+  3.6833190502240696`*^9, 3.683319059744994*^9}, {3.683320889592182*^9, 
+  3.6833208899300203`*^9}, {3.683322692524852*^9, 3.683322765175623*^9}, {
+  3.683323067759309*^9, 3.6833230766906815`*^9}, {3.6833232054626684`*^9, 
+  3.6833232099931583`*^9}, {3.683323277110729*^9, 3.6833233112664437`*^9}, {
+  3.68332335204751*^9, 3.6833233584145966`*^9}}]
+},
+WindowSize->{1440, 877},
+WindowMargins->{{-8, Automatic}, {Automatic, -8}},
+FrontEndVersion->"10.4 for Microsoft Windows (64-bit) (2016\:5e742\:670828\
+\:65e5)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 120, 2, 68, "Input"],
+Cell[681, 24, 4035, 106, 803, "Input"]
+}
+]
+*)
+

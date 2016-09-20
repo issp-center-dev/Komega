@@ -46,7 +46,7 @@
 %
 % Cover
 %
-\title{Shifted Krylov法ライブラリ設計書 ver.0.6}
+\title{Shifted Krylov法ライブラリ マニュアル}
 \author{東京大学物性研究所 ソフトウェア高度化推進チーム}
 \date{\today}
 \maketitle
@@ -59,14 +59,13 @@
 
 \section{概要}
 
-本資料はKrylov部分空間法に基づくシフト線形方程式群ソルバーに関する設計書である.
-本ライブラリは, HPhiにおけるGreen関数計算
+本資料はKrylov部分空間法に基づくシフト線形方程式群ソルバーに関するマニュアルである.
+本ライブラリは, (射影付き)シフト線形問題
 \begin{align}
   G_{i j}(z) = \langle i | (z-{\hat H})^{-1}| j \rangle \equiv 
   {\boldsymbol \varphi}_i^{*} \cdot (z-{\hat H})^{-1} {\boldsymbol \varphi}_j
 \end{align}
-に用いられる事を想定して作られる.
-ただし, なるべく汎用性も持たせられるようにもする.
+を, Krylov部分空間法を用いて解くためのルーチンを提供する.
 言語はfortranを用いる. 
 また, BLASレベル1ルーチンを使用する.
 
@@ -83,12 +82,7 @@
 \end{itemize}
 いずれの場合も Seed switching を行う.
 
-HPhiの計算では左ベクトルを$N_L$個, 右ベクトルを$N_R$個(典型的には1個),
-
-$z$を$N_z$個としてGreen関数計算を行うものとする.
-実装にあたっての優先順位は山元氏から提供されたコードをもとにCG法、COCG法の順に行う。具体的には\\
-(${\hat H}$,$z$)=(実数, 実数)$\to$(複素数, 実数)$\to$(実数, 複素数)$\to$ (複素数, 複素数)\\
-の順に対応し、各アルゴリズムに対しては独立した最小単位のライブラリとしても使用できるように考慮する。
+左ベクトルを$N_L$個, 右ベクトルを$N_R$個(典型的には1個),
 
 %\newpage
 \subsection{Seed switch 付き Shifted BiCG法}
@@ -313,7 +307,7 @@ end do iteration
 \\
 end do $j$
 
-\section{ライブラリの設計}
+\section{プログラム内でのライブラリの使用方法}
 
 以下では$N_R$のループは省略する(各右辺ベクトルごとに同じ事をすればいいので).
 また$G_{i j}(z_k)$の代わりに$N_z$個の$N_L$次元の解ベクトル${\bf x}_{k}$を求める.
