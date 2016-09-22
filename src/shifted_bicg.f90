@@ -3,6 +3,10 @@
 !
 MODULE shifted_bicg
   !
+  PRIVATE
+  !
+  PUBLIC BiCG_init, BiCG_restart, BiCG_update, BiCG_getcoef, BiCG_getvec, BiCG_finalize
+  !
 CONTAINS
 !
 ! Shifted Part
@@ -169,7 +173,7 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
 &                       iter_old, v2, v12, v4, v14, alpha_save0, beta_save0, z_seed0, r_l_save0)
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, threshold
-  USE shifted_krylov_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, z_seed
+  USE shifted_krylov_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed
   USE shifted_krylov_vecs_c, ONLY : r_l_save, v3, v5
   USE shifted_krylov_math, ONLY : zcopy, zdotc
   !

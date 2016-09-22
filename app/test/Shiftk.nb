@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[      6786,        186]
-NotebookOptionsPosition[      6490,        171]
-NotebookOutlinePosition[      6850,        187]
-CellTagsIndexPosition[      6807,        184]
+NotebookDataLength[      7007,        189]
+NotebookOptionsPosition[      6714,        174]
+NotebookOutlinePosition[      7071,        190]
+CellTagsIndexPosition[      7028,        187]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -25,26 +25,24 @@ Cell[BoxData[
   3.6833292274812546`*^9}, {3.683343137887512*^9, 3.683343161260872*^9}, {
   3.6833432430888443`*^9, 3.683343244811705*^9}}],
 
-Cell[BoxData[{"\"\<Hamiltonian\>\"", "\[IndentingNewLine]", 
+Cell[BoxData[{
+ RowBox[{"SetDirectory", "[", 
+  "\"\<C:\\\\Users\\\\kawamuura\\\\xubuntu\\\\programs\\\\ShiftK\\\\app\\\\\
+test\>\"", 
+  "]"}], "\[IndentingNewLine]", "\"\<Hamiltonian\>\"", "\[IndentingNewLine]", 
  RowBox[{"ham", "=", 
   RowBox[{"Import", "[", 
-   RowBox[{
-   "\"\<C:\\\\Users\\\\kawamuura\\\\xubuntu\\\\programs\\\\ShiftK\\\\app\\\\\
-test\\\\zvo_Ham.dat\>\"", ",", "\"\<MTX\>\""}], 
+   RowBox[{"\"\<zvo_Ham.dat\>\"", ",", "\"\<MTX\>\""}], 
    "]"}]}], "\[IndentingNewLine]", "\"\<RHS vector input\>\"", "\
 \[IndentingNewLine]", 
  RowBox[{"rhs0", "=", 
   RowBox[{
-  "Import", "[", 
-   "\"\<C:\\\\Users\\\\kawamuura\\\\xubuntu\\\\programs\\\\ShiftK\\\\app\\\\\
-test\\\\zvo_Excited.dat\>\"", 
+  "Import", "[", "\"\<zvo_Excited.dat\>\"", 
    "]"}]}], "\[IndentingNewLine]", "\"\<\\eta\>\"", "\[IndentingNewLine]", 
  RowBox[{"eta", "=", 
-  RowBox[{
-  "1", "/", 
-   "10"}]}], "\[IndentingNewLine]", "\"\<nomega\>\"", "\[IndentingNewLine]", 
+  "0.03"}], "\[IndentingNewLine]", "\"\<nomega\>\"", "\[IndentingNewLine]", 
  RowBox[{"nomega", "=", 
-  "10"}], "\[IndentingNewLine]", "\"\<Check hermitian\>\"", "\
+  "100"}], "\[IndentingNewLine]", "\"\<Check hermitian\>\"", "\
 \[IndentingNewLine]", 
  RowBox[{"HermitianMatrixQ", "[", "ham", 
   "]"}], "\[IndentingNewLine]", "\"\<Dimension\>\"", "\[IndentingNewLine]", 
@@ -117,39 +115,42 @@ test\\\\zvo_Excited.dat\>\"",
     RowBox[{"x", ",", "xmin", ",", "xmax"}], "}"}]}], 
   "]"}], "\[IndentingNewLine]", "\"\<Compute on grid\>\"", "\
 \[IndentingNewLine]", 
- RowBox[{"MatrixForm", "[", 
-  RowBox[{"Transpose", "[", "\[IndentingNewLine]", 
-   RowBox[{"{", 
-    RowBox[{
-     RowBox[{"N", "[", 
-      RowBox[{"Subdivide", "[", 
-       RowBox[{"xmin", ",", "xmax", ",", 
-        RowBox[{"nomega", "-", "1"}]}], "]"}], "]"}], ",", 
-     "\[IndentingNewLine]", 
-     RowBox[{"N", "[", 
-      RowBox[{"Table", "[", 
-       RowBox[{"eta", ",", "nomega"}], "]"}], "]"}], ",", 
-     "\[IndentingNewLine]", 
-     RowBox[{"N", "[", 
-      RowBox[{"Re", "[", 
-       RowBox[{
+ RowBox[{"Export", "[", 
+  RowBox[{"\"\<test.dat\>\"", ",", 
+   RowBox[{"Transpose", "[", "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"N", "[", 
+       RowBox[{"Subdivide", "[", 
+        RowBox[{"xmin", ",", "xmax", ",", 
+         RowBox[{"nomega", "-", "1"}]}], "]"}], "]"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"N", "[", 
+       RowBox[{"Table", "[", 
+        RowBox[{"eta", ",", "nomega"}], "]"}], "]"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"N", "[", 
+       RowBox[{"Re", "[", 
         RowBox[{
-         RowBox[{"Conjugate", "[", "rhs", "]"}], ".", "green", ".", "rhs"}], "/.", 
-        RowBox[{"x", "->", 
-         RowBox[{"Subdivide", "[", 
-          RowBox[{"xmin", ",", "xmax", ",", 
-           RowBox[{"nomega", "-", "1"}]}], "]"}]}]}], "]"}], "]"}], ",", 
-     "\[IndentingNewLine]", 
-     RowBox[{"N", "[", 
-      RowBox[{"Im", "[", 
-       RowBox[{
+         RowBox[{
+          RowBox[{"Conjugate", "[", "rhs", "]"}], ".", "green", ".", "rhs"}], 
+         "/.", 
+         RowBox[{"x", "->", 
+          RowBox[{"Subdivide", "[", 
+           RowBox[{"xmin", ",", "xmax", ",", 
+            RowBox[{"nomega", "-", "1"}]}], "]"}]}]}], "]"}], "]"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"N", "[", 
+       RowBox[{"Im", "[", 
         RowBox[{
-         RowBox[{"Conjugate", "[", "rhs", "]"}], ".", "green", ".", "rhs"}], "/.", 
-        RowBox[{"x", "->", 
-         RowBox[{"Subdivide", "[", 
-          RowBox[{"xmin", ",", "xmax", ",", 
-           RowBox[{"nomega", "-", "1"}]}], "]"}]}]}], "]"}], "]"}]}], "}"}], 
-   "\[IndentingNewLine]", "]"}], "]"}]}], "Input",
+         RowBox[{
+          RowBox[{"Conjugate", "[", "rhs", "]"}], ".", "green", ".", "rhs"}], 
+         "/.", 
+         RowBox[{"x", "->", 
+          RowBox[{"Subdivide", "[", 
+           RowBox[{"xmin", ",", "xmax", ",", 
+            RowBox[{"nomega", "-", "1"}]}], "]"}]}]}], "]"}], "]"}]}], "}"}], 
+    "\[IndentingNewLine]", "]"}]}], "]"}]}], "Input",
  CellChangeTimes->{{3.683264139725651*^9, 3.683264218352672*^9}, {
    3.683267423536478*^9, 3.6832674273604665`*^9}, {3.68326754153153*^9, 
    3.683267542320128*^9}, {3.6832676793864617`*^9, 3.6832676902031703`*^9}, {
@@ -167,10 +168,12 @@ test\\\\zvo_Excited.dat\>\"",
    3.6833323203684187`*^9}, 3.6833369946674495`*^9, {3.6833422481967754`*^9, 
    3.683342306350979*^9}, {3.683342371585476*^9, 3.6833424048244877`*^9}, {
    3.683342597542859*^9, 3.683342625404174*^9}, {3.683342662229726*^9, 
-   3.683342719510007*^9}, 3.6833429061536403`*^9}]
+   3.683342719510007*^9}, 3.6833429061536403`*^9, {3.6835204650753336`*^9, 
+   3.68352046777351*^9}, {3.6835209388610926`*^9, 3.683520988260829*^9}, 
+   3.683521118907254*^9, {3.6835212654463434`*^9, 3.683521316301767*^9}}]
 },
-WindowSize->{1920, 1117},
-WindowMargins->{{2152, Automatic}, {Automatic, -8}},
+WindowSize->{1209, 859},
+WindowMargins->{{-7, Automatic}, {-3, Automatic}},
 FrontEndVersion->"10.4 for Microsoft Windows (64-bit) (2016\:5e742\:670828\
 \:65e5)",
 StyleDefinitions->"Default.nb"
@@ -187,7 +190,7 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[558, 20, 319, 5, 68, "Input"],
-Cell[880, 27, 5606, 142, 1349, "Input"]
+Cell[880, 27, 5830, 145, 1403, "Input"]
 }
 ]
 *)

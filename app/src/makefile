@@ -9,6 +9,7 @@ INCLUDE = -I ../../src/
 OBJS= \
 dyn_mod.o \
 ham_prod.o \
+lobpcg_mod.o \
 shiftk.o \
 shiftk_io.o \
 shiftk_vals.o \
@@ -26,7 +27,11 @@ clean:
 
 shiftk.o:shiftk_io.o
 shiftk.o:dyn_mod.o
+shiftk.o:ham_prod.o
+shiftk.o:lobpcg_mod.o
 ham_prod.o:shiftk_vals.o
+lobpcg_mod.o:shiftk_vals.o
+lobpcg_mod.o:ham_prod.o
 shiftk_io.o:shiftk_vals.o
 shiftk_io.o:ham_prod.o
 dyn_mod.o:../../src/libshiftk.a

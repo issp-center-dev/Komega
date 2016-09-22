@@ -12,6 +12,8 @@ MODULE shiftk_vals
   & iter_old   ! Number of iteraction of previous run
   !
   REAL(8),SAVE :: &
+  & e_min, & ! Minimum energy
+  & e_max, & ! Maximum energy
   & threshold ! Convergence Threshold
   !
   COMPLEX(8),SAVE :: &
@@ -29,7 +31,7 @@ MODULE shiftk_vals
   & v12(:), v2(:), & ! (ndim): Working vector
   & v14(:), v4(:), & ! (ndim): Working vector
   & r_l(:), & ! (nl) : Projeccted residual vector 
-  & x(:,:) ! (nl,nomega) : Projected result 
+  & x_l(:,:) ! (nl,nomega) : Projected result 
   !
   ! Variables for Restart
   !

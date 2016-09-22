@@ -36,35 +36,100 @@ END SUBROUTINE input_filename
 !
 !
 !
-SUBROUTINE input_parameter()
+SUBROUTINE input_parameter_ham()
   !
-  USE shiftk_vals, ONLY : nomega, maxloops, outrestart, threshold, ndim, calctype, z
+  USE shiftk_vals, ONLY : ndim
+  USE ham_vals, ONLY : Jx, Jy, Jz, Dz, nsite
   !
   IMPLICIT NONE
   !
-  INTEGER :: convfactor, iomega
-  COMPLEX(8) :: omegamax, omegamin
-  NAMELIST /parameter/ omegamax, omegamin, nomega, maxloops, calctype, convfactor, outrestart
+  NAMELIST /ham/ Jx, Jy, Jz, Dz, nsite
+  !
+  Jx = 1d0
+  Jy = 1d0
+  Jz = 1d0
+  Dz = 0d0
+  nsite = 4
+  !
+  READ(*,ham,err=100)
+  !
+  ndim = 2**nsite
+  !
+  WRITE(*,*)
+  WRITE(*,*) "##########  Input Parameter for Hamiltonian ##########"
+  WRITE(*,*)
+  WRITE(*,*) "      Number of sites : ", nsite
+  WRITE(*,*) "                   Jx : ", Jx
+  WRITE(*,*) "                   Jy : ", Jy
+  WRITE(*,*) "                   Jz : ", Jz
+  WRITE(*,*) "                   Dz : ", Dz
+  WRITE(*,*) "  Dim. of Hamiltonian : ", ndim
+  !
+  return
+  !
+100 write(*,*) "Stop in INPUT_PARAMETER for Hamiltonian. reading namelist HAM"
+  !
+  stop
+  !
+END SUBROUTINE input_parameter_ham
+!
+!
+!
+SUBROUTINE input_parameter_cg()
+  !
+  USE shiftk_vals, ONLY : maxloops, threshold, ndim
+  !
+  IMPLICIT NONE
+  !
+  INTEGER :: convfactor
+  NAMELIST /cg/ maxloops, convfactor
   !
   maxloops = ndim
-  calctype = "normal"
   convfactor = 8
-  nomega = 10
-  omegamin = CMPLX(0d0, 1d0, KIND(0d0))
-  omegamax = CMPLX(1d0, 1d0, KIND(0d0))
-  outrestart = .FALSE.
   !
-  READ(*,parameter,err=100)
+  READ(*,cg,err=100)
   threshold = 10d0**(-convfactor)
   !
   WRITE(*,*)
-  WRITE(*,*) "##########  Input Parameter  ##########"
+  WRITE(*,*) "##########  Input Parameter for CG Iteration ##########"
+  WRITE(*,*)
+  WRITE(*,*) "  Maximum number of loop : ", maxloops
+  WRITE(*,*) "   Convergence Threshold : ", threshold
+  !
+  return
+  !
+100 write(*,*) "Stop in INPUT_PARAMETER for CG. reading namelist CG"
+  !
+  stop
+  !
+END SUBROUTINE input_parameter_cg
+!
+!
+!
+SUBROUTINE input_parameter_dyn()
+  !
+  USE shiftk_vals, ONLY : nomega, outrestart, calctype, z, e_max, e_min
+  !
+  IMPLICIT NONE
+  !
+  INTEGER :: iomega
+  COMPLEX(8) :: omegamax, omegamin
+  NAMELIST /dyn/ omegamax, omegamin, nomega, calctype, outrestart
+  !
+  calctype = "normal"
+  nomega = 10
+  omegamin = CMPLX(e_min, 0.01d0*(e_max - e_min), KIND(0d0))
+  omegamax = CMPLX(e_max, 0.01d0*(e_max - e_min), KIND(0d0))
+  outrestart = .FALSE.
+  !
+  READ(*,dyn,err=100)
+  !
+  WRITE(*,*)
+  WRITE(*,*) "##########  Input Parameter for Spectrum  ##########"
   WRITE(*,*)
   WRITE(*,*) "           Max. of Omega : ", omegamax
   WRITE(*,*) "           Min. of Omega : ", omegamin
   WRITE(*,*) "           Num. of Omega : ", nomega
-  WRITE(*,*) "  Maximum number of loop : ", maxloops
-  WRITE(*,*) "   Convergence Threshold : ", threshold
   WRITE(*,'(a,a)') "         Calculation type : ", calctype
   !
   ALLOCATE(z(nomega))
@@ -75,11 +140,11 @@ SUBROUTINE input_parameter()
   !
   return
   !
-100 write(*,*) "Stop in INPUT_PARAMETER. reading namelist PARAMETER"
+100 write(*,*) "Stop in INPUT_PARAMETER_DYN. reading namelist DYN"
   !
   stop
   !
-END SUBROUTINE input_parameter
+END SUBROUTINE input_parameter_dyn
 !
 ! Input Hamiltonian with the Matrix Market Format
 !
@@ -347,7 +412,7 @@ END SUBROUTINE output_restart_vector
 !
 SUBROUTINE output_result()
   !
-  USE shiftk_vals, ONLY : x, z, nomega
+  USE shiftk_vals, ONLY : x_l, z, nomega
   !
   IMPLICIT NONE
   !
@@ -357,7 +422,7 @@ SUBROUTINE output_result()
   !
   DO iz = 1, nomega
      !
-     write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(x(1,iz)), AIMAG(x(1,iz))
+     write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(x_l(1,iz)), AIMAG(x_l(1,iz))
      !
   END DO
   !
@@ -369,8 +434,8 @@ END SUBROUTINE output_result
 !
 SUBROUTINE output_result_debug()
   !
-  USE shiftk_vals, ONLY : v2, ndim, x, rhs, z, nomega
-  USE ham_prod, ONLY : ham_prod_compress
+  USE shiftk_vals, ONLY : v2, ndim, x_l, rhs, z, nomega
+  USE ham_prod_mod, ONLY : ham_prod
   !
   IMPLICIT NONE
   !
@@ -389,8 +454,8 @@ SUBROUTINE output_result_debug()
   !
   DO iz = 1, nomega
      !
-     CALL ham_prod_compress(x(1:ndim,iz), v2)
-     v2(1:ndim) = z(iz) * x(1:ndim,iz) - v2(1:ndim) - rhs(1:ndim)
+     CALL ham_prod(x_l(1:ndim,iz), v2)
+     v2(1:ndim) = z(iz) * x_l(1:ndim,iz) - v2(1:ndim) - rhs(1:ndim)
      !
      !write(*,form) v2(1:ndim)
      write(*,'(a,i5,a,2e13.5,a,e13.5)') "DEBUG (", iz, "), omega = ", z(iz), &
@@ -402,7 +467,7 @@ SUBROUTINE output_result_debug()
   !
   DO iz = 1, nomega
      !
-     Gii = dot_product(rhs,x(1:ndim,iz))
+     Gii = dot_product(rhs,x_l(1:ndim,iz))
      write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(Gii), AIMAG(Gii)
      !
   END DO

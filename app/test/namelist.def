@@ -1,14 +1,18 @@
 &filename
-  inham = "zvo_Ham.dat"
-  invec = "zvo_Excited.dat"
+  inham = ""
+  invec = ""
 /
-&parameter
-  maxloops = 10
-  calctype = "normal"
+&cg
+  maxloops = 100
   convfactor = 6
-  nomega = 5
-  omegamin = (-2d0, 0.1d0)
-  omegamax = ( 1d0, 0.1d0)
+/
+&ham
+/
+&dyn
+  calctype = "normal"
+  nomega = 100
+!  omegamin = (-2d0, 0.1d0)
+!  omegamax = ( 1d0, 0.1d0)
 !  omegamin = (2d0, 0d0)
 !  omegamax = (3d0, 0d0)
   outrestart = .TRUE.

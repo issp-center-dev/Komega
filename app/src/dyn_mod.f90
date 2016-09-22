@@ -8,18 +8,17 @@ CONTAINS
 !
 SUBROUTINE dyn()
   !
-  USE shiftk_io, ONLY : input_filename, input_hamiltonian, input_rhs_vector, &
-  &                     input_parameter, input_restart_parameter, input_restart_vector, &
+  USE shiftk_io, ONLY : input_restart_parameter, input_restart_vector, &
   &                     output_result, output_result_debug, output_restart_parameter, output_restart_vector
   USE shiftk_vals, ONLY : alpha, beta, calctype, ndim, nomega, maxloops, iter_old, lBiCG, nl, &
-  &                       outrestart, rhs, v12, v2, v14, v4, rhs, r_l, r_l_save, threshold, x, z, z_seed
+  &                       outrestart, v12, v2, v14, v4, rhs, r_l, r_l_save, threshold, x_l, z, z_seed
   !
   USE shifted_cocg, ONLY : COCG_init, COCG_restart, COCG_update, &
   &                        COCG_getcoef, COCG_getvec, COCG_finalize
   USE shifted_bicg, ONLY : BiCG_init, BiCG_restart, BiCG_update, &
   &                        BiCG_getcoef, BiCG_getvec, BiCG_finalize
   !
-  USE ham_prod, ONLY : ham_prod_compress
+  USE ham_prod_mod, ONLY : ham_prod
   !
   IMPLICIT NONE
   !
@@ -29,15 +28,11 @@ SUBROUTINE dyn()
   !
   COMPLEX(8),allocatable :: test_r(:,:,:) 
   !
-  CALL input_hamiltonian()
-  CALL input_rhs_vector()
-  !
   !nl = 1
   nl = ndim
-  CALL input_parameter()
   !lBiCG = .TRUE.
   !
-  ALLOCATE(v12(ndim), v2(ndim), r_l(nl), x(nl,nomega))
+  ALLOCATE(v12(ndim), v2(ndim), r_l(nl), x_l(nl,nomega))
   IF(lBiCG) ALLOCATE(v14(ndim), v4(ndim))
   ALLOCATE(test_r(ndim,maxloops,2))
   !
@@ -53,18 +48,18 @@ SUBROUTINE dyn()
      !
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
-           CALL BiCG_restart(ndim, nl, nomega, x, z, maxloops, threshold, status, &
+           CALL BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, status, &
            &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
         ELSE
-           CALL COCG_restart(ndim, nl, nomega, x, z, maxloops, threshold, status, &
+           CALL COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, status, &
            &                 iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
         END IF
      ELSE
         IF(lBiCG) THEN
-           CALL BiCG_restart(ndim, nl, nomega, x, z, 0,        threshold, status, &
+           CALL BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, status, &
            &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
         ELSE
-           CALL COCG_restart(ndim, nl, nomega, x, z, 0,        threshold, status, &
+           CALL COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, status, &
            &                 iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
         END IF
      END IF
@@ -83,15 +78,15 @@ SUBROUTINE dyn()
      !
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
-           CALL BiCG_init(ndim, nl, nomega, x, z, maxloops, threshold, status)
+           CALL BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, status)
         ELSE
-           CALL COCG_init(ndim, nl, nomega, x, z, maxloops, threshold, status)
+           CALL COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, status)
         END IF
      ELSE
         IF(lBiCG) THEN
-           CALL BiCG_init(ndim, nl, nomega, x, z, 0,        threshold, status)
+           CALL BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, status)
         ELSE
-           CALL COCG_init(ndim, nl, nomega, x, z, 0,        threshold, status)
+           CALL COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, status)
         END IF
      END IF
      !
@@ -127,15 +122,15 @@ SUBROUTINE dyn()
      !
      ! Matrix-vector product
      !
-     CALL ham_prod_compress(v2, v12)
-     IF(lBiCG) CALL ham_prod_compress(v4, v14)
+     CALL ham_prod(v2, v12)
+     IF(lBiCG) CALL ham_prod(v4, v14)
      !
      ! Update result x with COCG
      !
      IF(lBiCG) THEN
-        CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
+        CALL BiCG_update(v12, v2, v14, v4, x_l, r_l, status)
      ELSE
-        CALL COCG_update(v12, v2,          x, r_l, status)
+        CALL COCG_update(v12, v2,          x_l, r_l, status)
      END IF
      !
      WRITE(*,'(a,i8,3i5,2e13.5)') "  DEBUG : ", iter, status, DBLE(v12(1)), ABS(r_l(1))
@@ -196,7 +191,7 @@ SUBROUTINE dyn()
      CALL output_result()
   END IF
   !
-  DEALLOCATE(v12, v2, r_l, x, z)
+  DEALLOCATE(v12, v2, r_l, x_l, z)
   IF(lBiCG) DEALLOCATE(v14, v4)
   !
 END SUBROUTINE dyn
