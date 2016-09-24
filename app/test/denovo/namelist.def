@@ -1,0 +1,22 @@
+&filename
+  inham = ""
+  invec = ""
+/
+&cg
+  maxloops = 100
+  convfactor = 6
+/
+&ham
+Jx = 1d0
+Jz = 2d0
+Dz = 1d0
+/
+&dyn
+  calctype = "normal"
+  nomega = 100
+!  omegamin = (-2d0, 0.1d0)
+!  omegamax = ( 1d0, 0.1d0)
+!  omegamin = (2d0, 0d0)
+!  omegamax = (3d0, 0d0)
+  outrestart = .TRUE.
+/
