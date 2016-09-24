@@ -1,3 +1,6 @@
+!
+! This Module contains subroutines for LOBPCG calculation
+!
 MODULE lobpcg_mod
   !
   IMPLICIT NONE
@@ -7,7 +10,7 @@ MODULE lobpcg_mod
   !
 CONTAINS
 !
-!
+! Driver routine for the LOBPCG
 !
 SUBROUTINE lobpcg_driver()
   !
@@ -19,8 +22,6 @@ SUBROUTINE lobpcg_driver()
   COMPLEX(8),allocatable :: x(:,:), hx(:,:) ! x(:,1) = w, x(:,2) = x, x(:,3) = p
   REAL(8),allocatable :: x_r(:), x_i(:)
   !
-CALL print_ham()
-!
   WRITE(*,*) 
   WRITE(*,*) "##########  Calculation of the Ground State ##########"
   WRITE(*,*)
@@ -64,7 +65,7 @@ CALL print_ham()
   !
 END SUBROUTINE lobpcg_driver
 !
-!
+! Core routine for the LOBPCG method
 !
 SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   !
@@ -82,6 +83,8 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   REAL(8) :: dnorm, rwork(7), eig3(3), res
   COMPLEX(8) :: hsub(3,3), ovrp(3,3), work(5)
   !
+  ! Initial guess of re
+  !
   CALL RANDOM_NUMBER(x_r(1:ndim))
   CALL RANDOM_NUMBER(x_i(1:ndim))
   x(1:ndim,2) = CMPLX(x_r(1:ndim), x_i(1:ndim), KIND(0d0))
@@ -94,7 +97,8 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   x(1:ndim, 1) = hx(1:ndim,2) - eig * x(1:ndim,2)
   !
   res = MAXVAL(ABS(x(1:ndim,1)))
-  WRITE(*,'(a,i5,a,e15.5,a,e15.5)') "    iter = ", 0, ", res = ", res, ", eig = ", eig
+  WRITE(*,'(a)')        "    iter      Residual       Energy"
+  WRITE(*,'(i8,2e15.5)')        0,        res,             eig
   IF(res < threshold) GOTO 10
   !
   DO iter = 1, maxloops
@@ -146,7 +150,7 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
      x(1:ndim, 1) = hx(1:ndim, 2) - eig * x(1:ndim, 2)
      !
      res = MAXVAL(ABS(x(1:ndim,1)))
-     WRITE(*,'(a,i5,a,e15.5,a,e15.5)') "    iter = ", iter, ", res = ", res, ", eig = ", eig
+     WRITE(*,'(i8,2e15.5)') iter, res, eig
      IF(res < threshold) exit
      !
      dnorm = SQRT(DBLE(DOT_PRODUCT(x(1:ndim, 1), x(1:ndim, 1))))
@@ -158,30 +162,4 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   !
 END SUBROUTINE lobpcg
 !
-!
-!
-SUBROUTINE print_ham()
-  !
-  USE shiftk_vals, ONLY : ndim
-  USE ham_prod_mod, ONLY : ham_prod
-  !
-  IMPLICIT NONE
-  !
-  INTEGER :: idim
-  COMPLEX(8) :: veci(ndim), veco(ndim)
-  !
-  DO idim = 1, ndim
-     !
-     veci(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
-     veci(  idim) = CMPLX(1d0, 0d0, KIND(0d0))
-     !
-     CALL ham_prod(veci, veco)
-     !
-     WRITE(*,'(1000f10.5)') DBLE(veco(1:ndim))
-     !
-  END DO
-  !
-END SUBROUTINE print_ham
-!
 END MODULE lobpcg_mod
-

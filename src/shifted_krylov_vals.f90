@@ -2,7 +2,11 @@ MODULE shifted_krylov_parameter
   !
   IMPLICIT NONE
   !
+  REAL(8),PARAMETER :: &
+  & almost0 = 1d-13
+  !
   INTEGER,SAVE :: &
+  & iz_seed, &
   & ndim, &
   & nl,   &
   & nz,   &

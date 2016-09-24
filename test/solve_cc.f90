@@ -329,7 +329,7 @@ PROGRAM solve_cc
      v4(1:ndim) = CONJG(v2(1:ndim))
      !v4(1:ndim) = v2(1:ndim)
      !
-     CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold, status)
+     CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
      !
   END IF
   !
@@ -358,16 +358,22 @@ test_r(1:ndim,iter,2) = v4(1:ndim)
      CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
      !
      WRITE(*,'(a,i8,3i5,e15.5)') "DEBUG : ", iter, status, DBLE(v12(1))
-     IF(status(1) /= 0) EXIT
+     IF(status(1) < 0) EXIT
      !
   END DO
   !
-  IF(status(1) > 0) THEN
-     WRITE(*,*) "  Converged in iteration ", status(1)
-  ELSE
-     WRITE(*,*) "  Not Converged in iteration ", -status(1)
+  IF(status(2) == 0) THEN
+     WRITE(*,*) "  Converged in iteration ", ABS(status(1))
+  ELSE IF(status(2) == 1) THEN
+     WRITE(*,*) "  Not Converged in iteration ", ABS(status(1))
+  ELSE IF(status(2) == 2) THEN
+     WRITE(*,*) "  Alpha becomes infinity", ABS(status(1))
+  ELSE IF(status(2) == 3) THEN
+     WRITE(*,*) "  Pi_seed becomes zero", ABS(status(1))
+  ELSE IF(status(2) == 4) THEN
+     WRITE(*,*) "  Residual & Shadow residual are orthogonal", ABS(status(1))
   END IF
-  iter_old = abs(status(1))
+  iter_old = ABS(status(1))
   !
   DO iter = 1, iter_old
      DO jter = 1, iter_old

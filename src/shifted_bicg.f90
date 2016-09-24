@@ -46,7 +46,7 @@ END SUBROUTINE BiCG_shiftedeqn
 !
 SUBROUTINE BiCG_seed_switch(v2, v4, status)
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nz, nl, threshold
+  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nz, nl, iz_seed, almost0
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_save, beta_save, pi, pi_old, &
   &                               pi_save, rho, z, z_seed
   USE shifted_krylov_vecs_c, ONLY : v3, v5, r_l_save
@@ -55,23 +55,21 @@ SUBROUTINE BiCG_seed_switch(v2, v4, status)
   IMPLICIT NONE
   !
   COMPLEX(8),INTENT(INOUT) :: v2(ndim), v4(ndim)
-  INTEGER,INTENT(OUT) :: status
+  INTEGER,INTENT(INOUT) :: status(3)
   !
-  INTEGER :: iz_seed, jter
+  INTEGER :: jter
   COMPLEX(8) :: scale
   !
-  iz_seed = MINLOC(ABS(pi(1:nz)), 1)
-  status = iz_seed
+  status(3) = MINLOC(ABS(pi(1:nz)), 1)
   !
-  IF(ABS(z_seed - z(iz_seed)) > 1d-12) THEN
+  IF(ABS(pi(status(3))) < almost0) THEN
+     status(2) = 3
+  END IF
+  !
+  IF(status(3) /= iz_seed) THEN
      !
+     iz_seed = status(3)
      z_seed = z(iz_seed)
-     !
-     IF(ABS(pi(iz_seed)) < threshold) THEN
-        status = - iz_seed
-     ELSE
-        status = iz_seed
-     END IF
      !
      alpha = alpha * pi_old(iz_seed) / pi(iz_seed)
      rho = rho / pi_old(iz_seed)**2
@@ -121,9 +119,9 @@ END SUBROUTINE BiCG_seed_switch
 !
 ! Allocate & initialize variables
 !
-SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
+SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold
+  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold, iz_seed
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_save, beta, beta_save, pi, &
   &                               pi_old, pi_save, rho, z, z_seed 
   USE shifted_krylov_vecs_c, ONLY : p, r_l_save, v3, v5
@@ -135,9 +133,6 @@ SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
   REAL(8),INTENT(IN) :: threshold0
   COMPLEX(8),INTENT(IN) :: z0(nz0)
   COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
-  INTEGER,INTENT(OUT) :: status(3)
-  !
-  status(1:3) = 0
   !
   ndim = ndim0
   nl = nl0
@@ -156,7 +151,8 @@ SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
   rho = CMPLX(1d0, 0d0, KIND(0d0))
   alpha = CMPLX(1d0, 0d0, KIND(0d0))
   beta = CMPLX(0d0, 0d0, KIND(0d0))
-  z_seed = z(1)
+  iz_seed = 1
+  z_seed = z(iz_seed)
   iter = 0
   !
   IF(itermax > 0) THEN
@@ -172,7 +168,7 @@ END SUBROUTINE BiCG_init
 SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
 &                       iter_old, v2, v12, v4, v14, alpha_save0, beta_save0, z_seed0, r_l_save0)
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, threshold
+  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed
   USE shifted_krylov_vecs_c, ONLY : r_l_save, v3, v5
   USE shifted_krylov_math, ONLY : zcopy, zdotc
@@ -194,8 +190,11 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   COMPLEX(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
   COMPLEX(8),INTENT(INOUT) :: v4(ndim), v14(ndim)
   !
-  CALL BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status)
+  CALL BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   z_seed = z_seed0
+  iz_seed = 0
+  !
+  status(1:3) = 0
   !
   DO iter = 1, iter_old
      !
@@ -227,18 +226,35 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   ! Seed Switching
   !
-  CALL BiCG_seed_switch(v2,v4,status(3))
+  CALL BiCG_seed_switch(v2,v4,status)
   !
   ! Convergence check
   !
   v12(1) = CMPLX(MAXVAL(ABS(v2(1:ndim))), 0d0, KIND(0d0))
   !
   IF(DBLE(v12(1)) < threshold) THEN
-     status(1) = iter
+     !
+     ! Converged
+     !
+     status(1) = - iter
+     status(2) = 0
   ELSE IF(iter == itermax) THEN
+     !
+     ! NOT Converged in itermax
+     !
+     status(1) = - iter
+     status(2) = 1
+  ELSE IF(status(2) == 3) THEN
+     !
+     ! pi_seed becomes zero
+     !
      status(1) = - iter
   ELSE
-     status(1) = 0
+     !
+     ! Continue
+     !
+     status(1) = iter
+     status(2) = 0
   END IF
   !
 END SUBROUTINE BiCG_restart
@@ -247,7 +263,7 @@ END SUBROUTINE BiCG_restart
 !
 SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold
+  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold, almost0
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_old, alpha_save, &
   &                               beta, beta_save, rho, z_seed
   USE shifted_krylov_vecs_c, ONLY : r_l_save, v3, v5
@@ -262,7 +278,7 @@ SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
   COMPLEX(8) :: rho_old, alpha_denom
   !
   iter = iter + 1
-  !status(1:3) = 0
+  status(1:3) = 0
   !
   rho_old = rho
   rho = zdotc(ndim,v4,1,v2,1)
@@ -276,17 +292,12 @@ SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
   alpha_old = alpha
   alpha_denom = zdotc(ndim,v4,1,v12,1) - beta * rho / alpha
   !
-  IF(ABS(alpha_denom) < threshold) THEN
-     status(2) = 1
-     alpha = 1d0
-  ELSE IF(ABS(rho) < threshold) THEN
+  IF(ABS(alpha_denom) < almost0) THEN
      status(2) = 2
-     alpha = 1d0
-     beta = 0d0
-  ELSE
-     status(2) = 0
-     alpha = rho / alpha_denom
+  ELSE IF(ABS(rho) < almost0) THEN
+     status(2) = 4
   END IF
+  alpha = rho / alpha_denom
   !
   ! For restarting
   !
@@ -315,19 +326,45 @@ SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
   !
   ! Seed Switching
   !
-  CALL BiCG_seed_switch(v2,v4,status(3))
+  CALL BiCG_seed_switch(v2,v4,status)
   !
   ! Convergence check
   !
-  rho_old = CMPLX(MAXVAL(ABS(v2(1:ndim))), 0d0, KIND(0d0))
+  v12(1) = CMPLX(MAXVAL(ABS(v2(1:ndim))), 0d0, KIND(0d0))
   !
-  IF(DBLE(rho_old) < threshold) THEN
-     status(1) = iter
+  IF(DBLE(v12(1)) < threshold) THEN
+     !
+     ! Converged
+     !
+     status(1) = - iter
+     status(2) = 0
   ELSE IF(iter == itermax) THEN
-     status(1) = -iter
+     !
+     ! NOT Converged in itermax
+     !
+     status(1) = - iter
+     status(2) = 1
+  ELSE IF(status(2) == 2) THEN
+     !
+     ! alpha becomes infinite
+     !
+     status(1) = - iter
+  ELSE IF(status(2) == 3) THEN
+     !
+     ! pi_seed becomes zero
+     !
+     status(1) = - iter
+  ELSE IF(status(2) == 4) THEN
+     !
+     ! rho becomes zero
+     !
+     status(1) = - iter
   ELSE
-     v12(1) = rho_old
-     status(1) = 0
+     !
+     ! Continue
+     !
+     status(1) = iter
+     status(2) = 0
   END IF
   !
 END SUBROUTINE BiCG_update

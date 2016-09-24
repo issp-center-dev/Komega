@@ -3,17 +3,34 @@ MODULE ham_vals
   IMPLICIT NONE
   !
   INTEGER,SAVE :: &
-  nsite
+  & ndiag,   & ! Diagonal components
+  & nham,    & ! Non-zero elements of compressed Hamiltonian
+  & nsite      ! Number of sites for the Heisenberg Chain
   !
   REAL(8),SAVE :: &
-  & Jx, &
-  & Jy, &
-  & Jz, &
-  & Dz
+  & Jx, & ! Heisenberg Jx
+  & Jy, & ! Heisenberg Jy
+  & Jz, & ! Heisenberg Jz
+  & Dz    ! D-M interaction
+  !
+  LOGICAL,ALLOCATABLE,SAVE :: &
+  & uu(:), & ! i=Up   & i+1=Up   flag
+  & ud(:), & ! i=Up   & i+1=Down flag
+  & du(:), & ! i=Down & i+1=Up   flag
+  & dd(:), & ! i=Down & i+1=Down flag
+  & para(:), & ! i, i+1 Parallel flag
+  & anti(:)    ! i, i+1 AntiParallel flag
+  !
+  INTEGER,ALLOCATABLE,SAVE :: &
+  & ham_indx(:,:), & ! row & column index of Hamiltonian
+  & pair(:)          ! pair connected by S+S- or S+S+
+  !
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
+  & ham(:) ! Compressed Hamiltonian
   !
 END MODULE ham_vals
 !
-!
+! Module contains routines for Hamiltonian-Vector product
 !
 MODULE ham_prod_mod
   !
@@ -21,11 +38,11 @@ MODULE ham_prod_mod
   !
   PRIVATE
   !
-  PUBLIC ham_prod
+  PUBLIC ham_prod, print_ham, onthefly_init, finalize_ham
   !
 CONTAINS
 !
-!
+! Driver routine for the Hamiltonian-Vector Product
 !
 SUBROUTINE ham_prod(veci,veco)
   !
@@ -46,11 +63,12 @@ SUBROUTINE ham_prod(veci,veco)
   !
 END SUBROUTINE ham_prod
 !
-! Hamiltonian-vector product
+! Hamiltonian-vector product with the Compressed representation
 !
 SUBROUTINE ham_prod_compress(veci,veco)
   !
-  USE shiftk_vals, ONLY : ndim, nham, ndiag, ham, ham_indx
+  USE shiftk_vals, ONLY : ndim
+  USE ham_vals, ONLY : nham, ndiag, ham, ham_indx
   !
   IMPLICIT NONE
   !
@@ -73,12 +91,12 @@ SUBROUTINE ham_prod_compress(veci,veco)
   !
 END SUBROUTINE ham_prod_compress
 !
-!
+! Hamiltonian-vector product with On-The-Fly Hamiltonian generation
 !
 SUBROUTINE ham_prod_onthefly(veci,veco)
   !
-  USE shiftk_vals, ONLY : ndim, threshold
-  USE ham_vals, ONLY : Jx, Jy, Jz, Dz, nsite
+  USE shiftk_vals, ONLY : ndim, almost0
+  USE ham_vals, ONLY : Jx, Jy, Jz, Dz, nsite, uu, ud, du, dd, anti, para, pair
   !
   IMPLICIT NONE
   !
@@ -87,11 +105,6 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
   !
   INTEGER :: isite, isite1, mask1, mask2, mask12, spin, idim
   COMPLEX(8) :: matrix
-  !
-  LOGICAL,ALLOCATABLE :: uu(:), ud(:), du(:), dd(:), para(:), anti(:)
-  INTEGER,ALLOCATABLE :: pair(:)
-  !
-  ALLOCATE(uu(ndim), ud(ndim), du(ndim), dd(ndim), para(ndim), anti(ndim), pair(ndim))
   !
   DO isite = 1, nsite
      !
@@ -140,7 +153,7 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
      !
      ! S_{i z} S_{i+1 z}
      !
-     IF(ABS(Jz) > threshold) THEN
+     IF(ABS(Jz) > almost0) THEN
         !
         matrix = CMPLX(0.25d0 * Jz, 0d0, KIND(0d0))
         DO idim = 1, ndim
@@ -156,7 +169,7 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
      !
      ! S_{i}^+ S_{i+1}^- + S_{i}^- S_{i+1}^+
      !
-     IF(ABS(Jx + Jy) > threshold .OR. ABS(Dz) > threshold) THEN
+     IF(ABS(Jx + Jy) > almost0 .OR. ABS(Dz) > almost0) THEN
         !
         matrix = CMPLX(0.25d0 * (Jx + Jy), 0.5d0 * Dz, KIND(0d0)) 
         DO idim = 1, ndim
@@ -170,9 +183,9 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
         !
      END IF
      !
-     ! S_{i}^+ S_{i+1}^+ + S_{i}^+ S_{i+1}^+
+     ! S_{i}^+ S_{i+1}^+ + S_{i}^- S_{i+1}^
      !
-     IF(ABS(Jx - Jy) > threshold) THEN
+     IF(ABS(Jx - Jy) > almost0) THEN
         !
         matrix = CMPLX(0.25d0 * (Jx - Jy), 0d0, KIND(0d0)) 
         DO idim = 1, ndim
@@ -183,8 +196,88 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
      !
   END DO
   !
-  DEALLOCATE(uu, ud, du, dd, para, anti, pair)
-  !
 END SUBROUTINE ham_prod_onthefly
+!
+! Allocate Flags and Pair index for On-The-Fly
+!
+SUBROUTINE onthefly_init()
+  !
+  USE shiftk_vals, ONLY : ndim
+  USE ham_vals, ONLY : uu, ud, du, dd, anti, para, pair
+  !
+  IMPLICIT NONE
+  !
+  ALLOCATE(uu(ndim), ud(ndim), du(ndim), dd(ndim), para(ndim), anti(ndim), pair(ndim))
+  !
+END SUBROUTINE onthefly_init
+!
+! Deallocate Hamiltonian parameters
+!
+SUBROUTINE finalize_ham()
+  !
+  USE shiftk_vals, ONLY : inham
+  USE ham_vals, ONLY : uu, ud, du, dd, anti, para, pair, ham, ham_indx
+  !
+  IMPLICIT NONE
+  !
+  IF(inham == "") THEN
+     DEALLOCATE(uu, ud, du, dd, para, anti, pair)
+  ELSE
+     DEALLOCATE(ham, ham_indx)
+  END IF
+  !
+END SUBROUTINE finalize_ham
+!
+! Print Hamiltonian with the Matrix Market format
+!
+SUBROUTINE print_ham()
+  !
+  USE shiftk_vals, ONLY : ndim, almost0
+  USE ham_vals, ONLY : nham
+  !
+  IMPLICIT NONE
+  !
+  INTEGER :: idim, jdim, fo = 21
+  COMPLEX(8),ALLOCATABLE :: veci(:), veco(:)
+  !
+  ALLOCATE(veci(ndim), veco(ndim))
+  !
+  OPEN(fo, file = "zvo_Ham.dat")
+  !
+  WRITE(fo,*) "%%MatrixMarket matrix coordinate complex hermitian"
+  !
+  nham = 0
+  DO idim = 1, ndim
+     !
+     veci(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
+     veci(  idim) = CMPLX(1d0, 0d0, KIND(0d0))
+     !
+     CALL ham_prod(veci, veco)
+     !
+     nham = nham + COUNT(ABS(veco(idim:ndim)) > almost0)
+     !
+  END DO
+  !
+  WRITE(fo,'(3i10)') ndim, ndim, nham 
+  !
+  DO idim = 1, ndim
+     !
+     veci(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
+     veci(  idim) = CMPLX(1d0, 0d0, KIND(0d0))
+     !
+     CALL ham_prod(veci, veco)
+     !
+     DO jdim = idim, ndim
+        IF(ABS(veco(jdim)) > almost0) &
+        &  WRITE(fo,'(2i10,2f15.8)') jdim, idim, DBLE(veco(jdim)), AIMAG(veco(jdim))
+     END DO
+     !
+  END DO
+  !
+  CLOSE(fo)
+  !
+  DEALLOCATE(veci, veco)
+  !
+END SUBROUTINE print_ham
 !
 END MODULE ham_prod_mod

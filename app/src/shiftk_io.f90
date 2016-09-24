@@ -6,7 +6,9 @@ MODULE shiftk_io
   IMPLICIT NONE
   !
 CONTAINS
-  !
+!
+! Filname for Hamiltonian and RHS vector
+!
 SUBROUTINE input_filename()
   !
   USE shiftk_vals, ONLY : inham, invec
@@ -34,11 +36,11 @@ SUBROUTINE input_filename()
   !
 END SUBROUTINE input_filename
 !
-!
+! Read parameter for the On-The-Fly Hamiltonian generation
 !
 SUBROUTINE input_parameter_ham()
   !
-  USE shiftk_vals, ONLY : ndim
+  USE shiftk_vals, ONLY : ndim, almost0, lBiCG
   USE ham_vals, ONLY : Jx, Jy, Jz, Dz, nsite
   !
   IMPLICIT NONE
@@ -65,6 +67,16 @@ SUBROUTINE input_parameter_ham()
   WRITE(*,*) "                   Dz : ", Dz
   WRITE(*,*) "  Dim. of Hamiltonian : ", ndim
   !
+  ! Hermitian(BiCG) or Real-Symmetric(COCG)
+  !
+  IF(ABS(Dz) > almost0) THEN
+     WRITE(*,*) "  BiCG mathod is used."
+     lBiCG = .TRUE.
+  ELSE
+     WRITE(*,*) "  COCG mathod is used."
+     lBiCG = .FALSE.
+  END IF
+  !
   return
   !
 100 write(*,*) "Stop in INPUT_PARAMETER for Hamiltonian. reading namelist HAM"
@@ -73,7 +85,7 @@ SUBROUTINE input_parameter_ham()
   !
 END SUBROUTINE input_parameter_ham
 !
-!
+! Parameter for All CG calculations
 !
 SUBROUTINE input_parameter_cg()
   !
@@ -104,7 +116,7 @@ SUBROUTINE input_parameter_cg()
   !
 END SUBROUTINE input_parameter_cg
 !
-!
+! Read Parameter for the Spectrum calculation
 !
 SUBROUTINE input_parameter_dyn()
   !
@@ -150,7 +162,8 @@ END SUBROUTINE input_parameter_dyn
 !
 SUBROUTINE input_hamiltonian()
   !
-  USE shiftk_vals, ONLY : ndim, ham, ham_indx, nham, ndiag, inham, lBiCG
+  USE shiftk_vals, ONLY : ndim, inham, lBiCG, almost0
+  USE ham_vals, ONLY : ham, ham_indx, nham, ndiag
   !
   IMPLICIT NONE
   !
@@ -181,6 +194,9 @@ SUBROUTINE input_hamiltonian()
      ham(iham) = CMPLX(ham_r, ham_i, KIND(0d0))
   END DO
   !
+  ! Count the number of the Diagonal components
+  ! Sort: Diagonal component should be first
+  !
   ndiag = 0
   DO iham = 1, nham
      !
@@ -202,7 +218,9 @@ SUBROUTINE input_hamiltonian()
   !
   CLOSE(fi)
   !
-  IF(MAXVAL(ABS(AIMAG(ham(1:nham)))) > 1d-8) THEN
+  ! Hermitian(BiCG) or Real-Symmetric(COCG)
+  !
+  IF(MAXVAL(ABS(AIMAG(ham(1:nham)))) > almost0) THEN
      WRITE(*,*) "  BiCG mathod is used."
      lBiCG = .TRUE.
   ELSE
@@ -212,7 +230,7 @@ SUBROUTINE input_hamiltonian()
   !
 END SUBROUTINE input_hamiltonian
 !
-! Input Excited State
+! Input Right Hand Side Vector
 !
 SUBROUTINE input_rhs_vector()
   !
@@ -273,6 +291,8 @@ SUBROUTINE input_restart_parameter()
   WRITE(*,*) "  Previous Omega_Seed : ", z_seed_r, z_seed_i
   z_seed = CMPLX(z_seed_r, z_seed_i, KIND(0d0))
   !
+  ! alpha & beta for CG
+  !
   DO iter = 1, iter_old
      !
      READ(fi,*) alpha_r, alpha_i, beta_r, beta_i
@@ -280,6 +300,8 @@ SUBROUTINE input_restart_parameter()
      beta(iter) = CMPLX(beta_r, beta_i, KIND(0d0))
      !
   END DO
+  !
+  ! Projected residual vector
   !
   DO iter = 1, iter_old
      !
@@ -319,11 +341,15 @@ SUBROUTINE input_restart_vector()
      STOP
   END IF
   !
+  ! Last two residual vectors
+  !
   DO idim = 1, ndim
      READ(fi,*) v2_r, v2_i, v12_r, v12_i
      v2(idim) = CMPLX(v2_r, v2_i, KIND(0d0))
      v12(idim) = CMPLX(v12_r, v12_i, KIND(0d0))
   END DO
+  !
+  ! Last two Shadow residual vectors (Only for BiCG)
   !
   IF(lBiCG) THEN
      READ(fi,*) v2_r, v2_i, v12_r, v12_i
@@ -408,7 +434,7 @@ SUBROUTINE output_restart_vector()
   !
 END SUBROUTINE output_restart_vector
 !
-! Check Result
+! Output Resulting Spectrum
 !
 SUBROUTINE output_result()
   !
@@ -430,7 +456,7 @@ SUBROUTINE output_result()
   !
 END SUBROUTINE output_result
 !
-! Check Result
+! Output Resulting Spectrum, True residual
 !
 SUBROUTINE output_result_debug()
   !
@@ -459,7 +485,7 @@ SUBROUTINE output_result_debug()
      !
      !write(*,form) v2(1:ndim)
      write(*,'(a,i5,a,2e13.5,a,e13.5)') "DEBUG (", iz, "), omega = ", z(iz), &
-     &            ", Res. = ", dble(dot_product(v2,v2))
+     &            ", Res. = ", MAXVAL(ABS(v2(1:ndim)))
      !
   END DO
   !

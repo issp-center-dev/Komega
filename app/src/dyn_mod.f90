@@ -1,10 +1,13 @@
+!
+! Modules for the calculation of the spectrum
+!
 MODULE dyn_mod
   !
   IMPLICIT NONE
   !
 CONTAINS
 !
-!
+! Main routine for the spectrum
 !
 SUBROUTINE dyn()
   !
@@ -23,20 +26,31 @@ SUBROUTINE dyn()
   IMPLICIT NONE
   !
   INTEGER :: &
-  & iter, jter,   & ! Counter for Iteration
+  & iter, & ! Counter for Iteration
   & status(3)
   !
+#if defined(NO_PROJ)
+  INTEGER :: jter
   COMPLEX(8),allocatable :: test_r(:,:,:) 
+#endif
   !
-  !nl = 1
+  nl = 1
+#if defined(NO_PROJ)
   nl = ndim
+#endif
   !lBiCG = .TRUE.
   !
   ALLOCATE(v12(ndim), v2(ndim), r_l(nl), x_l(nl,nomega))
   IF(lBiCG) ALLOCATE(v14(ndim), v4(ndim))
+#if defined(DEBUG)
   ALLOCATE(test_r(ndim,maxloops,2))
+#endif
+  !
+  ! Restart or frm scratch
   !
   IF(TRIM(calctype) == "recalc" .OR. TRIM(calctype) == "restart") THEN
+     !
+     ! For restarting with the previous result
      !
      CALL input_restart_parameter()
      IF(TRIM(calctype) == "restart") CALL input_restart_vector()
@@ -69,6 +83,8 @@ SUBROUTINE dyn()
      !
   ELSE IF(TRIM(calctype) == "normal") THEN
      !
+     ! Compute from scratch
+     !
      WRITE(*,*)
      WRITE(*,*) "##########  CG Initialization  ##########"
      WRITE(*,*)
@@ -78,15 +94,15 @@ SUBROUTINE dyn()
      !
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
-           CALL BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, status)
+           CALL BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold)
         ELSE
-           CALL COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, status)
+           CALL COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold)
         END IF
      ELSE
         IF(lBiCG) THEN
-           CALL BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, status)
+           CALL BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold)
         ELSE
-           CALL COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, status)
+           CALL COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold)
         END IF
      END IF
      !
@@ -103,22 +119,27 @@ SUBROUTINE dyn()
   WRITE(*,*) "#####  BiCG Iteration  #####"
   WRITE(*,*)
   !
+  WRITE(*,'(a)') "    iter status1 status2 status3      Residual       Proj. Res."
+  !
   DO iter = 1, maxloops
      !
      ! Projection of Residual vector into the space
      ! spaned by left vectors
      !
+     r_l(1) = DOT_PRODUCT(rhs, v2)
+     !
+#if defined(DEBUG)
      test_r(1:ndim,iter,1) = v2(1:ndim)
      IF(lBiCG) THEN
         test_r(1:ndim,iter,2) = v4(1:ndim)
      ELSE
         test_r(1:ndim,iter,2) = v2(1:ndim)
      END IF
-     IF(ndim == nl) THEN
-        r_l(1:ndim) = v2(1:ndim)
-     ELSE
-        r_l(1) = DOT_PRODUCT(rhs, v2)
-     END IF
+#endif
+     !
+#if defined(NO_PROJ)
+     r_l(1:ndim) = v2(1:ndim)
+#endif
      !
      ! Matrix-vector product
      !
@@ -133,19 +154,29 @@ SUBROUTINE dyn()
         CALL COCG_update(v12, v2,          x_l, r_l, status)
      END IF
      !
-     WRITE(*,'(a,i8,3i5,2e13.5)') "  DEBUG : ", iter, status, DBLE(v12(1)), ABS(r_l(1))
-     IF(status(1) /= 0) EXIT
+     WRITE(*,'(i8,3i8,2e15.5)') iter, status, DBLE(v12(1)), ABS(r_l(1))
+     IF(status(1) < 0) EXIT
      !
   END DO
   !
-  IF(status(1) > 0) THEN
-     WRITE(*,*) "  Converged in iteration ", status(1)
-  ELSE
-     WRITE(*,*) "  Not Converged in iteration ", -status(1)
+  IF(status(2) == 0) THEN
+     WRITE(*,*) "  Converged in iteration ", ABS(status(1))
+  ELSE IF(status(2) == 1) THEN
+     WRITE(*,*) "  Not Converged in iteration ", ABS(status(1))
+  ELSE IF(status(2) == 2) THEN
+     WRITE(*,*) "  Alpha becomes infinity", ABS(status(1))
+  ELSE IF(status(2) == 3) THEN
+     WRITE(*,*) "  Pi_seed becomes zero", ABS(status(1))
+  ELSE IF(status(2) == 4) THEN
+     WRITE(*,*) "  Residual & Shadow residual are orthogonal", ABS(status(1))
   END IF
-  iter_old = abs(status(1))
+  iter_old = ABS(status(1))
   !
 10 CONTINUE
+  !
+#if defined(DEBUG)
+  !
+  ! Check othogonality of residual vectors
   !
   DO iter = 1, iter_old
      DO jter = 1, iter_old
@@ -154,6 +185,8 @@ SUBROUTINE dyn()
      END DO
      write(*,*)
   END DO
+#endif
+  !
   ! Get these vectors for restart in the Next run
   !
   IF(outrestart .EQV. .TRUE.) THEN
@@ -185,11 +218,11 @@ SUBROUTINE dyn()
   !
   ! Output to a file
   !
-  IF(ndim == nl) THEN
-     CALL output_result_debug()
-  ELSE
-     CALL output_result()
-  END IF
+#if defined(NO_PROJ)
+  CALL output_result_debug()
+#else
+  CALL output_result()
+#endif
   !
   DEALLOCATE(v12, v2, r_l, x_l, z)
   IF(lBiCG) DEALLOCATE(v14, v4)
