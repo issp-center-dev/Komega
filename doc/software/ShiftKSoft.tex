@@ -8,7 +8,7 @@
 \usepackage{fancyhdr}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage{graphicx}
+\usepackage[dvipdfmx]{graphicx}
 \usepackage{ascmac}
 \usepackage{bm}% bold math
 \usepackage{dcolumn}% Align table columns on decimal point
@@ -122,7 +122,7 @@ ver.1.0では並列化対応しないシンプルなものとする。
 
 \begin{figure}[htbp]
 \begin{center}
-	\includegraphics[width=12cm,clip]{KrylovSoft_ver.0.1.eps}
+	\includegraphics[width=12cm]{flow.pdf}
 	\label{Fig:CalcFlow}
 \end{center}
 \end{figure}
@@ -139,16 +139,25 @@ ver.1.0では並列化対応しないシンプルなものとする。
 \begin{screen}
 \begin{verbatim}
 &filename
-  InHam = "zvo_Ham.dat"
-  InVec = "zvo_Excited.dat"
+  inham = ""
+  invec = ""
 /
-&parameter
-  OmegaMin = (-2.0, 1.5)
-  OmegaMax = ( 1.0, 1.5)
-  Nomega = 10
-  MaxLoops = 100
-  calctype = "normal"
+&ham
+nsite = 4
+Jx = 1d0
+Jy = 1d0
+Jz = 1d0
+Dz = 0d0
+/
+&cg
+  maxloops = 100
   convfactor = 6
+/
+&dyn
+  calctype = "normal"
+  nomega = 100
+  omegamin = (-2d0, 0.1d0)
+  omegamax = ( 1d0, 0.1d0)
   outrestart = .TRUE.
 /
 \end{verbatim}
@@ -283,23 +292,32 @@ TriDiagComp.dat, ResVec.dat, dynamicalG.dat
 \subsection{入力ファイル}
 
 \subsubsection{ファイル名および計算条件指定ファイル}\label{Sec:ModPara}
-ふたつの namelist (\verb|filename|および\verb|parameter|)に分かれています。
+4つの namelist (\verb|filename|, \verb|ham|, \verb|cg|, \verb|dyn|)に分かれています。
 namelist のしくみについてはfortranについて書かれた書籍やWebページを参照してください。
 \\
 \begin{minipage}{15cm}
 \begin{screen}
 \begin{verbatim}
 &filename
-  InHam = "zvo_Ham.dat"
-  InVec = "zvo_Excited.dat"
+  inham = ""
+  invec = ""
 /
-&parameter
-  OmegaMin = (-2.0, 1.5)
-  OmegaMax = ( 1.0, 1.5)
-  Nomega = 10
-  MaxLoops = 100
-  calctype = "normal"
+&ham
+nsite = 4
+Jx = 1d0
+Jy = 1d0
+Jz = 1d0
+Dz = 0d0
+/
+&cg
+  maxloops = 100
   convfactor = 6
+/
+&dyn
+  calctype = "normal"
+  nomega = 100
+  omegamin = (-2d0, 0.1d0)
+  omegamax = ( 1d0, 0.1d0)
   outrestart = .TRUE.
 /
 \end{verbatim}
@@ -307,40 +325,100 @@ namelist のしくみについてはfortranについて書かれた書籍やWeb�
 \end{minipage}
 \\
 
-\subsubsection{ファイル形式}
-[string01]~[string02]
 \subsubsection{パラメータ}
+
+\verb|"filename"|ネームリストではHamiltonianと右辺ベクトルを格納しているファイル名を指定します.
+
 \begin{itemize}
 \item \verb|InHam|
   
-  {\bf 形式 :} string型 (default: \verb|"zvo_Ham.dat"|)
+  {\bf 形式 :} string型 (default: \verb|""|)
   
   {\bf 説明 :} MatrixMarket形式のHamiltonianファイル名(フルパスもしくは相対パス)を指定します。
+  これが指定されなかった場合には, \verb|ham|ネームリストのパラメーターから1次元スピン系の
+  Hamiltonianが生成されます.
   
 \item \verb|InVec|
   
-  {\bf 形式 :} string型 (default: \verb|"zvo_Excited.dat"|) 
+  {\bf 形式 :} string型 (default: \verb|""|) 
 
-  {\bf 説明 :} 励起ベクトルを格納したファイル名を指定します。
+  {\bf 説明 :} 右辺ベクトルを格納したファイル名を指定します。
+  これが指定されなかった場合には, まず最低エネルギー固有状態が計算され,
+  それに${\hat S}_{1 z}$(サイト1のスピン$z$成分の演算子)がかかったものが右辺ベクトルとなります
+  (すなわち1次元スピン系を計算しているものと勝手に解釈されます).
 
-\item  \verb|OmegaMin|
-  
-  {\bf 形式 :} 複素数 (default: \verb|(0.0, 1.0)|)
+\end{itemize}
 
-  {\bf 説明 :} 振動数の始点を指定します。
-  
-\item  \verb|OmegaMax|
-  
-  {\bf 形式 :} 複素数 (default: \verb|(1.0, 1.0)|)
+\verb|"ham"| ネームリストはHamiltonianが生成されるモードでのみ読み込まれ,
+次のHamiltonianで表される1次元スピン系(Fig. \ref{Fig_spin})
+を構成するパラメーターを指定することに使われます.
 
-  {\bf 説明 :} 振動数の終点を指定します。
-  
-\item  \verb|NOmega|
-  
-  {\bf 形式 :} 整数 (default: \verb|10|)
+\begin{figure}[tbp]
+  \begin{center}
+    \includegraphics[width=10cm]{spin.pdf}
+    \label{Fig_spin}
+    \caption{1次元スピン系の模式図}
+  \end{center}
+\end{figure}
 
-  {\bf 説明 :} 振動数の点数を指定します。
+\begin{align}
+  {\hat H} = \sum_{i}
+  \left(
+  \begin{matrix}
+    {\hat S}_{i x} & {\hat S}_{i y} & {\hat S}_{i z}
+  \end{matrix}
+  \right)
+  \left(
+  \begin{matrix}
+    J_x & D_z & 0 \\
+    -D_z & J_y & 0 \\
+    0 & 0 & J_z
+  \end{matrix}
+  \right)
+  \left(
+  \begin{matrix}
+    {\hat S}_{i+1 x} \\ {\hat S}_{i+1 y} \\ {\hat S}_{i+1 z}
+  \end{matrix}
+  \right)
+\end{align}
+
+\begin{itemize}
+
+\item  \verb|nsite|
   
+  {\bf 形式 :} 整数 (default: \verb|4|)
+
+  {\bf 説明 :} 1次元スピン模型のサイト数を指定します.
+  
+\item  \verb|Jx|
+  
+  {\bf 形式 :} 実数 (default: \verb|1.0|)
+
+  {\bf 説明 :} Heisenberg模型の$J_x$を指定します.
+
+\item  \verb|Jy|
+  
+  {\bf 形式 :} 実数 (default: \verb|1.0|)
+
+  {\bf 説明 :} Heisenberg模型の$J_y$を指定します.
+
+\item  \verb|Jz|
+  
+  {\bf 形式 :} 実数 (default: \verb|1.0|)
+
+  {\bf 説明 :} Heisenberg模型の$J_z$を指定します.
+
+\item  \verb|Dz|
+  
+  {\bf 形式 :} 実数 (default: \verb|0.0|)
+
+  {\bf 説明 :} Dzyaloshinskii-Moriya相互作用のパラメーター$D_z$を指定します.
+
+\end{itemize}
+
+\verb|cg| ネームリストでは(双)共役勾配法の反復に関するパラメーターを指定します.
+
+\begin{itemize}
 \item  \verb|MaxLoops|
   
   {\bf 形式 :} 整数 (default: Hamiltonianの次元)
@@ -353,6 +431,33 @@ namelist のしくみについてはfortranについて書かれた書籍やWeb�
 
   {\bf 説明 :} 残差ベクトルの二乗ノルムを次元数で割ったものが、
   $10^{-{\tt Convfactor}}$未満となったら収束したとみなして計算を終了します。
+  
+\end{itemize}
+
+\verb|dyn|ネームリストではスペクトルの計算に関するパラメーターを指定します.
+
+\begin{itemize}
+\item  \verb|OmegaMin|
+  
+  {\bf 形式 :} 複素数 (default: \verb|invec|を指定しなかった場合には
+  (ハミルトニアンの最小固有値, 最大$\cdot$最小固有値の差$\times0.01$),
+  それ以外の場合には\verb|(0.0, 0.01)|)
+
+  {\bf 説明 :} 振動数の始点を指定します。
+  
+\item  \verb|OmegaMax|
+  
+  {\bf 形式 :} 複素数 (default: \verb|invec|を指定しなかった場合には
+  (ハミルトニアンの最大固有値, 最大$\cdot$最小固有値の差$\times0.01$),
+  それ以外の場合には\verb|(1.0, 0.01)|)
+
+  {\bf 説明 :} 振動数の終点を指定します。
+  
+\item  \verb|NOmega|
+  
+  {\bf 形式 :} 整数 (default: \verb|10|)
+
+  {\bf 説明 :} 振動数の点数を指定します。
   
 \item \verb|outrestart|
   

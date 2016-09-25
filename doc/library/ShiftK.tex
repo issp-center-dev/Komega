@@ -624,10 +624,10 @@ COCGと同様.
 
 \noindent Fortran
 \begin{verbatim}
-CALL CG_R_init(ndim, nl, nz, x, z, itermax, threshold, status)
-CALL CG_C_init(ndim, nl, nz, x, z, itermax, threshold, status)
-CALL COCG_init(ndim, nl, nz, x, z, itermax, threshold, status)
-CALL BiCG_init(ndim, nl, nz, x, z, itermax, threshold, status)
+CALL CG_R_init(ndim, nl, nz, x, z, itermax, threshold)
+CALL CG_C_init(ndim, nl, nz, x, z, itermax, threshold)
+CALL COCG_init(ndim, nl, nz, x, z, itermax, threshold)
+CALL BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
 \end{verbatim}
 
 \noindent パラメーター
@@ -669,11 +669,6 @@ CALL BiCG_init(ndim, nl, nz, x, z, itermax, threshold, status)
   \verb|DOUBLE PRECISION|. スカラー. 入力. 収束判定用しきい値.
   シード方程式の残差ベクトルの各成分の絶対値の中で最大のものがこの値を下回った時に収束したと判定する.
 
-\item \verb|status|
-
-  \verb|INTEGER|. 長さ\verb|3|の配列. 出力. エラーコードを返す.
-  現在のところこのルーチンでは使われていない.
-    
 \end{itemize}
 
 \subsubsection{\texttt{?\_restart}}
@@ -702,9 +697,34 @@ CALL BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
 
 \begin{itemize}
 
-\item \verb|ndim, nl, nz, x, z, itermax, threshold, status|
+\item \verb|ndim, nl, nz, x, z, itermax, threshold|
 
   \verb|?_init|と同様.
+
+\item \verb|status|
+
+  \verb|INTEGER|. 長さ\verb|3|の配列. 出力. エラーコードを返す.
+  \begin{description}
+  \item [第一成分(\texttt{status(1)})]
+    現在の総反復回数が返される.
+    解が収束した場合, もしくは計算が破綻した場合には現在の総反復回数に
+    マイナスが付いた値が返される.
+    それ以外の場合には\verb|0|が返される.
+    \verb|status(1)|が正の値の時のみ反復を続行できる.
+    それ以外の場合は反復を進めても有意な結果は得られない.
+    
+  \item [第二成分(\texttt{status(2)})]
+    \verb|itermax|を有限にして, かつ\verb|itermax|回の反復で
+    収束に達しなかった場合には\verb|1|が返される.
+    $\alpha$が発散した場合には\verb|2|が返される.
+    $\pi_{\rm seed}$が0にになった場合には\verb|3|が返される.
+    \verb|COCG_restart|もしくは\verb|BiCG_restart|で,
+    残差ベクトルと影の残差ベクトルが直交した場合には\verb|4|が返される.
+    それ以外の場合には\verb|0|が返される.
+
+  \item [第三成分(\texttt{status(3)})]
+    シード点のindexが返される.
+  \end{description}
 
 \item \verb|iter_old|
 
@@ -818,18 +838,21 @@ CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
   \verb|INTEGER|. 長さ\verb|3|の配列. 出力. エラーコードを返す.
   \begin{description}
   \item [第一成分(\texttt{status(1)})]
-    解が収束した場合には現在の総反復回数が返される.
-    \verb|?_init|ルーチンで, \verb|itermax|を有限にして, かつ\verb|itermax|回の反復で
-    収束に達しなかった場合には\verb|-itermax|が返される.
+    現在の総反復回数が返される.
+    解が収束した場合, もしくは計算が破綻した場合には現在の総反復回数に
+    マイナスが付いた値が返される.
     それ以外の場合には\verb|0|が返される.
+    \verb|status(1)|が正の値の時のみ反復を続行できる.
+    それ以外の場合は反復を進めても有意な結果は得られない.
     
   \item [第二成分(\texttt{status(2)})]
-    $\alpha$が発散した場合には\verb|1|が返される.
+    \verb|?_init|ルーチンで, \verb|itermax|を有限にして, かつ\verb|itermax|回の反復で
+    収束に達しなかった場合には\verb|1|が返される.
+    $\alpha$が発散した場合には\verb|2|が返される.
+    $\pi_{\rm seed}$が0にになった場合には\verb|3|が返される.
     \verb|COCG_update|もしくは\verb|BiCG_update|で,
-    残差ベクトルと影の残差ベクトルが直交した場合には\verb|2|が返される.
+    残差ベクトルと影の残差ベクトルが直交した場合には\verb|4|が返される.
     それ以外の場合には\verb|0|が返される.
-    \verb|status(1)|と\verb|status(2)|の両方が\verb|0|の時のみ反復を続行できる.
-    それ以外の場合は反復を進めても有意な結果は得られない.
 
   \item [第三成分(\texttt{status(3)})]
     シード点のindexが返される.
@@ -1030,8 +1053,7 @@ PROGRAM my_prog
      v4(1:ndim) = CONJG(v2(1:ndim))
      !v4(1:ndim) = v2(1:ndim)
      !
-     CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), &
-     &              threshold, status)
+     CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
      !
   END IF
   !
@@ -1060,16 +1082,22 @@ PROGRAM my_prog
      WRITE(*,'(a,i,a,3i,a,e15.5)') "lopp : ", iter, &
      &                             ", status : ", status(1:3), &
      &                             ", Res. : ", DBLE(v12(1))
-     IF(status(1) /= 0) EXIT
+     IF(status(1) < 0) EXIT
      !
   END DO
   !
-  IF(status(1) > 0) THEN
-     WRITE(*,*) "  Converged in iteration ", status(1)
-  ELSE
-     WRITE(*,*) "  Not Converged in iteration ", -status(1)
+  IF(status(2) == 0) THEN
+     WRITE(*,*) "  Converged in iteration ", ABS(status(1))
+  ELSE IF(status(2) == 1) THEN
+     WRITE(*,*) "  Not Converged in iteration ", ABS(status(1))
+  ELSE IF(status(2) == 2) THEN
+     WRITE(*,*) "  Alpha becomes infinity", ABS(status(1))
+  ELSE IF(status(2) == 3) THEN
+     WRITE(*,*) "  Pi_seed becomes zero", ABS(status(1))
+  ELSE IF(status(2) == 4) THEN
+     WRITE(*,*) "  Residual & Shadow residual are orthogonal", ABS(status(1))
   END IF
-  iter_old = abs(status(1))
+  iter_old = ABS(status(1))
   !
   ! Get these vectors for restart in the Next run
   !

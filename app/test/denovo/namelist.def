@@ -2,14 +2,14 @@
   inham = ""
   invec = ""
 /
-&cg
-  maxloops = 100
-  convfactor = 6
-/
 &ham
 Jx = 1d0
 Jz = 2d0
 Dz = 1d0
+/
+&cg
+  maxloops = 100
+  convfactor = 6
 /
 &dyn
   calctype = "normal"

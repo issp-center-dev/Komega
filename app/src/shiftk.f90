@@ -12,8 +12,6 @@ PROGRAM shiftk
   CALL system("mkdir -p output")
   !
   CALL input_filename()
-  CALL input_parameter_cg()
-  !
   ! Initialize hamiltonian
   !
   IF(inham == "") THEN
@@ -25,6 +23,8 @@ PROGRAM shiftk
   ELSE
      CALL input_hamiltonian()
   END IF
+  !
+  CALL input_parameter_cg()
   !
   ! Initialize Right Hand Side Vector
   !

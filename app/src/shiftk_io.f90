@@ -17,8 +17,8 @@ SUBROUTINE input_filename()
   !
   NAMELIST /filename/ inham, invec
   !
-  inham = "zvo_Ham.dat"
-  invec = "zvo_Excited.dat"
+  inham = ""
+  invec = ""
   !
   READ(*,filename,err=100)
   !
@@ -234,7 +234,7 @@ END SUBROUTINE input_hamiltonian
 !
 SUBROUTINE input_rhs_vector()
   !
-  USE shiftk_vals, ONLY : ndim, rhs, invec
+  USE shiftk_vals, ONLY : ndim, rhs, invec, e_min, e_max
   !
   IMPLICIT NONE
   !
@@ -261,6 +261,9 @@ SUBROUTINE input_rhs_vector()
   END DO
   !
   CLOSE(fi)
+  !
+  e_min = 0d0
+  e_max = 1d0
   !
 END SUBROUTINE input_rhs_vector
 !

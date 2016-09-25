@@ -1,12 +1,12 @@
 &filename
-  inham = ""
-  invec = ""
+  inham = "zvo_Ham.dat"
+  invec = "zvo_Excited.dat"
+/
+&ham
 /
 &cg
   maxloops = 100
   convfactor = 6
-/
-&ham
 /
 &dyn
   calctype = "normal"

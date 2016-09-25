@@ -1,10 +1,28 @@
+##########################################################
+#
+# Environment for Make
+#
+#   * Choose one of the following things.
+#   * Comment-out that.
+#
+##########################################################
 #
 # intel
 #
-F90=ifort
-FFLAGS=-g -traceback -mkl -check all -warn all
+#F90=ifort
+#FFLAGS=-fpp -g -traceback -mkl
 #
 # gfortran
 #
-F90=gfortran
-FFLAGS=-g -lblas -Wall
+#F90=gfortran
+#FFLAGS=-cpp -g -lblas -llapack
+#
+# intel (for DEBUG)
+#
+F90=ifort
+FFLAGS=-fpp -g -traceback -mkl -check all -warn all -D DEBUG -D NO_PROJ
+#
+# gfortran (for DEBUG)
+#
+#F90=gfortran
+#FFLAGS=-cpp -g -lblas -llapack -Wall -D DEBUG -D NO_PROJ
