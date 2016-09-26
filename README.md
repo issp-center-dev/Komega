@@ -14,14 +14,19 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
    * `src/`: ミニアプリソースコードのディレクトリ
      * `dyn_mod.f90`: 動的Green関数計算用のサブルーチン群
      * `ham_prod.f90`: Hamiltonian-vector積のサブルーチン群
+     * `lobpcg_mod.f90` : LOBPCG法のルーチン
      * `makefile`: ミニアプリのビルド用Makeファイル
      * `shiftk.f90`: メインプログラム
      * `shiftk_io.f90`: 入出力関連のサブルーチン群
      * `shiftk_vals.f90`: ミニアプリ内部共通変数モジュール
-   * `test/`: ミニアプリテスト用ディレクトリ
-     * `namelist.def`: ミニアプリテスト用入力パラメーターファイル
-     * `zvo_Excited.dat`: テスト用励起ベクトルファイル(入力)
-     * `zvo_Ham.dat`: テスト用Hamiltonianファイル(入力)
+   * `sample/`: ミニアプリサンプル用ディレクトリ
+     * `Shiftk.nb`: テスト用Mathematicaノートブック(開発者向け)
+     * `denovo/`: ハミルトニアンや右辺ベクトルの入力ファイルを用いない場合の例
+       * `namelist.def`: ミニアプリテスト用入力パラメーターファイル
+     * `from_file/`: ハミルトニアンや右辺ベクトルの入力ファイルを用いる場合の例
+       * `namelist.def`: ミニアプリテスト用入力パラメーターファイル
+       * `zvo_Excited.dat`: テスト用励起ベクトルファイル(入力)
+       * `zvo_Ham.dat`: テスト用Hamiltonianファイル(入力)
  * `doc/`: ドキュメント用ディレクトリ
    * `library`: ライブラリのドキュメントのディレクトリ
      * `ShiftK.tex`: ライブラリの設計書兼マニュアル
@@ -73,10 +78,16 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
 ### fortranの場合
 
+静的リンク
 ```
 $ ifort myprog.f90 -L パス/src -lshiftk
 ```
-等
+動的リンク
+```
+$ ifort myprog.f90 -L パス/src/shared -lshiftk
+```
+動的リンクを行ったファイルを実行するときには,
+環境変数`LD_LIBRARY_PATH`に`src/shared`ディレクトリを追加しておく必要がある.
 
 ### C/C++の場合
 
