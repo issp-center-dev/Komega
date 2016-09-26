@@ -112,7 +112,7 @@ ver.1.0では並列化対応しないシンプルなものとする。
 本ソフトウェアでは
 \begin{enumerate}
 \item{条件ファイルの読み込み}
-\item{入力ファイルの読み込み (Hamiltonian, ベクトルなど)}
+\item{入力ファイルの読み込み (ハミルトニアン, ベクトルなど)}
 \item{リスタート用ファイルの読み込み (係数, 残差ベクトルなど)}
 \item{ライブラリを利用したループ計算}
 \item{計算結果ファイル出力(係数、残差ベクトル、動的グリーン関数)}
@@ -131,7 +131,7 @@ ver.1.0では並列化対応しないシンプルなものとする。
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \section{使用の流れ}\label{Sec:Usage}
-\subsection{Hamiltonian、ベクトルを読み込み計算する場合}
+\subsection{ハミルトニアン、ベクトルを読み込み計算する場合}
 \subsubsection*{入力条件ファイルの作成}
 周波数や計算時のループ回数の最大数などを指定するファイルを作成します。
 以下に入力ファイルの例を示します。\\
@@ -325,18 +325,18 @@ Dz = 0d0
 \end{minipage}
 \\
 
-\subsubsection{パラメータ}
+\subsubsection{パラメーター}
 
-\verb|"filename"|ネームリストではHamiltonianと右辺ベクトルを格納しているファイル名を指定します.
+\verb|"filename"|ネームリストではハミルトニアンと右辺ベクトルを格納しているファイル名を指定します.
 
 \begin{itemize}
 \item \verb|InHam|
   
   {\bf 形式 :} string型 (default: \verb|""|)
   
-  {\bf 説明 :} MatrixMarket形式のHamiltonianファイル名(フルパスもしくは相対パス)を指定します。
+  {\bf 説明 :} MatrixMarket形式のハミルトニアンファイル名(フルパスもしくは相対パス)を指定します。
   これが指定されなかった場合には, \verb|ham|ネームリストのパラメーターから1次元スピン系の
-  Hamiltonianが生成されます.
+  ハミルトニアンが生成されます.
   
 \item \verb|InVec|
   
@@ -349,8 +349,8 @@ Dz = 0d0
 
 \end{itemize}
 
-\verb|"ham"| ネームリストはHamiltonianが生成されるモードでのみ読み込まれ,
-次のHamiltonianで表される1次元スピン系(Fig. \ref{Fig_spin})
+\verb|"ham"| ネームリストはハミルトニアンが生成されるモードでのみ読み込まれ,
+次のハミルトニアンで表される1次元スピン系(Fig. \ref{Fig_spin})
 を構成するパラメーターを指定することに使われます.
 
 \begin{figure}[tbp]
@@ -421,7 +421,7 @@ Dz = 0d0
 \begin{itemize}
 \item  \verb|MaxLoops|
   
-  {\bf 形式 :} 整数 (default: Hamiltonianの次元)
+  {\bf 形式 :} 整数 (default: ハミルトニアンの次元)
 
   {\bf 説明 :} 最大反復回数を指定します。
   
@@ -504,7 +504,7 @@ MatrixMarket形式に準ずる。
 \item  1行目：$[$int01$]$
 \item  2行目-: $[$double01$]$~~$[$double02$]$
 \end{itemize}
-\subsubsection{パラメータ}
+\subsubsection{パラメーター}
 \begin{itemize}
   
 \item  $[$int01$]$
@@ -512,7 +512,7 @@ MatrixMarket形式に準ずる。
   {\bf 形式 :} int型
   
   {\bf 説明 :} 計算対象のヒルベルト空間数を指定する整数。
-  Hamiltonianの次元と一致しなければならない。
+  ハミルトニアンの次元と一致しなければならない。
  
 \item  $[$double01$]$, $[$double02$]$
   
@@ -552,7 +552,7 @@ MatrixMarket形式に準ずる。
 \item  3+$[$int01$]$行目-2+$2\times[$int01$]$行目: $[$double07$]$~~$[$double08$]$
 \end{itemize}
 
-\subsubsection{パラメータ}
+\subsubsection{パラメーター}
 
 \begin{itemize}
 
@@ -614,7 +614,7 @@ MatrixMarket形式に準ずる。
    \item  2行目-1+$[$int01$]$行目: $[$double01$]$~~$[$double02$]$
    \item  3行目-1+$2\times[$int01$]$行目: $[$double03$]$~~$[$double04$]$
   \end{itemize}
-\subsubsection{パラメータ}
+\subsubsection{パラメーター}
 \begin{itemize}
 
 \item  $[$int01$]$
@@ -634,7 +634,7 @@ MatrixMarket形式に準ずる。
   
   {\bf 形式 :} double型 
 
-  {\bf 説明 :} (Hamiltonianが複素の場合のみ出力)影の残差ベクトルの値を表します。\\
+  {\bf 説明 :} (ハミルトニアンが複素の場合のみ出力)影の残差ベクトルの値を表します。\\
   $[$double03$]$が実部、$[$double04$]$が虚部を表します。\\
 
 \end{itemize}
@@ -666,7 +666,7 @@ MatrixMarket形式に準ずる。
  \begin{itemize}
    \item 1行目-: $[$double01$]$~~$[$double02$]$~~$[$double03$]$~~$[$double04$]$
   \end{itemize}
-\subsubsection{パラメータ}
+\subsubsection{パラメーター}
  \begin{itemize}
 
   \item  $[$double01$]$,$[$double02$]$
