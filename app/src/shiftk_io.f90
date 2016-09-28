@@ -7,32 +7,80 @@ MODULE shiftk_io
   !
 CONTAINS
 !
+! Initialization of MPI
+!
+SUBROUTINE shiftk_init()
+  !
+#if defined(MPI)
+  USE mpi, only : MPI_COMM_WORLD
+#endif
+  USE shiftk_vals, ONLY : myrank, nproc, stdout
+  !
+  IMPLICIT NONE
+  !
+#if defined(MPI)
+  INTEGER ierr
+#endif
+  !  
+#if defined(MPI)
+  call MPI_INIT(ierr)
+  call MPI_COMM_SIZE (MPI_COMM_WORLD, nproc, ierr)
+  call MPI_COMM_RANK (MPI_COMM_WORLD, myrank, ierr)
+#else
+  nproc = 1
+  myrank = 0
+#endif
+  !
+  IF(myrank == 0) THEN
+     CALL system("mkdir -p output")
+     stdout = 6
+  ELSE
+     stdout = 6
+     OPEN(stdout, file='/dev/null', status='unknown')
+  END IF   
+  !
+END SUBROUTINE shiftk_init
+!
 ! Filname for Hamiltonian and RHS vector
 !
 SUBROUTINE input_filename()
   !
-  USE shiftk_vals, ONLY : inham, invec
+#if defined(MPI)
+  USE mpi, only : MPI_COMM_WORLD, MPI_CHARACTER
+#endif
+  USE shiftk_vals, ONLY : inham, invec, stdout, myrank
   !
   IMPLICIT NONE
   !
+#if defined(MPI)
+  INTEGER ierr
+#endif
   NAMELIST /filename/ inham, invec
   !
   inham = ""
   invec = ""
   !
-  READ(*,filename,err=100)
+  IF(myrank == 0) READ(*,filename,err=100)
   !
-  WRITE(*,*)
-  WRITE(*,*) "##########  Input FileName  ##########"
-  WRITE(*,*)
-  WRITE(*,*) "  Hamiltonian file : ", TRIM(inham)
-  WRITE(*,*) "  Excited state file : ", TRIM(invec)
+#if defined(MPI)
+  call MPI_BCAST(inham, 256, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(invec, 256, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+#endif
+  !
+  WRITE(stdout,*)
+  WRITE(stdout,*) "##########  Input FileName  ##########"
+  WRITE(stdout,*)
+  WRITE(stdout,*) "  Hamiltonian file : ", TRIM(inham)
+  WRITE(stdout,*) "  Excited state file : ", TRIM(invec)
   !
   return
   !
 100 write(*,*) "Stop in INPUT_FILENAME. reading namelist FILENAME"
   !
-  stop
+#if defined(MPI)
+     CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+#endif
+  STOP
   !
 END SUBROUTINE input_filename
 !
@@ -40,11 +88,17 @@ END SUBROUTINE input_filename
 !
 SUBROUTINE input_parameter_ham()
   !
-  USE shiftk_vals, ONLY : ndim, almost0, lBiCG
-  USE ham_vals, ONLY : Jx, Jy, Jz, Dz, nsite
+#if defined(MPI)
+  USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER, MPI_DOUBLE_PRECISION
+#endif
+  USE shiftk_vals, ONLY : ndim, almost0, lBiCG, stdout, myrank, nproc
+  USE ham_vals, ONLY : Jx, Jy, Jz, Dz, nsite, nsitep
   !
   IMPLICIT NONE
   !
+#if defined(MPI)
+  INTEGER ierr
+#endif
   NAMELIST /ham/ Jx, Jy, Jz, Dz, nsite
   !
   Jx = 1d0
@@ -53,27 +107,45 @@ SUBROUTINE input_parameter_ham()
   Dz = 0d0
   nsite = 4
   !
-  READ(*,ham,err=100)
+  IF(myrank == 0) READ(*,ham,err=100)
   !
-  ndim = 2**nsite
+#if defined(MPI)
+  call MPI_BCAST(nsite, 1, MPI_INTEGER,       0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(Jx, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(Jy, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(Jz, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(Dz, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+#endif
   !
-  WRITE(*,*)
-  WRITE(*,*) "##########  Input Parameter for Hamiltonian ##########"
-  WRITE(*,*)
-  WRITE(*,*) "      Number of sites : ", nsite
-  WRITE(*,*) "                   Jx : ", Jx
-  WRITE(*,*) "                   Jy : ", Jy
-  WRITE(*,*) "                   Jz : ", Jz
-  WRITE(*,*) "                   Dz : ", Dz
-  WRITE(*,*) "  Dim. of Hamiltonian : ", ndim
+  WRITE(stdout,*)
+  WRITE(stdout,*) "##########  Input Parameter for Hamiltonian ##########"
+  WRITE(stdout,*)
+  WRITE(stdout,*) "    TOTAL Number of sites : ", nsite
+  !
+  nsitep = NINT(LOG(DBLE(nproc)) / LOG(2d0))
+  IF(2**nsitep /= nproc) THEN
+     WRITE(*,*) "ERROR ! Number of processes is not 2-exponent."
+#if defined(MPI)
+     CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+#endif
+     STOP
+  END IF
+  WRITE(stdout,*) "    LOCAL Number of sites : ", nsite - nsitep
+  !
+  WRITE(stdout,*) "                       Jx : ", Jx
+  WRITE(stdout,*) "                       Jy : ", Jy
+  WRITE(stdout,*) "                       Jz : ", Jz
+  WRITE(stdout,*) "                       Dz : ", Dz
+  ndim = 2**(nsite - nsitep)
+  WRITE(stdout,*) "  Dim. of Hamiltonian : ", ndim
   !
   ! Hermitian(BiCG) or Real-Symmetric(COCG)
   !
   IF(ABS(Dz) > almost0) THEN
-     WRITE(*,*) "  BiCG mathod is used."
+     WRITE(stdout,*) "  BiCG mathod is used."
      lBiCG = .TRUE.
   ELSE
-     WRITE(*,*) "  COCG mathod is used."
+     WRITE(stdout,*) "  COCG mathod is used."
      lBiCG = .FALSE.
   END IF
   !
@@ -81,7 +153,10 @@ SUBROUTINE input_parameter_ham()
   !
 100 write(*,*) "Stop in INPUT_PARAMETER for Hamiltonian. reading namelist HAM"
   !
-  stop
+#if defined(MPI)
+  CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+#endif
+  STOP
   !
 END SUBROUTINE input_parameter_ham
 !
@@ -89,30 +164,45 @@ END SUBROUTINE input_parameter_ham
 !
 SUBROUTINE input_parameter_cg()
   !
-  USE shiftk_vals, ONLY : maxloops, threshold, ndim
+#if defined(MPI)
+  USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER
+#endif
+  USE shiftk_vals, ONLY : maxloops, threshold, ndim, stdout, myrank
   !
   IMPLICIT NONE
   !
   INTEGER :: convfactor
+#if defined(MPI)
+  INTEGER ierr
+#endif
   NAMELIST /cg/ maxloops, convfactor
   !
   maxloops = ndim
   convfactor = 8
   !
-  READ(*,cg,err=100)
+  IF(myrank == 0) READ(*,cg,err=100)
+  !
+#if defined(MPI)
+  call MPI_BCAST(maxloops,   1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(convfactor, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+#endif
+  !
   threshold = 10d0**(-convfactor)
   !
-  WRITE(*,*)
-  WRITE(*,*) "##########  Input Parameter for CG Iteration ##########"
-  WRITE(*,*)
-  WRITE(*,*) "  Maximum number of loop : ", maxloops
-  WRITE(*,*) "   Convergence Threshold : ", threshold
+  WRITE(stdout,*)
+  WRITE(stdout,*) "##########  Input Parameter for CG Iteration ##########"
+  WRITE(stdout,*)
+  WRITE(stdout,*) "  Maximum number of loop : ", maxloops
+  WRITE(stdout,*) "   Convergence Threshold : ", threshold
   !
   return
   !
 100 write(*,*) "Stop in INPUT_PARAMETER for CG. reading namelist CG"
   !
-  stop
+#if defined(MPI)
+  CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+#endif
+  STOP
   !
 END SUBROUTINE input_parameter_cg
 !
@@ -120,11 +210,18 @@ END SUBROUTINE input_parameter_cg
 !
 SUBROUTINE input_parameter_dyn()
   !
-  USE shiftk_vals, ONLY : nomega, outrestart, calctype, z, e_max, e_min
+#if defined(MPI)
+  USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER, MPI_DOUBLE_COMPLEX, &
+  &               MPI_CHARACTER, MPI_LOGICAL
+#endif
+  USE shiftk_vals, ONLY : nomega, outrestart, calctype, z, e_max, e_min, stdout, myrank
   !
   IMPLICIT NONE
   !
   INTEGER :: iomega
+#if defined(MPI)
+  INTEGER ierr
+#endif
   COMPLEX(8) :: omegamax, omegamin
   NAMELIST /dyn/ omegamax, omegamin, nomega, calctype, outrestart
   !
@@ -134,15 +231,23 @@ SUBROUTINE input_parameter_dyn()
   omegamax = CMPLX(e_max, 0.01d0*(e_max - e_min), KIND(0d0))
   outrestart = .FALSE.
   !
-  READ(*,dyn,err=100)
+  IF(myrank == 0) READ(*,dyn,err=100)
   !
-  WRITE(*,*)
-  WRITE(*,*) "##########  Input Parameter for Spectrum  ##########"
-  WRITE(*,*)
-  WRITE(*,*) "           Max. of Omega : ", omegamax
-  WRITE(*,*) "           Min. of Omega : ", omegamin
-  WRITE(*,*) "           Num. of Omega : ", nomega
-  WRITE(*,'(a,a)') "         Calculation type : ", calctype
+#if defined(MPI)
+  call MPI_BCAST(nomega,   1, MPI_INTEGER,        0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(omegamin, 1, MPI_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(omegamax, 1, MPI_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(calctype, 256, MPI_CHARACTER,    0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(outrestart, 1, MPI_LOGICAL,      0, MPI_COMM_WORLD, ierr)
+#endif
+  !
+  WRITE(stdout,*)
+  WRITE(stdout,*) "##########  Input Parameter for Spectrum  ##########"
+  WRITE(stdout,*)
+  WRITE(stdout,*) "           Max. of Omega : ", omegamax
+  WRITE(stdout,*) "           Min. of Omega : ", omegamin
+  WRITE(stdout,*) "           Num. of Omega : ", nomega
+  WRITE(stdout,'(a,a)') "         Calculation type : ", calctype
   !
   ALLOCATE(z(nomega))
   z(1) = omegamin
@@ -154,7 +259,10 @@ SUBROUTINE input_parameter_dyn()
   !
 100 write(*,*) "Stop in INPUT_PARAMETER_DYN. reading namelist DYN"
   !
-  stop
+#if defined(MPI)
+  CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+#endif
+  STOP
   !
 END SUBROUTINE input_parameter_dyn
 !
@@ -162,28 +270,42 @@ END SUBROUTINE input_parameter_dyn
 !
 SUBROUTINE input_hamiltonian()
   !
-  USE shiftk_vals, ONLY : ndim, inham, lBiCG, almost0
+#if defined(MPI)
+  USE mpi, only : MPI_COMM_WORLD
+#endif
+  USE shiftk_vals, ONLY : ndim, inham, lBiCG, almost0, nproc, stdout
   USE ham_vals, ONLY : ham, ham_indx, nham, ndiag
   !
   IMPLICIT NONE
   !
   INTEGER :: fi = 10, ndim2, iham, ham_indx0(2)
+#if defined(MPI)
+  INTEGER ierr
+#endif
   REAL(8) :: ham_r, ham_i
   COMPLEX(8) :: ham0
   CHARACTER(100) :: ctmp
   !
-  WRITE(*,*)
-  WRITE(*,*) "##########  Input Hamiltonian  ##########"
-  WRITE(*,*)
+  WRITE(stdout,*)
+  WRITE(stdout,*) "##########  Input Hamiltonian  ##########"
+  WRITE(stdout,*)
+  !
+  IF(nproc /= 1) THEN
+     WRITE(*,*) "ERROR ! MPI is not available in this mode."
+#if defined(MPI)
+     CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+#endif
+     STOP
+  END IF
   !
   OPEN(fi, file = TRIM(inham))
   READ(fi, *) ctmp
   READ(fi,*) ndim, ndim2, nham
-  WRITE(*,*) "          Dim. of Hamiltonian : ", ndim, ndim2
-  WRITE(*,*) "  Num. of Non-Zero Components : ", nham
+  WRITE(stdout,*) "          Dim. of Hamiltonian : ", ndim, ndim2
+  WRITE(stdout,*) "  Num. of Non-Zero Components : ", nham
   !
   IF(ndim2 /= ndim) THEN
-     WRITE(*,*) "ERROR ! Hamiltonian is not square."
+     WRITE(stdout,*) "ERROR ! Hamiltonian is not square."
      STOP
   END IF
   !
@@ -221,10 +343,10 @@ SUBROUTINE input_hamiltonian()
   ! Hermitian(BiCG) or Real-Symmetric(COCG)
   !
   IF(MAXVAL(ABS(AIMAG(ham(1:nham)))) > almost0) THEN
-     WRITE(*,*) "  BiCG mathod is used."
+     WRITE(stdout,*) "  BiCG mathod is used."
      lBiCG = .TRUE.
   ELSE
-     WRITE(*,*) "  COCG mathod is used."
+     WRITE(stdout,*) "  COCG mathod is used."
      lBiCG = .FALSE.
   END IF
   !
@@ -234,22 +356,37 @@ END SUBROUTINE input_hamiltonian
 !
 SUBROUTINE input_rhs_vector()
   !
-  USE shiftk_vals, ONLY : ndim, rhs, invec, e_min, e_max
+#if defined(MPI)
+  USE mpi, only : MPI_COMM_WORLD
+#endif
+  USE shiftk_vals, ONLY : ndim, rhs, invec, e_min, e_max, nproc, stdout
   !
   IMPLICIT NONE
   !
   INTEGER :: fi = 10, ndim2, idim
+#if defined(MPI)
+  INTEGER ierr
+#endif
   REAL(8) :: rhs_r, rhs_i
   !
-  WRITE(*,*)
-  WRITE(*,*) "##########  Input Right Hand Side Vector ##########"
-  WRITE(*,*)
+  WRITE(stdout,*)
+  WRITE(stdout,*) "##########  Input Right Hand Side Vector ##########"
+  WRITE(stdout,*)
+  !
+  IF(nproc /= 1) THEN
+     WRITE(*,*) "ERROR ! MPI is not available in this mode."
+#if defined(MPI)
+     CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+#endif
+     STOP
+  END IF
+  !
   OPEN(fi, file = TRIM(invec))
   READ(fi,*) ndim2
-  WRITE(*,*) "  Dim. of RHS vector : ", ndim2
+  WRITE(stdout,*) "  Dim. of RHS vector : ", ndim2
   !
   IF(ndim2 /= ndim) THEN
-     WRITE(*,*) "ERROR ! Dimension is Incorrect."
+     WRITE(stdout,*) "ERROR ! Dimension is Incorrect."
      STOP
   END IF
   !
@@ -271,51 +408,72 @@ END SUBROUTINE input_rhs_vector
 !
 SUBROUTINE input_restart_parameter()
   !
-  USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed, nl, r_l_save
+#if defined(MPI)
+  USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER, MPI_DOUBLE_COMPLEX
+#endif
+  USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed, nl, r_l_save, myrank, stdout
   !
   IMPLICIT NONE
   !
   INTEGER :: fi = 10, iter, il
+#if defined(MPI)
+  INTEGER ierr
+#endif
   REAL(8) :: z_seed_r, z_seed_i, alpha_r, alpha_i, beta_r, beta_i
   REAL(8) :: r_l_save_r, r_l_save_i
   !
-  WRITE(*,*)
-  WRITE(*,*) "##########  Input Restart Parameter  ##########"
-  WRITE(*,*)
+  WRITE(stdout,*)
+  WRITE(stdout,*) "##########  Input Restart Parameter  ##########"
+  WRITE(stdout,*)
   !
-  OPEN(fi, file = 'output/TriDiagComp.dat')
-  !
-  READ(fi,*) iter_old
-  WRITE(*,*) "  Num. of Iteration (Previous Run) : ", iter_old
-  !
-  ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl, iter_old))
-  !
-  READ(fi,*) z_seed_r, z_seed_i
-  WRITE(*,*) "  Previous Omega_Seed : ", z_seed_r, z_seed_i
-  z_seed = CMPLX(z_seed_r, z_seed_i, KIND(0d0))
-  !
-  ! alpha & beta for CG
-  !
-  DO iter = 1, iter_old
+  IF(myrank == 0) THEN
      !
-     READ(fi,*) alpha_r, alpha_i, beta_r, beta_i
-     alpha(iter) = CMPLX(alpha_r, alpha_i, KIND(0d0))
-     beta(iter) = CMPLX(beta_r, beta_i, KIND(0d0))
+     OPEN(fi, file = 'output/TriDiagComp.dat')
      !
-  END DO
-  !
-  ! Projected residual vector
-  !
-  DO iter = 1, iter_old
+     READ(fi,*) iter_old
+     WRITE(stdout,*) "  Num. of Iteration (Previous Run) : ", iter_old
      !
-     DO il = 1, nl
-        READ(fi,*) r_l_save_r, r_l_save_i
-        r_l_save(il,iter) = CMPLX(r_l_save_r, r_l_save_i, KIND(0d0))
+     ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl, iter_old))
+     !
+     READ(fi,*) z_seed_r, z_seed_i
+     WRITE(stdout,*) "  Previous Omega_Seed : ", z_seed_r, z_seed_i
+     z_seed = CMPLX(z_seed_r, z_seed_i, KIND(0d0))
+     !
+     ! alpha & beta for CG
+     !
+     DO iter = 1, iter_old
+        !
+        READ(fi,*) alpha_r, alpha_i, beta_r, beta_i
+        alpha(iter) = CMPLX(alpha_r, alpha_i, KIND(0d0))
+        beta(iter) = CMPLX(beta_r, beta_i, KIND(0d0))
+        !
      END DO
      !
-  END DO
+     ! Projected residual vector
+     !
+     DO iter = 1, iter_old
+        !
+        DO il = 1, nl
+           READ(fi,*) r_l_save_r, r_l_save_i
+           r_l_save(il,iter) = CMPLX(r_l_save_r, r_l_save_i, KIND(0d0))
+        END DO
+        !
+     END DO
+     !
+     CLOSE(fi)
+     !
+  END IF ! (myrank == 0)
   !
-  CLOSE(fi)
+#if defined(MPI)
+  call MPI_BCAST(iter_old, 1, MPI_INTEGER,          0, MPI_COMM_WORLD, ierr)
+  IF(myrank /= 0) THEN
+     ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl, iter_old))
+  END IF
+  call MPI_BCAST(z_seed,   1,             MPI_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(alpha,    iter_old,      MPI_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(beta,     iter_old,      MPI_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD, ierr)
+  call MPI_BCAST(r_l_save, iter_old * nl, MPI_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD, ierr)
+#endif
   !
 END SUBROUTINE input_restart_parameter
 !
@@ -323,24 +481,36 @@ END SUBROUTINE input_restart_parameter
 !
 SUBROUTINE input_restart_vector()
   !
-  USE shiftk_vals, ONLY : ndim, v2, v12, v4, v14, lBiCG
+#if defined(MPI)
+  USE mpi, only : MPI_COMM_WORLD
+#endif
+  USE shiftk_vals, ONLY : ndim, v2, v12, v4, v14, lBiCG, myrank, stdout
   !
   IMPLICIT NONE
   !
   INTEGER :: fi = 10, ndim2, idim
   REAL(8) :: v2_r, v2_i, v12_r, v12_i
+  CHARACTER(256) :: fname, cmyrank
+#if defined(MPI)
+  INTEGER ierr
+#endif
   !
-  WRITE(*,*)
-  WRITE(*,*) "##########  Input Restart Vector  ##########"
-  WRITE(*,*)
+  WRITE(stdout,*)
+  WRITE(stdout,*) "##########  Input Restart Vector  ##########"
+  WRITE(stdout,*)
   !
-  OPEN(fi, file = 'output/ResVec.dat')
+  WRITE(cmyrank,*) myrank
+  WRITE(fname,'(a,a)') 'output/ResVec.dat', TRIM(ADJUSTL(cmyrank))
+  OPEN(fi, file = TRIM(fname))
   !
   READ(fi,*) ndim2
-  WRITE(*,*) "  Dim. of Residual vector : ", ndim2
+  WRITE(stdout,*) "  Dim. of Residual vector : ", ndim2
   !
   IF(ndim2 /= ndim) THEN
-     WRITE(*,*) "ERROR ! Dimension is Incorrect."
+     WRITE(stdout,*) "ERROR ! Dimension is Incorrect."
+#if defined(MPI)
+     CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+#endif
      STOP
   END IF
   !
@@ -368,39 +538,43 @@ END SUBROUTINE input_restart_vector
 !
 SUBROUTINE output_restart_parameter()
   !
-  USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed, r_l_save, nl
+  USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed, r_l_save, nl, myrank, stdout
   !
   IMPLICIT NONE
   !
   INTEGER :: fo = 20, iter, il
   !
-  WRITE(*,*)
-  WRITE(*,*) "##########  Output Restart Parameter  ##########"
-  WRITE(*,*)
+  WRITE(stdout,*)
+  WRITE(stdout,*) "##########  Output Restart Parameter  ##########"
+  WRITE(stdout,*)
   !
-  OPEN(fo, file = 'output/TriDiagComp.dat')
-  !
-  WRITE(fo,*) iter_old
-  WRITE(*,*) "  Num. of Iteration (Current Run) : ", iter_old
-  !
-  WRITE(*,'(a,2e13.5)') "   Current Omega_Seed : ", z_seed
-  WRITE(fo,'(2e25.16)') z_seed
-  !
-  DO iter = 1, iter_old
+  IF(myrank == 0) THEN
      !
-     WRITE(fo,'(4e25.16)') alpha(iter), beta(iter)
+     OPEN(fo, file = 'output/TriDiagComp.dat')
      !
-  END DO
-  !
-  DO iter = 1, iter_old
+     WRITE(fo,*) iter_old
+     WRITE(stdout,*) "  Num. of Iteration (Current Run) : ", iter_old
      !
-     DO il = 1, nl
-        WRITE(fo,'(2e25.16)') r_l_save(il,iter)
+     WRITE(stdout,'(a,2e13.5)') "   Current Omega_Seed : ", z_seed
+     WRITE(fo,'(2e25.16)') z_seed
+     !
+     DO iter = 1, iter_old
+        !
+        WRITE(fo,'(4e25.16)') alpha(iter), beta(iter)
+        !
      END DO
      !
-  END DO
-  !
-  CLOSE(fo)
+     DO iter = 1, iter_old
+        !
+        DO il = 1, nl
+           WRITE(fo,'(2e25.16)') r_l_save(il,iter)
+        END DO
+        !
+     END DO
+     !
+     CLOSE(fo)
+     !
+  END IF !(myrank == 0)
   !
 END SUBROUTINE output_restart_parameter
 !
@@ -408,20 +582,23 @@ END SUBROUTINE output_restart_parameter
 !
 SUBROUTINE output_restart_vector()
   !
-  USE shiftk_vals, ONLY : ndim, v2, v12, v4, v14, lBiCG
+  USE shiftk_vals, ONLY : ndim, v2, v12, v4, v14, lBiCG, myrank, stdout
   !
   IMPLICIT NONE
   !
   INTEGER :: fo = 20, idim
+  CHARACTER(256) :: fname, cmyrank
   !
-  WRITE(*,*)
-  WRITE(*,*) "##########  Output Restart Vector  ##########"
-  WRITE(*,*)
+  WRITE(stdout,*)
+  WRITE(stdout,*) "##########  Output Restart Vector  ##########"
+  WRITE(stdout,*)
   !
-  OPEN(fo, file = 'output/ResVec.dat')
+  WRITE(cmyrank,*) myrank
+  WRITE(fname,'(a,a)') 'output/ResVec.dat', TRIM(ADJUSTL(cmyrank))
+  OPEN(fo, file = TRIM(fname))
   !
   WRITE(fo,*) ndim
-  WRITE(*,*) "  Dim. of Residual vector : ", ndim
+  WRITE(stdout,*) "  Dim. of Residual vector : ", ndim
   !
   DO idim = 1, ndim
      WRITE(fo,'(4e25.16)') v2(idim), v12(idim)
@@ -441,21 +618,25 @@ END SUBROUTINE output_restart_vector
 !
 SUBROUTINE output_result()
   !
-  USE shiftk_vals, ONLY : x_l, z, nomega
+  USE shiftk_vals, ONLY : x_l, z, nomega, myrank
   !
   IMPLICIT NONE
   !
   INTEGER :: iz, fo = 20
   !
-  OPEN(fo, file = "output/dynamicalG.dat")
-  !
-  DO iz = 1, nomega
+  IF(myrank == 0) THEN
      !
-     write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(x_l(1,iz)), AIMAG(x_l(1,iz))
+     OPEN(fo, file = "output/dynamicalG.dat")
      !
-  END DO
-  !
-  CLOSE(fo)
+     DO iz = 1, nomega
+        !
+        write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(x_l(1,iz)), AIMAG(x_l(1,iz))
+        !
+     END DO
+     !
+     CLOSE(fo)
+     !
+  END IF ! (myrank == 0)
   !
 END SUBROUTINE output_result
 !
@@ -463,8 +644,9 @@ END SUBROUTINE output_result
 !
 SUBROUTINE output_result_debug()
   !
-  USE shiftk_vals, ONLY : v2, ndim, x_l, rhs, z, nomega
+  USE shiftk_vals, ONLY : v2, ndim, x_l, rhs, z, nomega, myrank, stdout
   USE ham_prod_mod, ONLY : ham_prod
+  USE lobpcg_mod, ONLY : zabsmax
   !
   IMPLICIT NONE
   !
@@ -475,11 +657,11 @@ SUBROUTINE output_result_debug()
   WRITE(cndim,*) ndim * 2
   WRITE(form,'(a,a,a)') "(", TRIM(ADJUSTL(cndim)), "e13.5)"
   !
-  WRITE(*,*)
-  WRITE(*,*) "#####  Check Results  #####"
-  WRITE(*,*)
+  WRITE(stdout,*)
+  WRITE(stdout,*) "#####  Check Results  #####"
+  WRITE(stdout,*)
   !
-  WRITE(*,*) "  Residual Vector"
+  WRITE(stdout,*) "  Residual Vector"
   !
   DO iz = 1, nomega
      !
@@ -488,20 +670,24 @@ SUBROUTINE output_result_debug()
      !
      !write(*,form) v2(1:ndim)
      write(*,'(a,i5,a,2e13.5,a,e13.5)') "DEBUG (", iz, "), omega = ", z(iz), &
-     &            ", Res. = ", MAXVAL(ABS(v2(1:ndim)))
+     &            ", Res. = ", zabsmax(v2(1:ndim), ndim)
      !
   END DO
   !
-  OPEN(fo, file = "output/dynamicalG.dat")
-  !
-  DO iz = 1, nomega
+  IF (myrank == 0) THEN
      !
-     Gii = dot_product(rhs,x_l(1:ndim,iz))
-     write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(Gii), AIMAG(Gii)
+     OPEN(fo, file = "output/dynamicalG.dat")
      !
-  END DO
-  !
-  CLOSE(fo)
+     DO iz = 1, nomega
+        !
+        Gii = dot_product(rhs,x_l(1:ndim,iz))
+        write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(Gii), AIMAG(Gii)
+        !
+     END DO
+     !
+     CLOSE(fo)
+     !
+  END IF ! (myrank == 0)
   !
 END SUBROUTINE output_result_debug
 !

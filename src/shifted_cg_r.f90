@@ -110,9 +110,10 @@ END SUBROUTINE CG_R_seed_switch
 !
 ! Allocate & initialize variables
 !
-SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold, iz_seed
+  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, &
+  &                                    threshold, iz_seed, comm
   USE shifted_krylov_vals_r, ONLY : alpha, alpha_save, beta, beta_save, pi, &
   &                               pi_old, pi_save, rho, z, z_seed 
   USE shifted_krylov_vecs_r, ONLY : p, r_l_save, v3
@@ -120,7 +121,7 @@ SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
+  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0, comm0
   REAL(8),INTENT(IN) :: threshold0
   REAL(8),INTENT(IN) :: z0(nz0)
   REAL(8),INTENT(OUT) :: x(nl0,nz0)
@@ -130,6 +131,7 @@ SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   nz = nz0
   itermax = itermax0
   threshold = threshold0
+  comm = comm0
   !
   ALLOCATE(z(nz), v3(ndim), pi(nz), pi_old(nz), p(nl,nz))
   CALL dcopy(nz,z0,1,z,1)
@@ -155,17 +157,17 @@ END SUBROUTINE CG_R_init
 !
 ! Restart by input
 !
-SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
+SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
 &                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0)
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed
   USE shifted_krylov_vals_r, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed
   USE shifted_krylov_vecs_r, ONLY : r_l_save, v3
-  USE shifted_krylov_math, ONLY : dcopy, ddot
+  USE shifted_krylov_math, ONLY : dcopy, ddotMPI, dabsmax
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
+  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0, comm0
   REAL(8),INTENT(IN) :: threshold0
   REAL(8),INTENT(IN) :: z0(nz0)
   REAL(8),INTENT(OUT) :: x(nl0,nz0)
@@ -179,7 +181,7 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   REAL(8),INTENT(IN) :: r_l_save0(nl0,iter_old)
   REAL(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
   !
-  CALL CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+  CALL CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
   z_seed = z_seed0
   iz_seed = 0
   !
@@ -210,7 +212,7 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   iter = iter_old 
   !
   CALL dcopy(ndim,v12,1,v3,1)
-  rho = ddot(ndim,v3,1,v3,1)
+  rho = ddotMPI(ndim,v3,v3)
   !
   ! Seed Switching
   !
@@ -218,7 +220,7 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   ! Convergence check
   !
-  v12(1) = MAXVAL(ABS(v2(1:ndim)))
+  v12(1) = dabsmax(v2, ndim)
   !
   IF(v12(1) < threshold) THEN
      !
@@ -255,7 +257,7 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   USE shifted_krylov_vals_r, ONLY : alpha, alpha_old, alpha_save, &
   &                               beta, beta_save, rho, z_seed
   USE shifted_krylov_vecs_r, ONLY : r_l_save, v3
-  USE shifted_krylov_math, ONLY : ddot, dcopy
+  USE shifted_krylov_math, ONLY : ddotMPI, dcopy, dabsmax
   !
   IMPLICIT NONE
   !
@@ -269,7 +271,7 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   status(1:3) = 0
   !
   rho_old = rho
-  rho = ddot(ndim,v2,1,v2,1)
+  rho = ddotMPI(ndim,v2,v2)
   IF(iter == 1) THEN
      beta = 0d0
   ELSE
@@ -277,7 +279,7 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   END IF
   v12(1:ndim) = z_seed * v2(1:ndim) - v12(1:ndim)
   alpha_old = alpha
-  alpha_denom = ddot(ndim,v2,1,v12,1) - beta * rho / alpha
+  alpha_denom = ddotMPI(ndim,v2,v12) - beta * rho / alpha
   !
   IF(ABS(alpha_denom) < almost0) THEN
      status(2) = 2
@@ -310,7 +312,7 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   !
   ! Convergence check
   !
-  v12(1) = MAXVAL(ABS(v2(1:ndim)))
+  v12(1) = dabsmax(v2, ndim)
   !
   IF(v12(1) < threshold) THEN
      !

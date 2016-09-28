@@ -6,6 +6,9 @@ MODULE shiftk_vals
   & almost0 = 1d-15
   !
   INTEGER,SAVE :: &
+  & stdout,   &
+  & nproc,    &
+  & myrank,  &
   & ndim,     & ! Size of Hilvert space
   & nl,       & ! Dimention of x
   & nomega,   & ! Number of frequencies

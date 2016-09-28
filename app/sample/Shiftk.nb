@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[      7007,        189]
-NotebookOptionsPosition[      6714,        174]
-NotebookOutlinePosition[      7071,        190]
-CellTagsIndexPosition[      7028,        187]
+NotebookDataLength[      7201,        194]
+NotebookOptionsPosition[      6908,        179]
+NotebookOutlinePosition[      7265,        195]
+CellTagsIndexPosition[      7222,        192]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -28,7 +28,7 @@ Cell[BoxData[
 Cell[BoxData[{
  RowBox[{"SetDirectory", "[", 
   "\"\<C:\\\\Users\\\\kawamuura\\\\xubuntu\\\\programs\\\\ShiftK\\\\app\\\\\
-test\>\"", 
+sample\\\\denovo\>\"", 
   "]"}], "\[IndentingNewLine]", "\"\<Hamiltonian\>\"", "\[IndentingNewLine]", 
  RowBox[{"ham", "=", 
   RowBox[{"Import", "[", 
@@ -38,9 +38,7 @@ test\>\"",
  RowBox[{"rhs0", "=", 
   RowBox[{
   "Import", "[", "\"\<zvo_Excited.dat\>\"", 
-   "]"}]}], "\[IndentingNewLine]", "\"\<\\eta\>\"", "\[IndentingNewLine]", 
- RowBox[{"eta", "=", 
-  "0.03"}], "\[IndentingNewLine]", "\"\<nomega\>\"", "\[IndentingNewLine]", 
+   "]"}]}], "\[IndentingNewLine]", "\"\<nomega\>\"", "\[IndentingNewLine]", 
  RowBox[{"nomega", "=", 
   "100"}], "\[IndentingNewLine]", "\"\<Check hermitian\>\"", "\
 \[IndentingNewLine]", 
@@ -81,7 +79,12 @@ test\>\"",
  RowBox[{"xmin", "=", 
   RowBox[{
   "Min", "[", "eval", 
-   "]"}]}], "\[IndentingNewLine]", "\"\<Green's function\>\"", "\
+   "]"}]}], "\[IndentingNewLine]", "\"\<\\eta\>\"", "\[IndentingNewLine]", 
+ RowBox[{"eta", "=", 
+  RowBox[{
+   RowBox[{"(", 
+    RowBox[{"xmax", "-", "xmin"}], ")"}], "/", 
+   "100"}]}], "\[IndentingNewLine]", "\"\<Green's function\>\"", "\
 \[IndentingNewLine]", 
  RowBox[{
   RowBox[{"green", "=", 
@@ -170,7 +173,9 @@ test\>\"",
    3.683342597542859*^9, 3.683342625404174*^9}, {3.683342662229726*^9, 
    3.683342719510007*^9}, 3.6833429061536403`*^9, {3.6835204650753336`*^9, 
    3.68352046777351*^9}, {3.6835209388610926`*^9, 3.683520988260829*^9}, 
-   3.683521118907254*^9, {3.6835212654463434`*^9, 3.683521316301767*^9}}]
+   3.683521118907254*^9, {3.6835212654463434`*^9, 3.683521316301767*^9}, {
+   3.6839266149083242`*^9, 3.683926624316144*^9}, {3.683926686746871*^9, 
+   3.6839267047167273`*^9}}]
 },
 WindowSize->{1209, 859},
 WindowMargins->{{-7, Automatic}, {-3, Automatic}},
@@ -190,7 +195,7 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[558, 20, 319, 5, 68, "Input"],
-Cell[880, 27, 5830, 145, 1403, "Input"]
+Cell[880, 27, 6024, 150, 1403, "Input"]
 }
 ]
 *)

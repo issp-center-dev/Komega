@@ -14,7 +14,7 @@ SUBROUTINE dyn()
   USE shiftk_io, ONLY : input_restart_parameter, input_restart_vector, &
   &                     output_result, output_result_debug, output_restart_parameter, output_restart_vector
   USE shiftk_vals, ONLY : alpha, beta, calctype, ndim, nomega, maxloops, iter_old, lBiCG, nl, &
-  &                       outrestart, v12, v2, v14, v4, rhs, r_l, r_l_save, threshold, x_l, z, z_seed
+  &                       outrestart, v12, v2, v14, v4, rhs, r_l, r_l_save, stdout, threshold, x_l, z, z_seed
   !
   USE shifted_cocg, ONLY : COCG_init, COCG_restart, COCG_update, &
   &                        COCG_getcoef, COCG_getvec, COCG_finalize
@@ -56,25 +56,25 @@ SUBROUTINE dyn()
      IF(TRIM(calctype) == "restart") CALL input_restart_vector()
      maxloops = MAX(maxloops, iter_old)
      !
-     WRITE(*,*)
-     WRITE(*,*) "##########  CG Restart  ##########"
-     WRITE(*,*)
+     WRITE(stdout,*)
+     WRITE(stdout,*) "##########  CG Restart  ##########"
+     WRITE(stdout,*)
      !
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
-           CALL BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, status, &
-           &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+           CALL BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, 0, &
+           &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
         ELSE
-           CALL COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, status, &
-           &                 iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+           CALL COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, 0, &
+           &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
         END IF
      ELSE
         IF(lBiCG) THEN
-           CALL BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, status, &
-           &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+           CALL BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, 0, &
+           &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
         ELSE
-           CALL COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, status, &
-           &                 iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+           CALL COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, 0, &
+           &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
         END IF
      END IF
      DEALLOCATE(alpha, beta, r_l_save)
@@ -85,41 +85,41 @@ SUBROUTINE dyn()
      !
      ! Compute from scratch
      !
-     WRITE(*,*)
-     WRITE(*,*) "##########  CG Initialization  ##########"
-     WRITE(*,*)
+     WRITE(stdout,*)
+     WRITE(stdout,*) "##########  CG Initialization  ##########"
+     WRITE(stdout,*)
      !
      v2(1:ndim) = rhs(1:ndim)
      IF(lBiCG) v4(1:ndim) = rhs(1:ndim)
      !
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
-           CALL BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold)
+           CALL BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, 0)
         ELSE
-           CALL COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold)
+           CALL COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, 0)
         END IF
      ELSE
         IF(lBiCG) THEN
-           CALL BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold)
+           CALL BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, 0)
         ELSE
-           CALL COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold)
+           CALL COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, 0)
         END IF
      END IF
      !
   ELSE
      !
-     WRITE(*,*) "ERROR ! calctype = ", TRIM(calctype)
+     WRITE(stdout,*) "ERROR ! calctype = ", TRIM(calctype)
      STOP
      !
   END IF
   !
   ! COCG/BiCG Loop
   !
-  WRITE(*,*)
-  WRITE(*,*) "#####  BiCG Iteration  #####"
-  WRITE(*,*)
+  WRITE(stdout,*)
+  WRITE(stdout,*) "#####  BiCG Iteration  #####"
+  WRITE(stdout,*)
   !
-  WRITE(*,'(a)') "    iter status1 status2 status3      Residual       Proj. Res."
+  WRITE(stdout,'(a)') "    iter status1 status2 status3      Residual       Proj. Res."
   !
   DO iter = 1, maxloops
      !
@@ -154,21 +154,21 @@ SUBROUTINE dyn()
         CALL COCG_update(v12, v2,          x_l, r_l, status)
      END IF
      !
-     WRITE(*,'(i8,3i8,2e15.5)') iter, status, DBLE(v12(1)), ABS(r_l(1))
+     WRITE(stdout,'(i8,3i8,2e15.5)') iter, status, DBLE(v12(1)), ABS(r_l(1))
      IF(status(1) < 0) EXIT
      !
   END DO
   !
   IF(status(2) == 0) THEN
-     WRITE(*,*) "  Converged in iteration ", ABS(status(1))
+     WRITE(stdout,*) "  Converged in iteration ", ABS(status(1))
   ELSE IF(status(2) == 1) THEN
-     WRITE(*,*) "  Not Converged in iteration ", ABS(status(1))
+     WRITE(stdout,*) "  Not Converged in iteration ", ABS(status(1))
   ELSE IF(status(2) == 2) THEN
-     WRITE(*,*) "  Alpha becomes infinity", ABS(status(1))
+     WRITE(stdout,*) "  Alpha becomes infinity", ABS(status(1))
   ELSE IF(status(2) == 3) THEN
-     WRITE(*,*) "  Pi_seed becomes zero", ABS(status(1))
+     WRITE(stdout,*) "  Pi_seed becomes zero", ABS(status(1))
   ELSE IF(status(2) == 4) THEN
-     WRITE(*,*) "  Residual & Shadow residual are orthogonal", ABS(status(1))
+     WRITE(stdout,*) "  Residual & Shadow residual are orthogonal", ABS(status(1))
   END IF
   iter_old = ABS(status(1))
   !
@@ -180,10 +180,10 @@ SUBROUTINE dyn()
   !
   DO iter = 1, iter_old
      DO jter = 1, iter_old
-        write(*,'(e15.5)',advance="no") &
+        WRITE(stdout,'(e15.5)',advance="no") &
         & abs(dot_product(test_r(1:ndim,jter,2), test_r(1:ndim,iter,1)) )
      END DO
-     write(*,*)
+     WRITE(stdout,*)
   END DO
 #endif
   !

@@ -6,6 +6,7 @@ MODULE shifted_krylov_parameter
   & almost0 = 1d-13
   !
   INTEGER,SAVE :: &
+  & comm, &
   & iz_seed, &
   & ndim, &
   & nl,   &

@@ -302,8 +302,8 @@ PROGRAM solve_cr
     ! When restarting, counter
     !
     itermin = iter_old + 1
-    CALL COCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, status, &
-    &                 iter_old, v2, v12, alpha, beta, z_seed, r_l_save)
+    CALL COCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, 0, &
+    &                 status, iter_old, v2, v12, alpha, beta, z_seed, r_l_save)
     !
     ! These vectors were saved in COCG routine
     !
@@ -319,7 +319,7 @@ PROGRAM solve_cr
      !
      v2(1:ndim) = rhs(1:ndim)
      !
-     CALL COCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     CALL COCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold, 0)
      !
   END IF
   !

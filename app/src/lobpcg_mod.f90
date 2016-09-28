@@ -6,7 +6,7 @@ MODULE lobpcg_mod
   IMPLICIT NONE
   !
   PRIVATE
-  PUBLIC lobpcg_driver
+  PUBLIC lobpcg_driver, zabsmax
   !
 CONTAINS
 !
@@ -14,33 +14,39 @@ CONTAINS
 !
 SUBROUTINE lobpcg_driver()
   !
-  USE shiftk_vals, ONLY : ndim, rhs, e_min, e_max
+  USE shiftk_vals, ONLY : ndim, rhs, e_min, e_max, stdout
+#if defined(DEBUG)
+  USE shiftk_vals, ONLY : myrank
+#endif  
   !
   IMPLICIT NONE
   !
-  INTEGER :: idim, fo = 20
+  INTEGER :: idim
+#if defined(DEBUG)
+  INTEGER :: fo = 20
+#endif
   COMPLEX(8),allocatable :: x(:,:), hx(:,:) ! x(:,1) = w, x(:,2) = x, x(:,3) = p
   REAL(8),allocatable :: x_r(:), x_i(:)
   !
-  WRITE(*,*) 
-  WRITE(*,*) "##########  Calculation of the Ground State ##########"
-  WRITE(*,*)
+  WRITE(stdout,*) 
+  WRITE(stdout,*) "##########  Calculation of the Ground State ##########"
+  WRITE(stdout,*)
   !
   ALLOCATE(x(ndim,3), hx(ndim,3), x_r(ndim), x_i(ndim))
-  WRITE(*,*)
-  WRITE(*,*) "  Compute Maximum energy"
-  WRITE(*,*)
+  WRITE(stdout,*)
+  WRITE(stdout,*) "  Compute Maximum energy"
+  WRITE(stdout,*)
   CALL lobpcg(-1,x,hx,x_r,x_i,e_max)
-  WRITE(*,*) "    E_max = ", e_max
-  WRITE(*,*)
-  WRITE(*,*) "  Compute Minimum energy"
-  WRITE(*,*)
+  WRITE(stdout,*) "    E_max = ", e_max
+  WRITE(stdout,*)
+  WRITE(stdout,*) "  Compute Minimum energy"
+  WRITE(stdout,*)
   CALL lobpcg(1,x,hx,x_r,x_i,e_min)
-  WRITE(*,*) "    E_min = ", e_min
+  WRITE(stdout,*) "    E_min = ", e_min
   !
-  WRITE(*,*) 
-  WRITE(*,*) "##########  Generate Right Hand Side Vector ##########"
-  WRITE(*,*)
+  WRITE(stdout,*) 
+  WRITE(stdout,*) "##########  Generate Right Hand Side Vector ##########"
+  WRITE(stdout,*)
   !
   ALLOCATE(rhs(ndim))
   !
@@ -52,14 +58,20 @@ SUBROUTINE lobpcg_driver()
      END IF
   END DO
   !
-  OPEN(fo, file = "zvo_Excited.dat")
-  WRITE(fo,*) ndim
-  !
-  DO idim = 1, ndim
-     WRITE(fo,'(2e25.16)') DBLE(rhs(idim)), AIMAG(rhs(idim))
-  END DO
-  !
-  CLOSE(fo)
+#if defined(DEBUG)
+  IF(myrank == 0) THEN
+     !
+     OPEN(fo, file = "zvo_Excited.dat")
+     WRITE(fo,*) ndim
+     !
+     DO idim = 1, ndim
+        WRITE(fo,'(2e25.16)') DBLE(rhs(idim)), AIMAG(rhs(idim))
+     END DO
+     !
+     CLOSE(fo)
+     !
+  END IF
+#endif
   !
   DEALLOCATE(x, hx, x_r, x_i)
   !
@@ -69,7 +81,7 @@ END SUBROUTINE lobpcg_driver
 !
 SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   !
-  USE shiftk_vals, ONLY : ndim, maxloops, threshold
+  USE shiftk_vals, ONLY : ndim, maxloops, threshold, stdout
   USE ham_prod_mod, ONLY : ham_prod
   !  
   IMPLICIT NONE
@@ -96,9 +108,9 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   eig = DBLE(DOT_PRODUCT(x(1:ndim,2), hx(1:ndim,2)))
   x(1:ndim, 1) = hx(1:ndim,2) - eig * x(1:ndim,2)
   !
-  res = MAXVAL(ABS(x(1:ndim,1)))
-  WRITE(*,'(a)')        "    iter      Residual       Energy"
-  WRITE(*,'(i8,2e15.5)')        0,        res,             eig
+  res = zabsmax(x(1:ndim,1), ndim)
+  WRITE(stdout,'(a)')        "    iter      Residual       Energy"
+  WRITE(stdout,'(i8,2e15.5)')        0,        res,             eig
   IF(res < threshold) GOTO 10
   !
   DO iter = 1, maxloops
@@ -149,8 +161,8 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
      !
      x(1:ndim, 1) = hx(1:ndim, 2) - eig * x(1:ndim, 2)
      !
-     res = MAXVAL(ABS(x(1:ndim,1)))
-     WRITE(*,'(i8,2e15.5)') iter, res, eig
+     res = zabsmax(x(1:ndim,1), ndim)
+     WRITE(stdout,'(i8,2e15.5)') iter, res, eig
      IF(res < threshold) exit
      !
      dnorm = SQRT(DBLE(DOT_PRODUCT(x(1:ndim, 1), x(1:ndim, 1))))
@@ -161,5 +173,33 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
 10 CONTINUE
   !
 END SUBROUTINE lobpcg
+!
+! MAXVAL with MPI allreduce (for complex(8))
+!
+FUNCTION zabsmax(array, n) RESULT(maxarray)
+  !
+#if defined(MPI)
+  use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_PRECISION, MPI_MAX
+  USE shifted_krylov_parameter, ONLY : comm
+#endif
+  !
+  IMPLICIT NONE
+  !
+  INTEGER,INTENT(IN) :: n
+  COMPLEX(8),INTENT(IN) :: array(n)
+  REAL(8) maxarray
+  !
+#if defined(MPI)
+  INTEGER :: ierr
+#endif
+  !
+  maxarray = MAXVAL(ABS(array))
+  !
+#if defined(MPI)
+  call MPI_allREDUCE(MPI_IN_PLACE, maxarray, 1, &
+  &                  MPI_DOUBLE_PRECISION, MPI_MAX, comm, ierr)
+#endif
+  !
+END FUNCTION zabsmax
 !
 END MODULE lobpcg_mod

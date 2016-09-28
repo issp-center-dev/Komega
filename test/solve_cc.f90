@@ -310,8 +310,8 @@ PROGRAM solve_cc
     ! When restarting, counter
     !
     itermin = iter_old + 1
-    CALL BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, status, &
-    &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+    CALL BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, 0, &
+    &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
     !
     ! These vectors were saved in BiCG routine
     !
@@ -329,7 +329,7 @@ PROGRAM solve_cc
      v4(1:ndim) = CONJG(v2(1:ndim))
      !v4(1:ndim) = v2(1:ndim)
      !
-     CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold, 0)
      !
   END IF
   !

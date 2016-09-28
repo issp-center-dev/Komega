@@ -119,9 +119,10 @@ END SUBROUTINE BiCG_seed_switch
 !
 ! Allocate & initialize variables
 !
-SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold, iz_seed
+  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, &
+  &                                    threshold, iz_seed, comm
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_save, beta, beta_save, pi, &
   &                               pi_old, pi_save, rho, z, z_seed 
   USE shifted_krylov_vecs_c, ONLY : p, r_l_save, v3, v5
@@ -129,7 +130,7 @@ SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
+  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0, comm0
   REAL(8),INTENT(IN) :: threshold0
   COMPLEX(8),INTENT(IN) :: z0(nz0)
   COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
@@ -139,6 +140,7 @@ SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   nz = nz0
   itermax = itermax0
   threshold = threshold0
+  comm = comm0
   !
   ALLOCATE(z(nz), v3(ndim), v5(ndim), pi(nz), pi_old(nz), p(nl,nz))
   CALL zcopy(nz,z0,1,z,1)
@@ -165,17 +167,17 @@ END SUBROUTINE BiCG_init
 !
 ! Restart by input
 !
-SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
+SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
 &                       iter_old, v2, v12, v4, v14, alpha_save0, beta_save0, z_seed0, r_l_save0)
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed
   USE shifted_krylov_vecs_c, ONLY : r_l_save, v3, v5
-  USE shifted_krylov_math, ONLY : zcopy, zdotc
+  USE shifted_krylov_math, ONLY : zcopy, zdotcMPI, zabsmax
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
+  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0, comm0
   REAL(8),INTENT(IN) :: threshold0
   COMPLEX(8),INTENT(IN) :: z0(nz0)
   COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
@@ -190,7 +192,7 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   COMPLEX(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
   COMPLEX(8),INTENT(INOUT) :: v4(ndim), v14(ndim)
   !
-  CALL BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+  CALL BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
   z_seed = z_seed0
   iz_seed = 0
   !
@@ -222,7 +224,7 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   CALL zcopy(ndim,v12,1,v3,1)
   CALL zcopy(ndim,v14,1,v5,1)
-  rho = zdotc(ndim,v5,1,v3,1)
+  rho = zdotcMPI(ndim,v5,v3)
   !
   ! Seed Switching
   !
@@ -230,7 +232,7 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   ! Convergence check
   !
-  v12(1) = CMPLX(MAXVAL(ABS(v2(1:ndim))), 0d0, KIND(0d0))
+  v12(1) = CMPLX(zabsmax(v2, ndim), 0d0, KIND(0d0))
   !
   IF(DBLE(v12(1)) < threshold) THEN
      !
@@ -267,7 +269,7 @@ SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_old, alpha_save, &
   &                               beta, beta_save, rho, z_seed
   USE shifted_krylov_vecs_c, ONLY : r_l_save, v3, v5
-  USE shifted_krylov_math, ONLY : zdotc, zcopy
+  USE shifted_krylov_math, ONLY : zdotcMPI, zcopy, zabsmax
   !
   IMPLICIT NONE
   !
@@ -281,7 +283,7 @@ SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
   status(1:3) = 0
   !
   rho_old = rho
-  rho = zdotc(ndim,v4,1,v2,1)
+  rho = zdotcMPI(ndim,v4,v2)
   IF(iter == 1) THEN
      beta = CMPLX(0d0, 0d0, KIND(0d0))
   ELSE
@@ -290,7 +292,7 @@ SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
   v12(1:ndim) = z_seed * v2(1:ndim) - v12(1:ndim)
   v14(1:ndim) = CONJG(z_seed) * v4(1:ndim) - v14(1:ndim)
   alpha_old = alpha
-  alpha_denom = zdotc(ndim,v4,1,v12,1) - beta * rho / alpha
+  alpha_denom = zdotcMPI(ndim,v4,v12) - beta * rho / alpha
   !
   IF(ABS(alpha_denom) < almost0) THEN
      status(2) = 2
@@ -330,7 +332,7 @@ SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
   !
   ! Convergence check
   !
-  v12(1) = CMPLX(MAXVAL(ABS(v2(1:ndim))), 0d0, KIND(0d0))
+  v12(1) = CMPLX(zabsmax(v2, ndim), 0d0, KIND(0d0))
   !
   IF(DBLE(v12(1)) < threshold) THEN
      !

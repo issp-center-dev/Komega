@@ -1,15 +1,15 @@
 PROGRAM shiftk
   !
-  USE shiftk_io, ONLY : input_filename, input_hamiltonian, input_rhs_vector, &
+  USE shiftk_io, ONLY : shiftk_init, input_filename, input_hamiltonian, input_rhs_vector, &
   &                     input_parameter_cg, input_parameter_dyn, input_parameter_ham
-  USE shiftk_vals, ONLY : invec, inham
+  USE shiftk_vals, ONLY : invec, inham,stdout
   USE lobpcg_mod, ONLY : lobpcg_driver
   USE ham_prod_mod, ONLY : print_ham, onthefly_init, finalize_ham
   USE dyn_mod, ONLY : dyn
   !
   IMPLICIT NONE
   !
-  CALL system("mkdir -p output")
+  CALL shiftk_init()
   !
   CALL input_filename()
   ! Initialize hamiltonian
@@ -41,8 +41,8 @@ PROGRAM shiftk
   CALL dyn()
   !
   CALL finalize_ham()
-  WRITE(*,*)
-  WRITE(*,*) "#####  Done  #####"
-  WRITE(*,*)
+  WRITE(stdout,*)
+  WRITE(stdout,*) "#####  Done  #####"
+  WRITE(stdout,*)
   !
 END PROGRAM shiftk

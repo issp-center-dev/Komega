@@ -51,4 +51,146 @@ MODULE shifted_krylov_math
      !
   END INTERFACE
   !
+CONTAINS
+!
+! ddot with MPI allreduce
+!
+FUNCTION ddotMPI(n,dx,dy) RESULT(prod)
+  !
+#if defined(MPI)
+  use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_PRECISION, MPI_SUM
+  USE shifted_krylov_parameter, ONLY : comm
+#endif
+  !
+  IMPLICIT NONE
+  !
+  INTEGER,INTENT(IN) :: n
+  REAL(8),INTENT(IN) :: dx(n), dy(n)
+  REAL(8) prod
+  !
+#if defined(MPI)
+  INTEGER :: ierr
+#endif
+  !
+  prod = ddot(n,dx,1,dy,1)
+  !
+#if defined(MPI)
+  call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &
+  &                  MPI_DOUBLE_PRECISION, MPI_SUM, comm, ierr)
+#endif
+  !
+END FUNCTION ddotMPI
+!
+! zdotc with MPI allreduce
+!
+FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
+  !
+#if defined(MPI)
+  use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_COMPLEX, MPI_SUM
+  USE shifted_krylov_parameter, ONLY : comm
+#endif
+  !
+  IMPLICIT NONE
+  !
+  INTEGER,INTENT(IN) :: n
+  COMPLEX(8),INTENT(IN) :: zx(n), zy(n)
+  COMPLEX(8) prod
+  !
+#if defined(MPI)
+  INTEGER :: ierr
+#endif
+  !
+  prod = zdotc(n,zx,1,zy,1)
+  !
+#if defined(MPI)
+  call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &
+  &                  MPI_DOUBLE_COMPLEX, MPI_SUM, comm, ierr)
+#endif
+  !
+END FUNCTION zdotcMPI
+!
+! zdotu with MPI allreduce
+!
+FUNCTION zdotuMPI(n,zx,zy) RESULT(prod)
+  !
+#if defined(MPI)
+  use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_COMPLEX, MPI_SUM
+  USE shifted_krylov_parameter, ONLY : comm
+#endif
+  !
+  IMPLICIT NONE
+  !
+  INTEGER,INTENT(IN) :: n
+  COMPLEX(8),INTENT(IN) :: zx(n), zy(n)
+  COMPLEX(8) prod
+  !
+#if defined(MPI)
+  INTEGER :: ierr
+#endif
+  !
+  prod = zdotu(n,zx,1,zy,1)
+  !
+#if defined(MPI)
+  call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &
+  &                  MPI_DOUBLE_COMPLEX, MPI_SUM, comm, ierr)
+#endif
+  !
+END FUNCTION zdotuMPI
+!
+! MAXVAL with MPI allreduce (for real(8))
+!
+FUNCTION dabsmax(array, n) RESULT(maxarray)
+  !
+#if defined(MPI)
+  use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_PRECISION, MPI_MAX
+  USE shifted_krylov_parameter, ONLY : comm
+#endif
+  !
+  IMPLICIT NONE
+  !
+  INTEGER,INTENT(IN) :: n
+  REAL(8),INTENT(IN) :: array(n)
+  REAL(8) maxarray
+  !
+#if defined(MPI)
+  INTEGER :: ierr
+#endif
+  !
+  maxarray = MAXVAL(ABS(array))
+  !
+#if defined(MPI)
+  call MPI_allREDUCE(MPI_IN_PLACE, maxarray, 1, &
+  &                  MPI_DOUBLE_PRECISION, MPI_MAX, comm, ierr)
+#endif
+  !
+END FUNCTION dabsmax
+!
+! MAXVAL with MPI allreduce (for complex(8))
+!
+FUNCTION zabsmax(array, n) RESULT(maxarray)
+  !
+#if defined(MPI)
+  use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_PRECISION, MPI_MAX
+  USE shifted_krylov_parameter, ONLY : comm
+#endif
+  !
+  IMPLICIT NONE
+  !
+  INTEGER,INTENT(IN) :: n
+  COMPLEX(8),INTENT(IN) :: array(n)
+  REAL(8) maxarray
+  !
+#if defined(MPI)
+  INTEGER :: ierr
+#endif
+  !
+  maxarray = MAXVAL(ABS(array))
+  !
+#if defined(MPI)
+  call MPI_allREDUCE(MPI_IN_PLACE, maxarray, 1, &
+  &                  MPI_DOUBLE_PRECISION, MPI_MAX, comm, ierr)
+#endif
+  !
+END FUNCTION zabsmax
+!
 end MODULE shifted_krylov_math
