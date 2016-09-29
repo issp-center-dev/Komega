@@ -39,3 +39,4 @@ dyn_mod.o:../../src/libshiftk.a
 dyn_mod.o:shiftk_io.o
 dyn_mod.o:shiftk_vals.o
 dyn_mod.o:ham_prod.o
+dyn_mod.o:lobpcg_mod.o

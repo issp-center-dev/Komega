@@ -6,7 +6,7 @@ MODULE lobpcg_mod
   IMPLICIT NONE
   !
   PRIVATE
-  PUBLIC lobpcg_driver, zabsmax
+  PUBLIC lobpcg_driver, zabsmax, zdotcMPI
   !
 CONTAINS
 !
@@ -81,7 +81,7 @@ END SUBROUTINE lobpcg_driver
 !
 SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   !
-  USE shiftk_vals, ONLY : ndim, maxloops, threshold, stdout
+  USE shiftk_vals, ONLY : ndim, maxloops, threshold, stdout, myrank
   USE ham_prod_mod, ONLY : ham_prod
   !  
   IMPLICIT NONE
@@ -99,13 +99,13 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   !
   CALL RANDOM_NUMBER(x_r(1:ndim))
   CALL RANDOM_NUMBER(x_i(1:ndim))
-  x(1:ndim,2) = CMPLX(x_r(1:ndim), x_i(1:ndim), KIND(0d0))
-  dnorm = SQRT(DBLE(DOT_PRODUCT(x(1:ndim,2), x(1:ndim,2))))
+  x(1:ndim,2) = 1d0 !CMPLX(x_r(1:ndim), x_i(1:ndim), KIND(0d0))
+  dnorm = SQRT(DBLE(zdotcMPI(ndim, x(1:ndim,2), x(1:ndim,2))))
   x(1:ndim,2) = x(1:ndim,2) / dnorm
   CALL ham_prod(x(1:ndim,2), hx(1:ndim,2))
   x( 1:ndim,3) = CMPLX(0d0, 0d0, KIND(0d0))
   hx(1:ndim,3) = CMPLX(0d0, 0d0, KIND(0d0))
-  eig = DBLE(DOT_PRODUCT(x(1:ndim,2), hx(1:ndim,2)))
+  eig = DBLE(zdotcMPI(ndim, x(1:ndim,2), hx(1:ndim,2)))
   x(1:ndim, 1) = hx(1:ndim,2) - eig * x(1:ndim,2)
   !
   res = zabsmax(x(1:ndim,1), ndim)
@@ -119,8 +119,8 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
      !
      DO ii = 1, 3
         DO jj = 1, 3
-           hsub(jj,ii) = DOT_PRODUCT(x(1:ndim,jj), hx(1:ndim,ii)) 
-           ovrp(jj,ii) = DOT_PRODUCT(x(1:ndim,jj),  x(1:ndim,ii))
+           hsub(jj,ii) = zdotcMPI(ndim, x(1:ndim,jj), hx(1:ndim,ii)) 
+           ovrp(jj,ii) = zdotcMPI(ndim, x(1:ndim,jj),  x(1:ndim,ii))
         END DO
      END DO
      eig = DBLE(hsub(2,2))
@@ -154,7 +154,7 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
      hx(1:ndim,3) = hsub(1,jtarget) * hx(1:ndim,1) + hsub(3,jtarget) * hx(1:ndim,3)
      !
      DO ii = 2, 3
-        dnorm = SQRT(DBLE(DOT_PRODUCT(x(1:ndim,ii), x(1:ndim,ii))))
+        dnorm = SQRT(DBLE(zdotcMPI(ndim, x(1:ndim,ii), x(1:ndim,ii))))
         x( 1:ndim, ii) =  x(1:ndim, ii) / dnorm
         hx(1:ndim, ii) = hx(1:ndim, ii) / dnorm
      END DO
@@ -165,7 +165,7 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
      WRITE(stdout,'(i8,2e15.5)') iter, res, eig
      IF(res < threshold) exit
      !
-     dnorm = SQRT(DBLE(DOT_PRODUCT(x(1:ndim, 1), x(1:ndim, 1))))
+     dnorm = SQRT(DBLE(zdotcMPI(ndim, x(1:ndim, 1), x(1:ndim, 1))))
      x(1:ndim, 1) = x(1:ndim, 1) / dnorm
      !
   END DO
@@ -200,5 +200,32 @@ FUNCTION zabsmax(array, n) RESULT(maxarray)
 #endif
   !
 END FUNCTION zabsmax
+!
+! zdotc with MPI allreduce
+!
+FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
+  !
+#if defined(MPI)
+  use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_COMPLEX, MPI_SUM, MPI_COMM_WORLD
+#endif
+  !
+  IMPLICIT NONE
+  !
+  INTEGER,INTENT(IN) :: n
+  COMPLEX(8),INTENT(IN) :: zx(n), zy(n)
+  COMPLEX(8) prod
+  !
+#if defined(MPI)
+  INTEGER :: ierr
+#endif
+  !
+  prod = dot_product(zx,zy)
+  !
+#if defined(MPI)
+  call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &
+  &                  MPI_DOUBLE_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
+#endif
+  !
+END FUNCTION zdotcMPI
 !
 END MODULE lobpcg_mod

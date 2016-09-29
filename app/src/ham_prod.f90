@@ -261,14 +261,19 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
         !
         IF(ABS(Jx + Jy) > almost0 .OR. ABS(Dz) > almost0) THEN
            !
-           IF(IAND(myrank, mask2) == mask2 .AND. isite == 1) THEN
+           IF((IAND(myrank, mask2) == mask2 .AND. isite == 1) .OR. &
+           &  (IAND(myrank, mask2) == 0     .AND. isite == 2) ) THEN
               matrix = CMPLX(0.25d0 * (Jx + Jy), 0.5d0 * Dz, KIND(0d0))
            ELSE
               matrix = CMPLX(0.25d0 * (Jx + Jy), - 0.5d0 * Dz, KIND(0d0))
            END IF
            !
            DO idim = 1, ndim
-              IF(.NOT. para(idim)) veco(idim) = veco(idim) + matrix * veci_buf(pair(idim))
+              IF(.NOT. para(idim)) THEN
+                 veco(idim) = veco(idim) + matrix * veci_buf(pair(idim))
+                 !IF(ABS(veci_buf(pair(idim))) > 0.00001) &
+                 !& WRITE(*,*) myrank*ndim + idim, origin * ndim + pair(idim)
+              END IF
            END DO
            !
         END IF
@@ -355,7 +360,7 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
            !
            matrix = CMPLX(0.25d0 * (Jx - Jy), 0d0, KIND(0d0)) 
            DO idim = 1, ndim
-              IF(para(idim)) veco(idim) = veco(idim) + matrix * veci_buf(idim)
+              veco(idim) = veco(idim) + matrix * veci_buf(idim)
            END DO
            !
         END IF
@@ -440,7 +445,7 @@ SUBROUTINE print_ham()
         !
         CALL ham_prod(veci, veco)
         !
-        IF(myrank >= iproc) nham = nham + COUNT(ABS(veco(idim:ndim)) > almost0)
+        IF(myrank >= 0) nham = nham + COUNT(ABS(veco(1:ndim)) > almost0)
         !
      END DO ! idim = 1, ndim
   END DO ! iproc = 1, nproc
@@ -463,8 +468,8 @@ SUBROUTINE print_ham()
         !
         CALL ham_prod(veci, veco)
         !
-        DO jproc = iproc, nproc - 1
-           DO jdim = idim, ndim
+        DO jproc = 0, nproc - 1
+           DO jdim = 1, ndim
               IF(ABS(veco(jdim)) > almost0 .AND. myrank == jproc) &
               &  WRITE(*,'(2i10,2f15.8)') jdim + ndim * myrank, idim + ndim *iproc, &
               & DBLE(veco(jdim)), AIMAG(veco(jdim))

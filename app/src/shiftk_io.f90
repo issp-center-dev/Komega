@@ -646,7 +646,7 @@ SUBROUTINE output_result_debug()
   !
   USE shiftk_vals, ONLY : v2, ndim, x_l, rhs, z, nomega, myrank, stdout
   USE ham_prod_mod, ONLY : ham_prod
-  USE lobpcg_mod, ONLY : zabsmax
+  USE lobpcg_mod, ONLY : zabsmax, zdotcMPI
   !
   IMPLICIT NONE
   !
@@ -680,7 +680,7 @@ SUBROUTINE output_result_debug()
      !
      DO iz = 1, nomega
         !
-        Gii = dot_product(rhs,x_l(1:ndim,iz))
+        Gii = zdotcMPI(ndim, rhs,x_l(1:ndim,iz))
         write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(Gii), AIMAG(Gii)
         !
      END DO

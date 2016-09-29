@@ -20,6 +20,7 @@ SUBROUTINE dyn()
   &                        COCG_getcoef, COCG_getvec, COCG_finalize
   USE shifted_bicg, ONLY : BiCG_init, BiCG_restart, BiCG_update, &
   &                        BiCG_getcoef, BiCG_getvec, BiCG_finalize
+  USE lobpcg_mod, ONLY : zdotcMPI
 #if defined (MPI)
   USE mpi, ONLY : MPI_COMM_WORLD
 #endif
@@ -136,7 +137,7 @@ SUBROUTINE dyn()
      ! Projection of Residual vector into the space
      ! spaned by left vectors
      !
-     r_l(1) = DOT_PRODUCT(rhs, v2)
+     r_l(1) = zdotcMPI(ndim, rhs, v2)
      !
 #if defined(DEBUG)
      test_r(1:ndim,iter,1) = v2(1:ndim)
