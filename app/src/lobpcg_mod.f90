@@ -81,7 +81,7 @@ END SUBROUTINE lobpcg_driver
 !
 SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   !
-  USE shiftk_vals, ONLY : ndim, maxloops, threshold, stdout, myrank
+  USE shiftk_vals, ONLY : ndim, maxloops, threshold, stdout
   USE ham_prod_mod, ONLY : ham_prod
   !  
   IMPLICIT NONE

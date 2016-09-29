@@ -29,5 +29,6 @@
 #
 # MPI + intel compiler (for DEBUG)
 #
-F90=mpif90
-FFLAGS=-fpp -g -traceback -mkl -check all -warn all -D DEBUG -D NO_PROJ -D MPI
+F90=ifort
+MPIF90=mpif90
+FFLAGS=-fpp -g -traceback -mkl -check all -warn all -D DEBUG -D NO_PROJ

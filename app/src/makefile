@@ -4,7 +4,9 @@ include ../../make.sys
 .SUFFIXES : .o .f90
 
 LIB = -L ../../src/ -lshiftk
+MPILIB = -L ../../../src/mpi/ -lpshiftk
 INCLUDE = -I ../../src/
+MPIINCLUDE = -I ../../../src/mpi/
 
 OBJS= \
 dyn_mod.o \
@@ -14,16 +16,27 @@ shiftk.o \
 shiftk_io.o \
 shiftk_vals.o \
 
-all:ShiftK.out
-
+ifdef MPIF90
 ShiftK.out:$(OBJS) ../../src/libshiftk.a
 	$(F90) $(OBJS) -o $@ $(LIB) $(FFLAGS)
+	cd mpi; $(MPIF90) $(OBJS) -o $@ $(MPILIB) $(FFLAGS) -D MPI
+else
+ShiftK.out:$(OBJS) ../../src/libshiftk.a
+	$(F90) $(OBJS) -o $@ $(LIB) $(FFLAGS)
+endif
 
+ifdef MPIF90
 .f90.o:
 	$(F90) -c $< $(FFLAGS) $(INCLUDE)
+	cd mpi; $(MPIF90) -c ../$< $(FFLAGS) $(MPIINCLUDE) -D MPI
+else
+.f90.o:
+	$(F90) -c $< $(FFLAGS) $(INCLUDE)
+endif
 
 clean:
 	rm -f *.o ShiftK.out *.mod
+	cd mpi; rm -f *.o ShiftK.out *.mod
 
 shiftk.o:shiftk_io.o
 shiftk.o:dyn_mod.o

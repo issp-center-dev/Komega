@@ -418,13 +418,18 @@ END SUBROUTINE finalize_ham
 !
 SUBROUTINE print_ham()
   !
+#if defined(MPI)
   use mpi, ONLY : MPI_COMM_WORLD, MPI_IN_PLACE, MPI_INTEGER, MPI_SUM
+#endif
   USE shiftk_vals, ONLY : ndim, almost0, myrank, nproc
   USE ham_vals, ONLY : nham
   !
   IMPLICIT NONE
   !
-  INTEGER :: idim, jdim, fo = 21, ierr, iproc, jproc
+  INTEGER :: idim, jdim, fo = 21, iproc, jproc
+#if defined(MPI)
+  INTEGER :: ierr
+#endif
   COMPLEX(8),ALLOCATABLE :: veci(:), veco(:)
   !
   ALLOCATE(veci(ndim), veco(ndim))
@@ -474,7 +479,9 @@ SUBROUTINE print_ham()
               &  WRITE(*,'(2i10,2f15.8)') jdim + ndim * myrank, idim + ndim *iproc, &
               & DBLE(veco(jdim)), AIMAG(veco(jdim))
            END DO
+#if defined(MPI)
            CALL MPI_BARRIER(MPI_COMM_WORLD, ierr)
+#endif
         END DO
         !
      END DO ! idim = 1, ndim
