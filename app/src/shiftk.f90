@@ -36,7 +36,6 @@ PROGRAM shiftk
   !
   ! Calculation of the Dynamical Green's function
   !
-  stop
   CALL input_parameter_dyn()
   !
   CALL dyn()

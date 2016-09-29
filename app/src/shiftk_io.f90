@@ -653,6 +653,7 @@ SUBROUTINE output_result_debug()
   INTEGER :: iz, fo = 20
   CHARACTER(100) :: cndim, form
   COMPLEX(8) :: Gii
+  REAL(8) :: res
   !
   WRITE(cndim,*) ndim * 2
   WRITE(form,'(a,a,a)') "(", TRIM(ADJUSTL(cndim)), "e13.5)"
@@ -668,26 +669,23 @@ SUBROUTINE output_result_debug()
      CALL ham_prod(x_l(1:ndim,iz), v2)
      v2(1:ndim) = z(iz) * x_l(1:ndim,iz) - v2(1:ndim) - rhs(1:ndim)
      !
+     res = zabsmax(v2(1:ndim), ndim)
      !write(*,form) v2(1:ndim)
-     write(*,'(a,i5,a,2e13.5,a,e13.5)') "DEBUG (", iz, "), omega = ", z(iz), &
-     &            ", Res. = ", zabsmax(v2(1:ndim), ndim)
+     IF (myrank == 0) write(*,'(a,i5,a,2e13.5,a,e13.5)') &
+     &        "DEBUG (", iz, "), omega = ", z(iz), ", Res. = ", res
      !
   END DO
   !
-  IF (myrank == 0) THEN
+  IF (myrank == 0) OPEN(fo, file = "output/dynamicalG.dat")
+  !
+  DO iz = 1, nomega
      !
-     OPEN(fo, file = "output/dynamicalG.dat")
+     Gii = zdotcMPI(ndim, rhs,x_l(1:ndim,iz))
+     IF (myrank == 0) write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(Gii), AIMAG(Gii)
      !
-     DO iz = 1, nomega
-        !
-        Gii = zdotcMPI(ndim, rhs,x_l(1:ndim,iz))
-        write(fo,'(4e13.5)') DBLE(z(iz)), AIMAG(z(iz)), DBLE(Gii), AIMAG(Gii)
-        !
-     END DO
-     !
-     CLOSE(fo)
-     !
-  END IF ! (myrank == 0)
+  END DO
+  !
+  IF (myrank == 0) CLOSE(fo)
   !
 END SUBROUTINE output_result_debug
 !

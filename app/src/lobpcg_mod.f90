@@ -99,7 +99,7 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   !
   CALL RANDOM_NUMBER(x_r(1:ndim))
   CALL RANDOM_NUMBER(x_i(1:ndim))
-  x(1:ndim,2) = 1d0 !CMPLX(x_r(1:ndim), x_i(1:ndim), KIND(0d0))
+  x(1:ndim,2) = CMPLX(x_r(1:ndim), x_i(1:ndim), KIND(0d0))
   dnorm = SQRT(DBLE(zdotcMPI(ndim, x(1:ndim,2), x(1:ndim,2))))
   x(1:ndim,2) = x(1:ndim,2) / dnorm
   CALL ham_prod(x(1:ndim,2), hx(1:ndim,2))
