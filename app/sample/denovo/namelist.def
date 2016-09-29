@@ -4,7 +4,8 @@
 /
 &ham
 Jx = 1d0
-Jz = 2d0
+Jy = 1d0
+Jz = 1d0
 Dz = 1d0
 /
 &cg

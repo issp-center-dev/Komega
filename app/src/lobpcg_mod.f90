@@ -179,8 +179,7 @@ END SUBROUTINE lobpcg
 FUNCTION zabsmax(array, n) RESULT(maxarray)
   !
 #if defined(MPI)
-  use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_PRECISION, MPI_MAX
-  USE shifted_krylov_parameter, ONLY : comm
+  use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_PRECISION, MPI_MAX, MPI_COMM_WORLD
 #endif
   !
   IMPLICIT NONE
@@ -197,7 +196,7 @@ FUNCTION zabsmax(array, n) RESULT(maxarray)
   !
 #if defined(MPI)
   call MPI_allREDUCE(MPI_IN_PLACE, maxarray, 1, &
-  &                  MPI_DOUBLE_PRECISION, MPI_MAX, comm, ierr)
+  &                  MPI_DOUBLE_PRECISION, MPI_MAX, MPI_COMM_WORLD, ierr)
 #endif
   !
 END FUNCTION zabsmax

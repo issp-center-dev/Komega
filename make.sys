@@ -19,10 +19,15 @@
 #
 # intel (for DEBUG)
 #
-F90=ifort
-FFLAGS=-fpp -g -traceback -mkl -check all -warn all -D DEBUG -D NO_PROJ
+#F90=ifort
+#FFLAGS=-fpp -g -traceback -mkl -check all -warn all -D DEBUG -D NO_PROJ
 #
 # gfortran (for DEBUG)
 #
 #F90=gfortran
 #FFLAGS=-cpp -g -lblas -llapack -Wall -D DEBUG -D NO_PROJ
+#
+# MPI + intel compiler (for DEBUG)
+#
+F90=mpif90
+FFLAGS=-fpp -g -traceback -mkl -check all -warn all -D DEBUG -D NO_PROJ -D MPI

@@ -20,6 +20,9 @@ SUBROUTINE dyn()
   &                        COCG_getcoef, COCG_getvec, COCG_finalize
   USE shifted_bicg, ONLY : BiCG_init, BiCG_restart, BiCG_update, &
   &                        BiCG_getcoef, BiCG_getvec, BiCG_finalize
+#if defined (MPI)
+  USE mpi, ONLY : MPI_COMM_WORLD
+#endif
   !
   USE ham_prod_mod, ONLY : ham_prod
   !
@@ -32,6 +35,13 @@ SUBROUTINE dyn()
 #if defined(NO_PROJ)
   INTEGER :: jter
   COMPLEX(8),allocatable :: test_r(:,:,:) 
+#endif
+  INTEGER :: comm
+  !
+#if defined (MPI)
+  comm = MPI_COMM_WORLD
+#else
+  comm = 0
 #endif
   !
   nl = 1
@@ -62,18 +72,18 @@ SUBROUTINE dyn()
      !
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
-           CALL BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, 0, &
+           CALL BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, comm, &
            &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
         ELSE
-           CALL COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, 0, &
+           CALL COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, comm, &
            &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
         END IF
      ELSE
         IF(lBiCG) THEN
-           CALL BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, 0, &
+           CALL BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, comm, &
            &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
         ELSE
-           CALL COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, 0, &
+           CALL COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, comm, &
            &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
         END IF
      END IF
@@ -94,15 +104,15 @@ SUBROUTINE dyn()
      !
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
-           CALL BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, 0)
+           CALL BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, comm)
         ELSE
-           CALL COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, 0)
+           CALL COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, comm)
         END IF
      ELSE
         IF(lBiCG) THEN
-           CALL BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, 0)
+           CALL BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, comm)
         ELSE
-           CALL COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, 0)
+           CALL COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, comm)
         END IF
      END IF
      !

@@ -26,6 +26,11 @@ MODULE ham_vals
   COMPLEX(8),ALLOCATABLE,SAVE :: &
   & ham(:) ! Compressed Hamiltonian
   !
+#if defined(MPI)
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
+  & veci_buf(:)
+#endif
+  !
 END MODULE ham_vals
 !
 ! Module contains routines for Hamiltonian-Vector product
@@ -93,6 +98,11 @@ END SUBROUTINE ham_prod_compress
 !
 SUBROUTINE ham_prod_onthefly(veci,veco)
   !
+#if defined(MPI)
+  USE mpi, ONLY : MPI_COMM_WORLD, MPI_DOUBLE_COMPLEX, MPI_STATUS_SIZE
+  USE shiftk_vals, ONLY : myrank
+  USE ham_vals, ONLY : veci_buf
+#endif
   USE shiftk_vals, ONLY : ndim, almost0
   USE ham_vals, ONLY : Jx, Jy, Jz, Dz, nsite, ud, du, para, pair, nsitep
   !
@@ -101,15 +111,23 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
   COMPLEX(8),INTENT(IN) :: veci(ndim)
   COMPLEX(8),INTENT(OUT) :: veco(ndim)
   !
-  INTEGER :: isite, isite1, mask1, mask2, mask12, spin, idim
+  INTEGER :: isite, isite1, mask1, mask2, mask12, spin, idim, nsite2
   COMPLEX(8) :: matrix, cmatrix
+#if defined(MPI)
+  INTEGER :: origin, status(MPI_STATUS_SIZE), ierr
+#endif
   !
   ! Intra process region
   !
-  DO isite = 1, nsite - nsitep
+  IF(nsitep == 0) THEN
+     nsite2 = nsite
+  ELSE
+     nsite2 = nsite - nsitep - 1
+  END IF
+  !
+  DO isite = 1, nsite2
      !
      isite1 = MOD(isite, nsite) + 1
-!WRITE(stdout,*) isite, isite1
      !
      mask12 = 0
      mask12 = IBSET(mask12, isite  - 1)
@@ -189,82 +207,86 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
   ! isite = nsite - nsitep .OR. isite = nsite
   !
 #if defined(MPI)
-  DO isite = 1, 2
+  IF(nsitep > 0) THEN
      !
-     IF(isite = 1) THEN
-        mask1 = 0
-        mask1 = IBSET(mask1, nsite - nsitep - 1)
-        mask2 = 0
-        mask2 = IBSET(mask2, 0)
-     ELSE
-        mask1 = 0
-        mask1 = IBSET(mask1, 0)
-        mask2 = 0
-        mask2 = IBSET(mask2, nsitep - 1)
-     END IF
-     origin = IEOR(myrank, mask2)
-     !
-     CALL mpi_sendrecv(veci, ndim, MPI_DOUBLE_COMPLEX, isite1, 0, &
-     &             veci_buf, ndim, MPI_DOUBLE_COMPLEX, isite1, 0, MPI_COMM_WORLD, status);
-     !
-     para(1:ndim) = .FALSE.
-     !
-     DO idim = 1, ndim
+     DO isite = 1, 2
         !
-        spin = IAND(idim - 1, mask1)
-        pair(idim) = IEOR(idim - 1, mask1) + 1
+        IF(isite == 1) THEN
+           mask1 = 0
+           mask1 = IBSET(mask1, nsite - nsitep - 1)
+           mask2 = 0
+           mask2 = IBSET(mask2, 0)
+        ELSE
+           mask1 = 0
+           mask1 = IBSET(mask1, 0)
+           mask2 = 0
+           mask2 = IBSET(mask2, nsitep - 1)
+        END IF
+        origin = IEOR(myrank, mask2)
         !
-        IF(spin == mask1) para(idim) = .TRUE.
+        CALL mpi_sendrecv(veci, ndim, MPI_DOUBLE_COMPLEX, origin, 0, &
+        &             veci_buf, ndim, MPI_DOUBLE_COMPLEX, origin, 0, MPI_COMM_WORLD, status, ierr);
         !
-     END DO
-     !
-     IF(IAND(myrank, mask2) == 0) THEN
-        para(1:ndim) = .NOT. para(1:ndim)
-     END IF
-     !
-     ! S_{i z} S_{i+1 z}
-     !
-     IF(ABS(Jz) > almost0) THEN
+        para(1:ndim) = .FALSE.
         !
-        matrix = CMPLX(0.25d0 * Jz, 0d0, KIND(0d0))
         DO idim = 1, ndim
-           IF(para(idim)) THEN
-              veco(idim) = veco(idim) + matrix * veci(idim)
-           ELSE
-              veco(idim) = veco(idim) - matrix * veci(idim)
-           END IF
+           !
+           spin = IAND(idim - 1, mask1)
+           pair(idim) = IEOR(idim - 1, mask1) + 1
+           !
+           IF(spin == mask1) para(idim) = .TRUE.
+           !
         END DO
         !
-     END IF        
-     !
-     ! S_{i}^+ S_{i+1}^- + S_{i}^- S_{i+1}^+
-     !
-     IF(ABS(Jx + Jy) > almost0 .OR. ABS(Dz) > almost0) THEN
-        !
-        IF(IAND(myrank, mask2) == mask2 .AND. isite == 1) THEN
-           matrix = CMPLX(0.25d0 * (Jx + Jy), 0.5d0 * Dz, KIND(0d0))
-        ELSE
-           matrix = CMPLX(0.25d0 * (Jx + Jy), - 0.5d0 * Dz, KIND(0d0))
+        IF(IAND(myrank, mask2) == 0) THEN
+           para(1:ndim) = .NOT. para(1:ndim)
         END IF
         !
-        DO idim = 1, ndim
-           IF(.NOT. para(idim)) veco(idim) = veco(idim) + matrix * veci_buf(pair(idim))
-        END DO
+        ! S_{i z} S_{i+1 z}
         !
-     END IF
-     !
-     ! S_{i}^+ S_{i+1}^+ + S_{i}^- S_{i+1}^
-     !
-     IF(ABS(Jx - Jy) > almost0) THEN
+        IF(ABS(Jz) > almost0) THEN
+           !
+           matrix = CMPLX(0.25d0 * Jz, 0d0, KIND(0d0))
+           DO idim = 1, ndim
+              IF(para(idim)) THEN
+                 veco(idim) = veco(idim) + matrix * veci(idim)
+              ELSE
+                 veco(idim) = veco(idim) - matrix * veci(idim)
+              END IF
+           END DO
+           !
+        END IF
         !
-        matrix = CMPLX(0.25d0 * (Jx - Jy), 0d0, KIND(0d0)) 
-        DO idim = 1, ndim
-           IF(para(idim)) veco(idim) = veco(idim) + matrix * veci_buf(pair(idim))
-        END DO
+        ! S_{i}^+ S_{i+1}^- + S_{i}^- S_{i+1}^+
         !
-     END IF
+        IF(ABS(Jx + Jy) > almost0 .OR. ABS(Dz) > almost0) THEN
+           !
+           IF(IAND(myrank, mask2) == mask2 .AND. isite == 1) THEN
+              matrix = CMPLX(0.25d0 * (Jx + Jy), 0.5d0 * Dz, KIND(0d0))
+           ELSE
+              matrix = CMPLX(0.25d0 * (Jx + Jy), - 0.5d0 * Dz, KIND(0d0))
+           END IF
+           !
+           DO idim = 1, ndim
+              IF(.NOT. para(idim)) veco(idim) = veco(idim) + matrix * veci_buf(pair(idim))
+           END DO
+           !
+        END IF
+        !
+        ! S_{i}^+ S_{i+1}^+ + S_{i}^- S_{i+1}^
+        !
+        IF(ABS(Jx - Jy) > almost0) THEN
+           !
+           matrix = CMPLX(0.25d0 * (Jx - Jy), 0d0, KIND(0d0)) 
+           DO idim = 1, ndim
+              IF(para(idim)) veco(idim) = veco(idim) + matrix * veci_buf(pair(idim))
+           END DO
+           !
+        END IF
+        !
+     END DO ! isite = 1, 2
      !
-  END DO ! isite = 1, 2
+  END IF ! (nsitep > 0)
   !
   ! nsite - nsitep < isite < nsite
   !
@@ -284,8 +306,8 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
      !
      origin = IEOR(myrank, mask12)
      !
-     CALL mpi_sendrecv(veci, ndim, MPI_DOUBLE_COMPLEX, isite1, 0, &
-     &             veci_buf, ndim, MPI_DOUBLE_COMPLEX, isite1, 0, MPI_COMM_WORLD, status);
+     CALL mpi_sendrecv(veci, ndim, MPI_DOUBLE_COMPLEX, origin, 0, &
+     &             veci_buf, ndim, MPI_DOUBLE_COMPLEX, origin, 0, MPI_COMM_WORLD, status, ierr);
      !
      spin = IAND(myrank, mask12)
      !
@@ -351,6 +373,9 @@ SUBROUTINE onthefly_init()
   !
   USE shiftk_vals, ONLY : ndim
   USE ham_vals, ONLY : ud, du, para, pair
+#if defined(MPI)
+  USE ham_vals, ONLY : veci_buf
+#endif  
   !
   IMPLICIT NONE
   !
@@ -367,6 +392,9 @@ SUBROUTINE finalize_ham()
   !
   USE shiftk_vals, ONLY : inham
   USE ham_vals, ONLY : ud, du, para, pair, ham, ham_indx
+#if defined(MPI)
+  USE ham_vals, ONLY : veci_buf
+#endif  
   !
   IMPLICIT NONE
   !
@@ -385,56 +413,76 @@ END SUBROUTINE finalize_ham
 !
 SUBROUTINE print_ham()
   !
-  USE shiftk_vals, ONLY : ndim, almost0, myrank
+  use mpi, ONLY : MPI_COMM_WORLD, MPI_IN_PLACE, MPI_INTEGER, MPI_SUM
+  USE shiftk_vals, ONLY : ndim, almost0, myrank, nproc
   USE ham_vals, ONLY : nham
   !
   IMPLICIT NONE
   !
-  INTEGER :: idim, jdim, fo = 21
+  INTEGER :: idim, jdim, fo = 21, ierr, iproc, jproc
   COMPLEX(8),ALLOCATABLE :: veci(:), veco(:)
   !
   ALLOCATE(veci(ndim), veco(ndim))
   !
-  IF(myrank == 0) THEN
-     OPEN(fo, file = "zvo_Ham.dat")
-     WRITE(fo,*) "%%MatrixMarket matrix coordinate complex hermitian"
-  END IF
+  OPEN(fo, file = "zvo_Ham.dat")
+  IF(myrank == 0) WRITE(*,*) "%%MatrixMarket matrix coordinate complex hermitian"
   !
   nham = 0
-  DO idim = 1, ndim
-     !
-     veci(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
-     veci(  idim) = CMPLX(1d0, 0d0, KIND(0d0))
-     !
-     CALL ham_prod(veci, veco)
-     !
-     nham = nham + COUNT(ABS(veco(idim:ndim)) > almost0)
-     !
-  END DO
+  DO iproc = 0, nproc - 1
+     DO idim = 1, ndim
+        !
+        IF(myrank == iproc) THEN
+           veci(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
+           veci(  idim) = CMPLX(1d0, 0d0, KIND(0d0))
+        ELSE
+           veci(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
+        END IF
+        !
+        CALL ham_prod(veci, veco)
+        !
+        IF(myrank >= iproc) nham = nham + COUNT(ABS(veco(idim:ndim)) > almost0)
+        !
+     END DO ! idim = 1, ndim
+  END DO ! iproc = 1, nproc
   !
-  IF(myrank == 0) WRITE(fo,'(3i10)') ndim, ndim, nham 
+#if defined(MPI)
+  call MPI_allREDUCE(MPI_IN_PLACE,nham, 1, &
+  &                  MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr)
+#endif
+  IF(myrank == 0) WRITE(*,'(3i10)') ndim*nproc, ndim*nproc, nham 
   !
-  DO idim = 1, ndim
-     !
-     veci(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
-     veci(  idim) = CMPLX(1d0, 0d0, KIND(0d0))
-     !
-     CALL ham_prod(veci, veco)
-     !
-     IF(myrank == 0) THEN
-        DO jdim = idim, ndim
-           IF(ABS(veco(jdim)) > almost0) &
-           &  WRITE(fo,'(2i10,2f15.8)') jdim, idim, DBLE(veco(jdim)), AIMAG(veco(jdim))
+  DO iproc = 0, nproc - 1
+     DO idim = 1, ndim
+        !
+        IF(myrank == iproc) THEN
+           veci(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
+           veci(  idim) = CMPLX(1d0, 0d0, KIND(0d0))
+        ELSE
+           veci(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
+        END IF
+        !
+        CALL ham_prod(veci, veco)
+        !
+        DO jproc = iproc, nproc - 1
+           DO jdim = idim, ndim
+              IF(ABS(veco(jdim)) > almost0 .AND. myrank == jproc) &
+              &  WRITE(*,'(2i10,2f15.8)') jdim + ndim * myrank, idim + ndim *iproc, &
+              & DBLE(veco(jdim)), AIMAG(veco(jdim))
+           END DO
+           CALL MPI_BARRIER(MPI_COMM_WORLD, ierr)
         END DO
-     END IF
-     !
-  END DO
+        !
+     END DO ! idim = 1, ndim
+  END DO ! iproc = 1, nproc
   !
-  IF(myrank == 0) THEN
-     CLOSE(fo)
-  END IF
+  CLOSE(fo)
   !
   DEALLOCATE(veci, veco)
+  !
+  flush(fo)
+  !CALL MPI_BARRIER(MPI_COMM_WORLD, ierr)
+  !CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+  !STOP
   !
 END SUBROUTINE print_ham
 !
