@@ -9,9 +9,14 @@ PROGRAM shiftk
   !
   IMPLICIT NONE
   !
+#if defined(MPI)
+  INTEGER :: ierr
+#endif
+  !
   CALL shiftk_init()
   !
   CALL input_filename()
+  !
   ! Initialize hamiltonian
   !
   IF(inham == "") THEN
@@ -41,6 +46,11 @@ PROGRAM shiftk
   CALL dyn()
   !
   CALL finalize_ham()
+  !
+#if defined(MPI)
+  call MPI_FINALIZE(ierr)
+#endif
+  !
   WRITE(stdout,*)
   WRITE(stdout,*) "#####  Done  #####"
   WRITE(stdout,*)

@@ -14,6 +14,7 @@ SUBROUTINE shiftk_init()
 #if defined(MPI)
   USE mpi, only : MPI_COMM_WORLD
 #endif
+  !$ USE omp_lib, only : OMP_GET_NUM_THREADS
   USE shiftk_vals, ONLY : myrank, nproc, stdout
   !
   IMPLICIT NONE
@@ -37,7 +38,16 @@ SUBROUTINE shiftk_init()
   ELSE
      stdout = 6
      OPEN(stdout, file='/dev/null', status='unknown')
-  END IF   
+  END IF
+  !
+  WRITE(stdout,*)
+  WRITE(stdout,*) "  Number of processes : ", nproc
+  !$OMP PARALLEL
+  !$OMP MASTER
+  !$ WRITE(stdout,*) "  Number of threads : ", OMP_GET_NUM_THREADS()
+  !$OMP END MASTER
+  !$OMP END PARALLEL
+  WRITE(stdout,*)
   !
 END SUBROUTINE shiftk_init
 !
@@ -525,9 +535,11 @@ SUBROUTINE input_restart_vector()
   ! Last two Shadow residual vectors (Only for BiCG)
   !
   IF(lBiCG) THEN
-     READ(fi,*) v2_r, v2_i, v12_r, v12_i
-     v4(idim) = CMPLX(v2_r, v2_i, KIND(0d0))
-     v14(idim) = CMPLX(v12_r, v12_i, KIND(0d0))
+     DO idim = 1, ndim
+        READ(fi,*) v2_r, v2_i, v12_r, v12_i
+        v4(idim) = CMPLX(v2_r, v2_i, KIND(0d0))
+        v14(idim) = CMPLX(v12_r, v12_i, KIND(0d0))
+     END DO
   END IF
   !
   CLOSE(fi)

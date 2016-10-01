@@ -611,23 +611,37 @@ COCGと同様.
 \item 計算情報出力 (getcoef, getvec関数などを呼び出力)
 \item 終了関数 (finalize関数)
 \end{itemize}
-の手順で実行する. 
+の手順で実行する.
+fortran から呼び出すときには
+\begin{verbatim}
+  USE shifted_????
+\end{verbatim}
+のようにモジュールを呼び出す. \verb|"????"|の部分には,
+\verb|"CG_R"|, \verb|"CG_C"|, \verb|"COCG"|, \verb|"BiCG"|が入る.
 
 \subsection{各ルーチンの説明}
 
-\subsubsection{\texttt{?\_init}}
+\subsubsection{\texttt{????\_init}, \texttt{p????\_init}}
 
 ライブラリ内部変数の割り付けおよび初期化を行う.
 シフト線形方程式を解く前に, 一番初めに実行する.
 
 \noindent 構文
 
-\noindent Fortran
+\noindent Fortran シリアル/OpenMP版
 \begin{verbatim}
 CALL CG_R_init(ndim, nl, nz, x, z, itermax, threshold)
 CALL CG_C_init(ndim, nl, nz, x, z, itermax, threshold)
 CALL COCG_init(ndim, nl, nz, x, z, itermax, threshold)
 CALL BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
+\end{verbatim}
+
+\noindent Fortran MPI/Hybrid並列版
+\begin{verbatim}
+CALL pCG_R_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL pCG_C_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL pCOCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL pBiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 \end{verbatim}
 
 \noindent パラメーター
@@ -636,15 +650,15 @@ CALL BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
 
 \item \verb|ndim|
 
-  INTEGER. スカラー. 入力. 線形方程式の次元.
+  \verb|INTEGER|. スカラー. 入力. 線形方程式の次元.
 
 \item \verb|nl|
 
-  INTEGER. スカラー. 入力. 射影された解ベクトルの次元.
+  \verb|INTEGER|. スカラー. 入力. 射影された解ベクトルの次元.
 
 \item \verb|nz|
 
-  INTEGER. スカラー. 入力. シフト点の数.
+  \verb|INTEGER|. スカラー. 入力. シフト点の数.
 
 \item \verb|x|
 
@@ -669,17 +683,22 @@ CALL BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
   \verb|DOUBLE PRECISION|. スカラー. 入力. 収束判定用しきい値.
   シード方程式の残差ベクトルの各成分の絶対値の中で最大のものがこの値を下回った時に収束したと判定する.
 
+\item \verb|comm|
+
+  \verb|INTEGER|. スカラー. 入力. MPI/Hybrid並列版のみ.
+  MPIのコミニュケーター(\verb|MPI_COMM_WORLD|など)を入れる.
+
 \end{itemize}
 
-\subsubsection{\texttt{?\_restart}}
+\subsubsection{\texttt{????\_restart}, \texttt{p????\_restart}}
 
   リスタートを行う場合に\verb|?_init|の代わりに用いる.
   ライブラリ内部変数の割り付けおよび初期化を行う.
   シフト線形方程式を解く前に, 一番初めに実行する.
 
   \noindent 構文
-
-  \noindent Fortran
+  
+  \noindent Fortran (シリアル/OpenMP版)
   
 \begin{verbatim}
 CALL CG_R_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
@@ -693,11 +712,25 @@ CALL BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
 &                 z_seed, r_l_save)
 \end{verbatim}
 
+  \noindent Fortran (MPI/ハイブリッド並列版)
+  
+\begin{verbatim}
+CALL pCG_R_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL pCG_C_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL pCOCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL pBiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+&                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
+&                 z_seed, r_l_save)
+\end{verbatim}
+
 \noindent パラメーター
 
 \begin{itemize}
 
-\item \verb|ndim, nl, nz, x, z, itermax, threshold|
+\item \verb|ndim, nl, nz, x, z, itermax, threshold, comm|
 
   \verb|?_init|と同様.
 
@@ -785,18 +818,26 @@ CALL BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
 
 \end{itemize}
 
-\subsubsection{\texttt{?\_update}}
+\subsubsection{\texttt{????\_update}, \texttt{p????\_update}}
 
 ループ内で行列ベクトル積と交互に呼ばれて解を更新する.
 
 \noindent 構文
 
-\noindent Fortran
+\noindent Fortran (シリアル/OpenMPI版)
 \begin{verbatim}
 CALL CG_R_update(v12, v2, x, r_l, status)
 CALL CG_C_update(v12, v2, x, r_l, status)
 CALL COCG_update(v12, v2, x, r_l, status)
 CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
+\end{verbatim}
+
+\noindent Fortran (MPI/ハイブリッド並列版)
+\begin{verbatim}
+CALL pCG_R_update(v12, v2, x, r_l, status)
+CALL pCG_C_update(v12, v2, x, r_l, status)
+CALL pCOCG_update(v12, v2, x, r_l, status)
+CALL pBiCG_update(v12, v2, v14, v4, x, r_l, status)
 \end{verbatim}
 
 \noindent パラメーター
@@ -860,7 +901,7 @@ CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
 
 \end{itemize}
 
-\subsubsection{\texttt{?\_getcoef}}
+\subsubsection{\texttt{????\_getcoef}, \texttt{p????\_getcoef}}
 
 後でリスタートを刷るときに必要な係数を取得する.
 このルーチンを呼び出すためには,
@@ -868,12 +909,20 @@ CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
 
 \noindent 構文
 
-\noindent Fortran
+\noindent Fortran (シリアル/OpenMP版)
 \begin{verbatim}
 CALL CG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 CALL CG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 CALL COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 CALL BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+\end{verbatim}
+
+\noindent Fortran (MPI/ハイブリッド並列版)
+\begin{verbatim}
+CALL pCG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL pCG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL pCOCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL pBiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 \end{verbatim}
 
 \noindent パラメーター
@@ -905,7 +954,7 @@ CALL BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
   各反復での射影された残差ベクトル.
 \end{itemize}
 
-\subsubsection{\texttt{?\_getvec}}
+\subsubsection{\texttt{????\_getvec}, \texttt{p????\_getvec}}
 
 後でリスタートをするときに必要な残差ベクトルを取得する.
 このルーチンを呼び出すためには,
@@ -913,12 +962,20 @@ CALL BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 
 \noindent 構文
 
-\noindent Fortran
+\noindent Fortran (シリアル/OpenMP版)
 \begin{verbatim}
 CALL CG_R_getvec(r_old)
 CALL CG_C_getvec(r_old)
 CALL COCG_getvec(r_old)
 CALL BiCG_getvec(r_old, r_tilde_old)
+\end{verbatim}
+
+\noindent Fortran (MPI/ハイブリッド並列版)
+\begin{verbatim}
+CALL pCG_R_getvec(r_old)
+CALL pCG_C_getvec(r_old)
+CALL pCOCG_getvec(r_old)
+CALL pBiCG_getvec(r_old, r_tilde_old)
 \end{verbatim}
 
 \noindent パラメーター
@@ -941,18 +998,26 @@ CALL BiCG_getvec(r_old, r_tilde_old)
 
 \end{itemize}
 
-\subsubsection{\texttt{?\_finalize}}
+\subsubsection{\texttt{????\_finalize}, \texttt{p????\_finalize}}
 
 ライブラリ内部で割りつけた配列のメモリを解放する.
 
 \noindent 構文
 
-\noindent Fortran
+\noindent Fortran (シリアル/OpenMP版)
 \begin{verbatim}
 CALL CG_R_finalize()
 CALL CG_C_finalize()
 CALL COCG_finalize()
 CALL BiCG_finalize()
+\end{verbatim}
+
+\noindent Fortran (MPI/ハイブリッド並列版)
+\begin{verbatim}
+CALL pCG_R_finalize()
+CALL pCG_C_finalize()
+CALL pCOCG_finalize()
+CALL pBiCG_finalize()
 \end{verbatim}
 
 \subsection{Shifted BiCGライブラリを使用したソースコードの例}

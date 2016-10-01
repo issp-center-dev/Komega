@@ -299,7 +299,7 @@ PROGRAM solve_cr
     ! When restarting, counter
     !
     itermin = iter_old + 1
-    CALL CG_C_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, 0, &
+    CALL CG_C_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
     &                 status, iter_old, v2, v12, alpha, beta, z_seed, r_l_save)
     !
     ! These vectors were saved in CG_C routine
@@ -316,7 +316,7 @@ PROGRAM solve_cr
      !
      v2(1:ndim) = rhs(1:ndim)
      !
-     CALL CG_C_init(ndim, nl, nz, x, z, max(0,itermax), threshold, 0)
+     CALL CG_C_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
      !
   END IF
   !

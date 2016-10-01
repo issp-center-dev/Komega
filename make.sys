@@ -9,26 +9,24 @@
 #
 # intel
 #
-#F90=ifort
-#FFLAGS=-fpp -g -traceback -mkl
+MPIF90 = mpif90
+F90=ifort
+FFLAGS=-fopenmp -fpp -g -traceback -mkl -xHost -O3
 #
 # gfortran
 #
+#MPIF90 = mpif90
 #F90=gfortran
-#FFLAGS=-cpp -g -lblas -llapack
+#FFLAGS=-fopenmp -cpp -g -lblas -llapack
 #
-# intel (for DEBUG)
+# intel compiler (for DEBUG)
 #
 #F90=ifort
-#FFLAGS=-fpp -g -traceback -mkl -check all -warn all -D DEBUG -D NO_PROJ
+#MPIF90=mpif90
+#FFLAGS=-fopenmp -fpp -g -traceback -mkl -check all -warn all -D DEBUG -D NO_PROJ
 #
 # gfortran (for DEBUG)
 #
+#MPIF90=mpif90
 #F90=gfortran
 #FFLAGS=-cpp -g -lblas -llapack -Wall -D DEBUG -D NO_PROJ
-#
-# MPI + intel compiler (for DEBUG)
-#
-F90=ifort
-MPIF90=mpif90
-FFLAGS=-fpp -g -traceback -mkl -check all -warn all -D DEBUG -D NO_PROJ

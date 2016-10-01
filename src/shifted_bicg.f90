@@ -1,11 +1,19 @@
 !
 ! Routines for real-valiable CG
 !
+#if defined(MPI)
+MODULE pshifted_bicg
+#else
 MODULE shifted_bicg
+#endif
   !
   PRIVATE
   !
+#if defined(MPI)
+  PUBLIC pBiCG_init, pBiCG_restart, pBiCG_update, pBiCG_getcoef, pBiCG_getvec, pBiCG_finalize
+#else
   PUBLIC BiCG_init, BiCG_restart, BiCG_update, BiCG_getcoef, BiCG_getvec, BiCG_finalize
+#endif
   !
 CONTAINS
 !
@@ -119,10 +127,17 @@ END SUBROUTINE BiCG_seed_switch
 !
 ! Allocate & initialize variables
 !
-SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+#if defined(MPI)
+SUBROUTINE pBiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+#else
+SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+#endif
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, &
-  &                                    threshold, iz_seed, comm
+  &                                    threshold, iz_seed
+#if defined(MPI)
+  USE shifted_krylov_parameter, ONLY : comm
+#endif
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_save, beta, beta_save, pi, &
   &                               pi_old, pi_save, rho, z, z_seed 
   USE shifted_krylov_vecs_c, ONLY : p, r_l_save, v3, v5
@@ -130,17 +145,22 @@ SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0, comm0
+  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
   REAL(8),INTENT(IN) :: threshold0
   COMPLEX(8),INTENT(IN) :: z0(nz0)
   COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
+#if defined(MPI)
+  INTEGER,INTENT(IN) :: comm0
+#endif
   !
   ndim = ndim0
   nl = nl0
   nz = nz0
   itermax = itermax0
   threshold = threshold0
+#if defined(MPI)
   comm = comm0
+#endif
   !
   ALLOCATE(z(nz), v3(ndim), v5(ndim), pi(nz), pi_old(nz), p(nl,nz))
   CALL zcopy(nz,z0,1,z,1)
@@ -163,12 +183,21 @@ SUBROUTINE BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
      pi_save(1:nz,-1:0) = CMPLX(1d0, 0d0, KIND(0d0))
   END IF
   !
+#if defined(MPI)
+END SUBROUTINE pBiCG_init
+#else
 END SUBROUTINE BiCG_init
+#endif
 !
 ! Restart by input
 !
-SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
+#if defined(MPI)
+SUBROUTINE pBiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
 &                       iter_old, v2, v12, v4, v14, alpha_save0, beta_save0, z_seed0, r_l_save0)
+#else
+SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
+&                       iter_old, v2, v12, v4, v14, alpha_save0, beta_save0, z_seed0, r_l_save0)
+#endif
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed
@@ -177,11 +206,14 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, sta
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0, comm0
+  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
   REAL(8),INTENT(IN) :: threshold0
   COMPLEX(8),INTENT(IN) :: z0(nz0)
   COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
   INTEGER,INTENT(OUT) :: status(3)
+#if defined(MPI)
+  INTEGER,INTENT(IN) :: comm0
+#endif
   !
   ! For Restarting
   !
@@ -192,7 +224,11 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, sta
   COMPLEX(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
   COMPLEX(8),INTENT(INOUT) :: v4(ndim), v14(ndim)
   !
-  CALL BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+#if defined(MPI)
+  CALL pBiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+#else
+  CALL BiCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+#endif
   z_seed = z_seed0
   iz_seed = 0
   !
@@ -259,11 +295,19 @@ SUBROUTINE BiCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, sta
      status(2) = 0
   END IF
   !
+#if defined(MPI)
+END SUBROUTINE pBiCG_restart
+#else
 END SUBROUTINE BiCG_restart
+#endif
 !
 ! Update x, p, r
 !
+#if defined(MPI)
+SUBROUTINE pBiCG_update(v12, v2, v14, v4, x, r_l, status)
+#else
 SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
+#endif
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold, almost0
   USE shifted_krylov_vals_c, ONLY : alpha, alpha_old, alpha_save, &
@@ -369,11 +413,19 @@ SUBROUTINE BiCG_update(v12, v2, v14, v4, x, r_l, status)
      status(2) = 0
   END IF
   !
+#if defined(MPI)
+END SUBROUTINE pBiCG_update
+#else
 END SUBROUTINE BiCG_update
+#endif
 !
 ! Return saved alpha, beta, r_l
 !
+#if defined(MPI)
+SUBROUTINE pBiCG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
+#else
 SUBROUTINE BiCG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
+#endif
   !
   USE shifted_krylov_parameter, ONLY : iter, nl
   USE shifted_krylov_vals_c, ONLY : alpha_save, beta_save, z_seed
@@ -390,11 +442,19 @@ SUBROUTINE BiCG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
   CALL zcopy(iter,beta_save,1,beta_save0,1)
   CALL zcopy(nl*iter,r_l_save,1,r_l_save0,1)
   !
+#if defined(MPI)
+END SUBROUTINE pBiCG_getcoef
+#else
 END SUBROUTINE BiCG_getcoef
+#endif
 !
 ! Return r_old
 !
+#if defined(MPI)
+SUBROUTINE pBiCG_getvec(r_old, r_tilde_old)
+#else
 SUBROUTINE BiCG_getvec(r_old, r_tilde_old)
+#endif
   !
   USE shifted_krylov_parameter, ONLY : ndim
   USE shifted_krylov_vecs_c, ONLY : v3, v5
@@ -407,11 +467,19 @@ SUBROUTINE BiCG_getvec(r_old, r_tilde_old)
   CALL zcopy(ndim,v3,1,r_old,1)
   CALL zcopy(ndim,v5,1,r_tilde_old,1)
   !
+#if defined(MPI)
+END SUBROUTINE pBiCG_getvec
+#else
 END SUBROUTINE BiCG_getvec
+#endif
 !
 ! Deallocate private arrays
 !
+#if defined(MPI)
+SUBROUTINE pBiCG_finalize()
+#else
 SUBROUTINE BiCG_finalize()
+#endif
   !
   USE shifted_krylov_parameter, ONLY : itermax
   USE shifted_krylov_vals_c, ONLY : alpha_save, beta_save, &
@@ -426,6 +494,14 @@ SUBROUTINE BiCG_finalize()
      DEALLOCATE(alpha_save, beta_save, r_l_save, pi_save)
   END IF
   !
+#if defined(MPI)
+END SUBROUTINE pBiCG_finalize
+#else
 END SUBROUTINE BiCG_finalize
+#endif
 !
+#if defined(MPI)
+END MODULE pshifted_bicg
+#else
 END MODULE shifted_bicg
+#endif

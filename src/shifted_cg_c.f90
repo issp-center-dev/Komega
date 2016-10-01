@@ -1,11 +1,19 @@
 !
 ! Routines for real-valiable CG
 !
+#if defined(MPI)
+MODULE pshifted_cg_c
+#else
 MODULE shifted_cg_c
+#endif
   !
   PRIVATE
   !
+#if defined(MPI)
+  PUBLIC pCG_C_init, pCG_C_restart, pCG_C_update, pCG_C_getcoef, pCG_C_getvec, pCG_C_finalize
+#else
   PUBLIC CG_C_init, CG_C_restart, CG_C_update, CG_C_getcoef, CG_C_getvec, CG_C_finalize
+#endif
   !
 CONTAINS
 !
@@ -110,10 +118,17 @@ END SUBROUTINE CG_C_seed_switch
 !
 ! Allocate & initialize variables
 !
-SUBROUTINE CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+#if defined(MPI)
+SUBROUTINE pCG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+#else
+SUBROUTINE CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+#endif
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, &
-  &                                    threshold, iz_seed, comm
+  &                                    threshold, iz_seed
+#if defined(MPI)
+  USE shifted_krylov_parameter, ONLY : comm
+#endif
   USE shifted_krylov_vals_r, ONLY : alpha, alpha_save, beta, beta_save, pi, &
   &                               pi_old, pi_save, rho, z, z_seed 
   USE shifted_krylov_vecs_c, ONLY : p, r_l_save, v3
@@ -121,17 +136,22 @@ SUBROUTINE CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0, comm0
+  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
   REAL(8),INTENT(IN) :: threshold0
   REAL(8),INTENT(IN) :: z0(nz0)
   COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
+#if defined(MPI)
+  INTEGER,INTENT(IN) :: comm0
+#endif
   !
   ndim = ndim0
   nl = nl0
   nz = nz0
   itermax = itermax0
   threshold = threshold0
+#if defined(MPI)
   comm = comm0
+#endif
   !
   ALLOCATE(z(nz), v3(ndim), pi(nz), pi_old(nz), p(nl,nz))
   CALL dcopy(nz,z0,1,z,1)
@@ -153,12 +173,21 @@ SUBROUTINE CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
      pi_save(1:nz,-1:0) = 1d0
   END IF
   !
+#if defined(MPI)
+END SUBROUTINE pCG_C_init
+#else
 END SUBROUTINE CG_C_init
+#endif
 !
 ! Restart by input
 !
-SUBROUTINE CG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
+#if defined(MPI)
+SUBROUTINE pCG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
 &                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0)
+#else
+SUBROUTINE CG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
+&                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0)
+#endif
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed
   USE shifted_krylov_vals_r, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed
@@ -167,11 +196,14 @@ SUBROUTINE CG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, sta
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0, comm0
+  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
   REAL(8),INTENT(IN) :: threshold0
   REAL(8),INTENT(IN) :: z0(nz0)
   COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
   INTEGER,INTENT(OUT) :: status(3)
+#if defined(MPI)
+  INTEGER,INTENT(IN) :: comm0
+#endif
   !
   ! For Restarting
   !
@@ -181,7 +213,11 @@ SUBROUTINE CG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, sta
   COMPLEX(8),INTENT(IN) :: r_l_save0(nl0,iter_old)
   COMPLEX(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
   !
-  CALL CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+#if defined(MPI)
+  CALL pCG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+#else
+  CALL CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+#endif
   z_seed = z_seed0
   iz_seed = 0
   !
@@ -247,11 +283,19 @@ SUBROUTINE CG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, sta
      status(2) = 0
   END IF
   !
+#if defined(MPI)
+END SUBROUTINE pCG_C_restart
+#else
 END SUBROUTINE CG_C_restart
+#endif
 !
 ! Update x, p, r
 !
+#if defined(MPI)
+SUBROUTINE pCG_C_update(v12, v2, x, r_l, status)
+#else
 SUBROUTINE CG_C_update(v12, v2, x, r_l, status)
+#endif
   !
   USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold, almost0
   USE shifted_krylov_vals_r, ONLY : alpha, alpha_old, alpha_save, &
@@ -344,11 +388,19 @@ SUBROUTINE CG_C_update(v12, v2, x, r_l, status)
      status(2) = 0
   END IF
   !
+#if defined(MPI)
+END SUBROUTINE pCG_C_update
+#else
 END SUBROUTINE CG_C_update
+#endif
 !
 ! Return saved alpha, beta, r_l
 !
+#if defined(MPI)
+SUBROUTINE pCG_C_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
+#else
 SUBROUTINE CG_C_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
+#endif
   !
   USE shifted_krylov_parameter, ONLY : iter, nl
   USE shifted_krylov_vals_r, ONLY : alpha_save, beta_save, z_seed
@@ -365,11 +417,19 @@ SUBROUTINE CG_C_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
   CALL dcopy(iter,beta_save,1,beta_save0,1)
   CALL zcopy(nl*iter,r_l_save,1,r_l_save0,1)
   !
+#if defined(MPI)
+END SUBROUTINE pCG_C_getcoef
+#else
 END SUBROUTINE CG_C_getcoef
+#endif
 !
 ! Return r_old
 !
+#if defined(MPI)
+SUBROUTINE pCG_C_getvec(r_old)
+#else
 SUBROUTINE CG_C_getvec(r_old)
+#endif
   !
   USE shifted_krylov_parameter, ONLY : ndim
   USE shifted_krylov_vecs_c, ONLY : v3
@@ -381,11 +441,19 @@ SUBROUTINE CG_C_getvec(r_old)
   !
   CALL zcopy(ndim,v3,1,r_old,1)
   !
+#if defined(MPI)
+END SUBROUTINE pCG_C_getvec
+#else
 END SUBROUTINE CG_C_getvec
+#endif
 !
 ! Deallocate private arrays
 !
+#if defined(MPI)
+SUBROUTINE pCG_C_finalize()
+#else
 SUBROUTINE CG_C_finalize()
+#endif
   !
   USE shifted_krylov_parameter, ONLY : itermax
   USE shifted_krylov_vals_r, ONLY : alpha_save, beta_save, &
@@ -400,6 +468,14 @@ SUBROUTINE CG_C_finalize()
      DEALLOCATE(alpha_save, beta_save, r_l_save, pi_save)
   END IF
   !
+#if defined(MPI)
+END SUBROUTINE pCG_C_finalize
+#else
 END SUBROUTINE CG_C_finalize
+#endif
 !
+#if defined(MPI)
+END MODULE pshifted_cg_c
+#else
 END MODULE shifted_cg_c
+#endif

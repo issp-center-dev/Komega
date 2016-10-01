@@ -16,10 +16,17 @@ SUBROUTINE dyn()
   USE shiftk_vals, ONLY : alpha, beta, calctype, ndim, nomega, maxloops, iter_old, lBiCG, nl, &
   &                       outrestart, v12, v2, v14, v4, rhs, r_l, r_l_save, stdout, threshold, x_l, z, z_seed
   !
+#if defined(MPI)
+  USE pshifted_cocg, ONLY : pCOCG_init, pCOCG_restart, pCOCG_update, &
+  &                         pCOCG_getcoef, pCOCG_getvec, pCOCG_finalize
+  USE pshifted_bicg, ONLY : pBiCG_init, pBiCG_restart, pBiCG_update, &
+  &                         pBiCG_getcoef, pBiCG_getvec, pBiCG_finalize
+#else
   USE shifted_cocg, ONLY : COCG_init, COCG_restart, COCG_update, &
   &                        COCG_getcoef, COCG_getvec, COCG_finalize
   USE shifted_bicg, ONLY : BiCG_init, BiCG_restart, BiCG_update, &
   &                        BiCG_getcoef, BiCG_getvec, BiCG_finalize
+#endif
   USE lobpcg_mod, ONLY : zdotcMPI
 #if defined (MPI)
   USE mpi, ONLY : MPI_COMM_WORLD
@@ -36,13 +43,6 @@ SUBROUTINE dyn()
 #if defined(NO_PROJ)
   INTEGER :: jter
   COMPLEX(8),allocatable :: test_r(:,:,:) 
-#endif
-  INTEGER :: comm
-  !
-#if defined (MPI)
-  comm = MPI_COMM_WORLD
-#else
-  comm = 0
 #endif
   !
   nl = 1
@@ -73,19 +73,39 @@ SUBROUTINE dyn()
      !
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
-           CALL BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, comm, &
+#if defined (MPI)
+           CALL pBiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, MPI_COMM_WORLD, &
            &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+#else
+           CALL BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, &
+           &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+#endif
         ELSE
-           CALL COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, comm, &
+#if defined (MPI)
+           CALL pCOCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, MPI_COMM_WORLD, &
            &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+#else
+           CALL COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, &
+           &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+#endif
         END IF
      ELSE
         IF(lBiCG) THEN
-           CALL BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, comm, &
+#if defined (MPI)
+           CALL pBiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, MPI_COMM_WORLD, &
            &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+#else
+           CALL BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, &
+           &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+#endif
         ELSE
-           CALL COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, comm, &
+#if defined (MPI)
+           CALL pCOCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, MPI_COMM_WORLD, &
            &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+#else
+           CALL COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, &
+           &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+#endif
         END IF
      END IF
      DEALLOCATE(alpha, beta, r_l_save)
@@ -105,15 +125,31 @@ SUBROUTINE dyn()
      !
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
-           CALL BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, comm)
+#if defined (MPI)
+           CALL pBiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, MPI_COMM_WORLD)
+#else
+           CALL BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold)
+#endif
         ELSE
-           CALL COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, comm)
+#if defined (MPI)
+           CALL pCOCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, MPI_COMM_WORLD)
+#else
+           CALL COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold)
+#endif
         END IF
      ELSE
         IF(lBiCG) THEN
-           CALL BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, comm)
+#if defined (MPI)
+           CALL pBiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, MPI_COMM_WORLD)
+#else
+           CALL BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold)
+#endif
         ELSE
-           CALL COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, comm)
+#if defined (MPI)
+           CALL pCOCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, MPI_COMM_WORLD)
+#else
+           CALL COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold)
+#endif
         END IF
      END IF
      !
@@ -160,9 +196,17 @@ SUBROUTINE dyn()
      ! Update result x with COCG
      !
      IF(lBiCG) THEN
+#if defined (MPI)
+        CALL pBiCG_update(v12, v2, v14, v4, x_l, r_l, status)
+#else
         CALL BiCG_update(v12, v2, v14, v4, x_l, r_l, status)
+#endif
      ELSE
+#if defined (MPI)
+        CALL pCOCG_update(v12, v2,          x_l, r_l, status)
+#else
         CALL COCG_update(v12, v2,          x_l, r_l, status)
+#endif
      END IF
      !
      WRITE(stdout,'(i8,3i8,2e15.5)') iter, status, DBLE(v12(1)), ABS(r_l(1))
@@ -192,7 +236,7 @@ SUBROUTINE dyn()
   DO iter = 1, iter_old
      DO jter = 1, iter_old
         WRITE(stdout,'(e15.5)',advance="no") &
-        & abs(dot_product(test_r(1:ndim,jter,2), test_r(1:ndim,iter,1)) )
+        & ABS(zdotcMPI(ndim, test_r(1:ndim,jter,2), test_r(1:ndim,iter,1)) )
      END DO
      WRITE(stdout,*)
   END DO
@@ -205,11 +249,21 @@ SUBROUTINE dyn()
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl, iter_old))
      !
      IF(lBiCG) THEN
+#if defined (MPI)
+        CALL pBiCG_getcoef(alpha, beta, z_seed, r_l_save)
+        CALL pBiCG_getvec(v12,v14)
+#else
         CALL BiCG_getcoef(alpha, beta, z_seed, r_l_save)
         CALL BiCG_getvec(v12,v14)
+#endif
      ELSE
+#if defined (MPI)
+        CALL pCOCG_getcoef(alpha, beta, z_seed, r_l_save)
+        CALL pCOCG_getvec(v12)
+#else
         CALL COCG_getcoef(alpha, beta, z_seed, r_l_save)
         CALL COCG_getvec(v12)
+#endif
      END IF
      !
      CALL output_restart_parameter()
@@ -222,9 +276,17 @@ SUBROUTINE dyn()
   ! Deallocate all intrinsic vectors
   !
   IF(lBiCG) THEN
+#if defined (MPI)
+     CALL pBiCG_finalize()
+#else
      CALL BiCG_finalize()
+#endif
   ELSE
+#if defined (MPI)
+     CALL pCOCG_finalize()
+#else
      CALL COCG_finalize()
+#endif
   END IF
   !
   ! Output to a file

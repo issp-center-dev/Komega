@@ -57,7 +57,17 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
  * 必要に応じて`make.sys`を編集する.
    * `F90`:fortranコンパイルコマンド
    * `FFLAGS`: オプション.BLASのリンク(`-lblas`や`-mkl`)など.
+   * `MPIF90`:MPI版fortranコンパイルコマンド. MPI版が必要ない場合には指定しなくて良い.
  * `$ make`
+
+以下のものが作られる.
+
+ * `src/libshiftk.a` : シリアル版静的ライブラリ
+ * `src/shared/libshiftk.so` : シリアル版動的ライブラリ
+ * `src/mpi/libpshiftk.a` : MPI版静的ライブラリ(Optional)
+ * `src/shared_mpi/libpshiftk.so` : MPI版動的ライブラリ(Optional)
+ * `app/src/Shiftk.out` : ミニアプリ
+ * `app/src/mpi/Shiftk.out` : MPI版ミニアプリ (Oprional)
 
 # ミニアプリのテスト
 
@@ -80,11 +90,11 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
 静的リンク
 ```
-$ ifort myprog.f90 -L パス/src -lshiftk
+$ ifort myprog.f90 -L パス/src -lshiftk -I パス/src
 ```
 動的リンク
 ```
-$ ifort myprog.f90 -L パス/src/shared -lshiftk
+$ ifort myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
 ```
 動的リンクを行ったファイルを実行するときには,
 環境変数`LD_LIBRARY_PATH`に`src/shared`ディレクトリを追加しておく必要がある.

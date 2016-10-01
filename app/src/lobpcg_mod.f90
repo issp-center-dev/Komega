@@ -8,6 +8,13 @@ MODULE lobpcg_mod
   PRIVATE
   PUBLIC lobpcg_driver, zabsmax, zdotcMPI
   !
+  INTERFACE
+     DOUBLE COMPLEX FUNCTION zdotc(n,zx,incx,zy,incy)
+       DOUBLE COMPLEX zx(*),zy(*)
+       INTEGER        incx,incy,n
+     END FUNCTION zdotc
+  END INTERFACE
+  !
 CONTAINS
 !
 ! Driver routine for the LOBPCG
@@ -16,7 +23,7 @@ SUBROUTINE lobpcg_driver()
   !
   USE shiftk_vals, ONLY : ndim, rhs, e_min, e_max, stdout
 #if defined(DEBUG)
-  USE shiftk_vals, ONLY : myrank
+  USE shiftk_vals, ONLY : nproc
 #endif  
   !
   IMPLICIT NONE
@@ -59,7 +66,7 @@ SUBROUTINE lobpcg_driver()
   END DO
   !
 #if defined(DEBUG)
-  IF(myrank == 0) THEN
+  IF(nproc == 1) THEN
      !
      OPEN(fo, file = "zvo_Excited.dat")
      WRITE(fo,*) ndim
@@ -219,7 +226,7 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
-  prod = dot_product(zx,zy)
+  prod = zdotc(n,zx,1,zy,1)
   !
 #if defined(MPI)
   call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &

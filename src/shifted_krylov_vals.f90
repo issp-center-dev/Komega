@@ -3,7 +3,7 @@ MODULE shifted_krylov_parameter
   IMPLICIT NONE
   !
   REAL(8),PARAMETER :: &
-  & almost0 = 1d-13
+  & almost0 = 1d-50
   !
   INTEGER,SAVE :: &
   & comm, &
