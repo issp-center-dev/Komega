@@ -104,16 +104,27 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   !
   ! Initial guess of re
   !
+  WRITE(*,*) "DEBUG 0"
   CALL RANDOM_NUMBER(x_r(1:ndim))
+  WRITE(*,*) "DEBUG 1"
   CALL RANDOM_NUMBER(x_i(1:ndim))
+  WRITE(*,*) "DEBUG 2"
   x(1:ndim,2) = CMPLX(x_r(1:ndim), x_i(1:ndim), KIND(0d0))
+  WRITE(*,*) "DEBUG 3"
   dnorm = SQRT(DBLE(zdotcMPI(ndim, x(1:ndim,2), x(1:ndim,2))))
+  WRITE(*,*) "DEBUG 4"
   x(1:ndim,2) = x(1:ndim,2) / dnorm
+  WRITE(*,*) "DEBUG 5"
   CALL ham_prod(x(1:ndim,2), hx(1:ndim,2))
+  WRITE(*,*) "DEBUG 6"
   x( 1:ndim,3) = CMPLX(0d0, 0d0, KIND(0d0))
+  WRITE(*,*) "DEBUG 7"
   hx(1:ndim,3) = CMPLX(0d0, 0d0, KIND(0d0))
+  WRITE(*,*) "DEBUG 8"
   eig = DBLE(zdotcMPI(ndim, x(1:ndim,2), hx(1:ndim,2)))
+  WRITE(*,*) "DEBUG 9"
   x(1:ndim, 1) = hx(1:ndim,2) - eig * x(1:ndim,2)
+  WRITE(*,*) "DEBUG a"
   !
   res = zabsmax(x(1:ndim,1), ndim)
   WRITE(stdout,'(a)')        "    iter      Residual       Energy"
