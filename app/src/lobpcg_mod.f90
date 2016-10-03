@@ -237,12 +237,16 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
+  WRITE(*,*) "DEBUG 3.1", n, size(zx), size(zy)
+  WRITE(*,*) "DEBUG 3.2"
   prod = zdotc(n,zx,1,zy,1)
+  WRITE(*,*) "DEBUG 3.3"
   !
 #if defined(MPI)
   call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &
   &                  MPI_DOUBLE_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
 #endif
+  WRITE(*,*) "DEBUG 3.4"
   !
 END FUNCTION zdotcMPI
 !
