@@ -72,7 +72,7 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 # ミニアプリのテスト
 
  * `app/sample/denovo/`もしくは`app/sample/from_file/`ディレクトリに移動する.
- * `$ ../../src/ShiftK.out < namelist.def`とやる.
+ * `$ ../../src/ShiftK.out namelist.def`とやる.
  * `dynamicalG.dat`などが作られると成功.
  * `namelist.def`の書式はマニュアル参照
 

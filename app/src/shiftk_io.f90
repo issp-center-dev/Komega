@@ -15,14 +15,18 @@ SUBROUTINE shiftk_init()
   USE mpi, only : MPI_COMM_WORLD
 #endif
   !$ USE omp_lib, only : OMP_GET_NUM_THREADS
-  USE shiftk_vals, ONLY : myrank, nproc, stdout
+  USE shiftk_vals, ONLY : myrank, nproc, stdout, inpunit
   !
   IMPLICIT NONE
   !
-#if defined(MPI)
+  CHARACTER(256) :: fname
   INTEGER ierr
-#endif
-  !  
+  !
+  if(iargc() == 0) then
+     write(*,*) "ERROR ! Input file is absent."
+     stop
+  end if
+  !
 #if defined(MPI)
   call MPI_INIT(ierr)
   call MPI_COMM_SIZE (MPI_COMM_WORLD, nproc, ierr)
@@ -33,8 +37,24 @@ SUBROUTINE shiftk_init()
 #endif
   !
   IF(myrank == 0) THEN
+     !
      CALL system("mkdir -p output")
+     inpunit = 5
      stdout = 6
+     !
+     call getarg(1, fname)
+     OPEN(inpunit, file = TRIM(fname), status = "OLD", iostat = ierr)
+     !
+     IF(ierr /= 0) THEN
+        WRITE(*,*) "Cannot open input file ", TRIM(fname)
+#if defined(MPI)
+        CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+#endif
+        STOP
+     ELSE
+        WRITE(*,*) "  Open input file ", TRIM(fname)
+     END IF
+     !
   ELSE
      stdout = 6
      OPEN(stdout, file='/dev/null', status='unknown')
@@ -58,7 +78,7 @@ SUBROUTINE input_filename()
 #if defined(MPI)
   USE mpi, only : MPI_COMM_WORLD, MPI_CHARACTER
 #endif
-  USE shiftk_vals, ONLY : inham, invec, stdout, myrank
+  USE shiftk_vals, ONLY : inham, invec, stdout, myrank, inpunit
   !
   IMPLICIT NONE
   !
@@ -70,7 +90,7 @@ SUBROUTINE input_filename()
   inham = ""
   invec = ""
   !
-  IF(myrank == 0) READ(*,filename,err=100)
+  IF(myrank == 0) READ(inpunit,filename,err=100)
   !
 #if defined(MPI)
   call MPI_BCAST(inham, 256, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
@@ -101,7 +121,7 @@ SUBROUTINE input_parameter_ham()
 #if defined(MPI)
   USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER, MPI_DOUBLE_PRECISION
 #endif
-  USE shiftk_vals, ONLY : ndim, almost0, lBiCG, stdout, myrank, nproc
+  USE shiftk_vals, ONLY : ndim, almost0, lBiCG, stdout, myrank, nproc, inpunit
   USE ham_vals, ONLY : Jx, Jy, Jz, Dz, nsite, nsitep
   !
   IMPLICIT NONE
@@ -117,7 +137,7 @@ SUBROUTINE input_parameter_ham()
   Dz = 0d0
   nsite = 4
   !
-  IF(myrank == 0) READ(*,ham,err=100)
+  IF(myrank == 0) READ(inpunit,ham,err=100)
   !
 #if defined(MPI)
   call MPI_BCAST(nsite, 1, MPI_INTEGER,       0, MPI_COMM_WORLD, ierr)
@@ -177,7 +197,7 @@ SUBROUTINE input_parameter_cg()
 #if defined(MPI)
   USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER
 #endif
-  USE shiftk_vals, ONLY : maxloops, threshold, ndim, stdout, myrank
+  USE shiftk_vals, ONLY : maxloops, threshold, ndim, stdout, myrank, inpunit
   !
   IMPLICIT NONE
   !
@@ -190,7 +210,7 @@ SUBROUTINE input_parameter_cg()
   maxloops = ndim
   convfactor = 8
   !
-  IF(myrank == 0) READ(*,cg,err=100)
+  IF(myrank == 0) READ(inpunit,cg,err=100)
   !
 #if defined(MPI)
   call MPI_BCAST(maxloops,   1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
@@ -224,7 +244,7 @@ SUBROUTINE input_parameter_dyn()
   USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER, MPI_DOUBLE_COMPLEX, &
   &               MPI_CHARACTER, MPI_LOGICAL
 #endif
-  USE shiftk_vals, ONLY : nomega, outrestart, calctype, z, e_max, e_min, stdout, myrank
+  USE shiftk_vals, ONLY : nomega, outrestart, calctype, z, e_max, e_min, stdout, myrank, inpunit
   !
   IMPLICIT NONE
   !
@@ -241,7 +261,7 @@ SUBROUTINE input_parameter_dyn()
   omegamax = CMPLX(e_max, 0.01d0*(e_max - e_min), KIND(0d0))
   outrestart = .FALSE.
   !
-  IF(myrank == 0) READ(*,dyn,err=100)
+  IF(myrank == 0) READ(inpunit,dyn,err=100)
   !
 #if defined(MPI)
   call MPI_BCAST(nomega,   1, MPI_INTEGER,        0, MPI_COMM_WORLD, ierr)

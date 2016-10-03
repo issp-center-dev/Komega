@@ -9,9 +9,14 @@
 #
 # intel
 #
-MPIF90 = mpif90
-F90=ifort
-FFLAGS=-fopenmp -fpp -g -traceback -mkl -xHost -O3
+#MPIF90 = mpif90
+#F90=ifort
+#FFLAGS=-fopenmp -fpp -g -traceback -mkl -xHost -O3 -D NO_ZDOT
+#
+# Mac + gfortran ?
+#
+F90=gfortran
+FFLAGS=-fopenmp -cpp -g -framework Accelerate -lblas -llapack -lm -D NO_ZDOT
 #
 # gfortran
 #

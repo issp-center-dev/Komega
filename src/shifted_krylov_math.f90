@@ -100,8 +100,11 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
-  !prod = zdotc(n,zx,1,zy,1)
+#if defined(NO_ZDOT)
   prod = DOT_PRODUCT(zx,zy)
+#else
+  prod = zdotc(n,zx,1,zy,1)
+#endif
   !
 #if defined(MPI)
   call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &
@@ -129,8 +132,11 @@ FUNCTION zdotuMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
-  !prod = zdotu(n,zx,1,zy,1)
+#if defined(NO_ZDOT)
   prod = SUM(zx(1:n) * zy(1:n))
+#else
+  prod = zdotu(n,zx,1,zy,1)
+#endif
   !
 #if defined(MPI)
   call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &

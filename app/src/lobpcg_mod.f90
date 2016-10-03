@@ -226,8 +226,11 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
+#if defined(NO_ZDOT)
   prod = DOT_PRODUCT(zx,zy)
-  !prod = zdotc(n,zx,1,zy,1)
+#else
+  prod = zdotc(n,zx,1,zy,1)
+#endif
   !
 #if defined(MPI)
   call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &

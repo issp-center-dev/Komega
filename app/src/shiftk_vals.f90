@@ -6,6 +6,7 @@ MODULE shiftk_vals
   & almost0 = 1d-15
   !
   INTEGER,SAVE :: &
+  & inpunit,  &
   & stdout,   &
   & nproc,    &
   & myrank,  &
