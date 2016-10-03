@@ -56,16 +56,13 @@ SUBROUTINE ham_prod(veci,veco)
   COMPLEX(8),INTENT(IN) :: veci(ndim)
   COMPLEX(8),INTENT(OUT) :: veco(ndim)
   !
-  write(*,*) "DEBUG b"
   veco(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
-  write(*,*) "DEBUG c"
   !
   IF(inham == "") THEN
      CALL ham_prod_onthefly(veci,veco)
   ELSE
      CALL ham_prod_compress(veci,veco)
   END IF
-  write(*,*) "DEBUG d"
   !
 END SUBROUTINE ham_prod
 !

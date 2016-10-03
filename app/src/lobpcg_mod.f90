@@ -104,27 +104,16 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   !
   ! Initial guess of re
   !
-  WRITE(*,*) "DEBUG 0"
   CALL RANDOM_NUMBER(x_r(1:ndim))
-  WRITE(*,*) "DEBUG 1"
   CALL RANDOM_NUMBER(x_i(1:ndim))
-  WRITE(*,*) "DEBUG 2"
   x(1:ndim,2) = CMPLX(x_r(1:ndim), x_i(1:ndim), KIND(0d0))
-  WRITE(*,*) "DEBUG 3"
   dnorm = SQRT(DBLE(zdotcMPI(ndim, x(1:ndim,2), x(1:ndim,2))))
-  WRITE(*,*) "DEBUG 4"
   x(1:ndim,2) = x(1:ndim,2) / dnorm
-  WRITE(*,*) "DEBUG 5"
   CALL ham_prod(x(1:ndim,2), hx(1:ndim,2))
-  WRITE(*,*) "DEBUG 6"
   x( 1:ndim,3) = CMPLX(0d0, 0d0, KIND(0d0))
-  WRITE(*,*) "DEBUG 7"
   hx(1:ndim,3) = CMPLX(0d0, 0d0, KIND(0d0))
-  WRITE(*,*) "DEBUG 8"
   eig = DBLE(zdotcMPI(ndim, x(1:ndim,2), hx(1:ndim,2)))
-  WRITE(*,*) "DEBUG 9"
   x(1:ndim, 1) = hx(1:ndim,2) - eig * x(1:ndim,2)
-  WRITE(*,*) "DEBUG a"
   !
   res = zabsmax(x(1:ndim,1), ndim)
   WRITE(stdout,'(a)')        "    iter      Residual       Energy"
@@ -144,7 +133,9 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
      eig = DBLE(hsub(2,2))
      !
      IF(iter == 1) THEN
+        WRITE(stdout,'(a)',advance = "no") "DEBUG zhegv start"
         CALL zhegv(1, 'V', 'U', 2, hsub, 3, ovrp, 3, eig3, work, lwork, rwork, info)
+        WRITE(stdout,'(a)',advance = "no") "DEBUG zhegv end"
         eig3(3) = 0d0
         !
         IF(itarget == 1) THEN
@@ -154,7 +145,9 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
         END IF
         !
      ELSE
+        WRITE(stdout,'(a)',advance = "no") "DEBUG zhegv start"
         CALL zhegv(1, 'V', 'U', 3, hsub, 3, ovrp, 3, eig3, work, lwork, rwork, info)
+        WRITE(stdout,'(a)',advance = "no") "DEBUG zhegv end"
         !
         IF(itarget == 1) THEN
            jtarget = 1
@@ -237,16 +230,13 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
-  WRITE(*,*) "DEBUG 3.1", n, size(zx), size(zy)
-  WRITE(*,*) "DEBUG 3.2"
-  prod = zdotc(n,zx,1,zy,1)
-  WRITE(*,*) "DEBUG 3.3"
+  prod = DOT_PRODUCT(zx,zy)
+  !prod = zdotc(n,zx,1,zy,1)
   !
 #if defined(MPI)
   call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &
   &                  MPI_DOUBLE_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
 #endif
-  WRITE(*,*) "DEBUG 3.4"
   !
 END FUNCTION zdotcMPI
 !
