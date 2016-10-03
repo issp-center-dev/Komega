@@ -133,9 +133,7 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
      eig = DBLE(hsub(2,2))
      !
      IF(iter == 1) THEN
-        WRITE(stdout,'(a)',advance = "no") "DEBUG zhegv start"
         CALL zhegv(1, 'V', 'U', 2, hsub, 3, ovrp, 3, eig3, work, lwork, rwork, info)
-        WRITE(stdout,'(a)',advance = "no") "DEBUG zhegv end"
         eig3(3) = 0d0
         !
         IF(itarget == 1) THEN
@@ -145,9 +143,7 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
         END IF
         !
      ELSE
-        WRITE(stdout,'(a)',advance = "no") "DEBUG zhegv start"
         CALL zhegv(1, 'V', 'U', 3, hsub, 3, ovrp, 3, eig3, work, lwork, rwork, info)
-        WRITE(stdout,'(a)',advance = "no") "DEBUG zhegv end"
         !
         IF(itarget == 1) THEN
            jtarget = 1

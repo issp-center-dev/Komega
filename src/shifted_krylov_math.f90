@@ -100,7 +100,8 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
-  prod = zdotc(n,zx,1,zy,1)
+  !prod = zdotc(n,zx,1,zy,1)
+  prod = DOT_PRODUCT(zx,zy)
   !
 #if defined(MPI)
   call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &
