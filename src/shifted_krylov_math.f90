@@ -129,7 +129,8 @@ FUNCTION zdotuMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
-  prod = zdotu(n,zx,1,zy,1)
+  !prod = zdotu(n,zx,1,zy,1)
+  prod = SUM(zx(1:n) * zy(1:n))
   !
 #if defined(MPI)
   call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &
