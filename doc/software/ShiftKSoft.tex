@@ -51,7 +51,7 @@
 % Cover
 %
 \title{Shifted Krylov法ミニアプリマニュアル \\
-  ver.0.1}
+  ver.0.1.1}
 \author{東京大学物性研究所 ソフトウェア高度化推進チーム}
 \date{\today}
 \maketitle
@@ -67,8 +67,8 @@
 \section{概要}
 
 本資料はKrylov部分空間法に基づくシフト線形方程式群ライブラリを用いた
-Green関数計算用ミニアプリのマニュアルである。
-ライブラリに関する使用方法については、「Shifted Krylov法ライブラリマニュアル」に記載した。
+Green関数計算用ミニアプリのマニュアルです。
+ライブラリに関する使用方法については、「Shifted Krylov法ライブラリマニュアル」に記載しました。
 
 \subsection{ソフトウェア概要}
 本ソフトウェアでは、Green関数
@@ -76,20 +76,20 @@ Green関数計算用ミニアプリのマニュアルである。
   G_{i}(z) = \langle i | (z-{\hat H})^{-1}| i \rangle \equiv 
   {\boldsymbol \varphi}_i^{*} \cdot (z-{\hat H})^{-1} {\boldsymbol \varphi}_i
 \end{align}
-の計算を行う。ここで$| i \rangle $はベクトル、${\cal H}$はハミルトニアン、$z$は複素数である。\\
+の計算を行います。ここで$| i \rangle $はベクトル、${\cal H}$はハミルトニアン、$z$は複素数を表します。\\
 なお${\cal H}$については、
 \begin{itemize}
 \item{${\cal H}$をMatrixMarket形式の入力ファイルとして与えるモード}
 \item{Heisenberg模型の${\cal H}$を内部で与えるモード}
 \end{itemize}
-を用意する。またグリーン関数の計算では、${\hat H}$と$z$が複素数もしくは実数かに応じ、
+を用意します。またグリーン関数の計算では、${\hat H}$と$z$が複素数もしくは実数かに応じ、
 \begin{itemize}
 \item ${\hat H}$も$z$も両方複素数の場合 : Shifted Bi-Conjugate Gradient(BiCG)法 or Shifted Conjugate Orthogonal Conjugate Gradient(COCG)法 
 \item ${\hat H}$が実数で$z$が複素数の場合 : Shifted Conjugate Orthogonal Conjugate Gradient(COCG)法 
 \item ${\hat H}$が複素数で$z$が実数の場合 : Shifted Conjugate Gradient(CG)法 (複素ベクトル)
 \item ${\hat H}$も$z$も両方実数の場合 : Shifted Conjugate Gradient(CG)法 (実ベクトル)
 \end{itemize}
-の手法を用意する。デフォルトでは入力条件および入力ファイルからどのタイプかを自動判定し計算を行うものとする。ただし、各手法を手動で選択させ計算させることも可能とする。
+の手法を用意しています。デフォルトでは入力条件および入力ファイルからどのタイプかを自動判定し計算が行われます。ただし、各手法を手動で選択させ計算させることも可能となっています。
 
 
 \subsection{開発環境}
@@ -118,8 +118,8 @@ Green関数計算用ミニアプリのマニュアルである。
 \item{ライブラリを利用したループ計算}
 \item{計算結果ファイル出力(係数、残差ベクトル、動的グリーン関数)}
 \end{enumerate}
-の流れで計算を行う(図\ref{Fig:CalcFlow})。
-使用の流れおよび各ファイルの詳細については、Sec. \ref{Sec:Usage}, \ref{Sec:FileFormat}にそれぞれ記載する。
+の流れで計算を行います(図\ref{Fig:CalcFlow})。
+使用の流れおよび各ファイルの詳細については、Sec. \ref{Sec:Usage}, \ref{Sec:FileFormat}にそれぞれ記載してあります。
 
 \begin{figure}[htbp]
 \begin{center}
@@ -203,10 +203,7 @@ MatrixMarket形式に従ったハミルトニアンの要素が記載された�
 
 \subsubsection*{計算実行}
 作成した入力ファイル指定ファイルを引数にして計算実行します。
-計算の途中経過は標準出力およびファイルでログ出力されます(\textcolor{red}{ログの内容に関しては要検討})。
-ログファイルは自動生成される\verb|output|フォルダに格納されます。
-
-以下、実行ファイルを\verb|ShiftK.out|、
+計算の途中経過は標準出力されます。以下、実行ファイルを\verb|ShiftK.out|、
 入力ファイル指定ファイルを\verb|namelist.def|としてコマンド例を記載します。
 
 \verb|$| \underline{パス}/\verb|ShiftK.out| \verb|namelist.def|
@@ -240,8 +237,7 @@ TriDiagComp.dat, ResVec.dat, dynamicalG.dat
 \subsubsection*{計算実行}
 作成した入力ファイル指定ファイルを引数にして計算実行します。
 \verb|output|フォルダにある\verb|TriDiagComp.dat|および\verb|ResVec.dat|が自動的に読み込まれます。
-計算の途中経過は標準出力およびファイルでログ出力されます(\textcolor{red}{ログの内容に関しては要検討})。
-ログファイルは自動生成される\verb|output|フォルダに格納されます。
+計算の途中経過は標準出力されます。
 なお、\verb|output|フォルダ内に\verb|dynamicalG.dat|が存在する場合は計算終了時に上書きされます。
 
 以下、実行ファイルを\verb|ShiftK.out|、
@@ -256,14 +252,12 @@ TriDiagComp.dat, ResVec.dat, dynamicalG.dat
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{リスタート計算をする場合}
 \subsubsection*{入力条件ファイルの作成}
-\verb|namelist.def|内の\verb|calctype|パラメーターを\verb|"restart"|に変更してください.
+\verb|namelist.def|内の\verb|calctype|パラメーターを\verb|"restart"|に変更してください。
 あとは上記の再計算の場合と同様です。
 
 \subsubsection*{計算実行}
 作成した入力ファイル指定ファイルを引数にして計算実行します。
-計算の途中経過は標準出力およびファイルでログ出力されます(\textcolor{red}{ログの内容に関しては要検討})。
-ログファイルは自動生成される\verb|output|フォルダに格納されます。
-
+計算の途中経過は標準出力されます。
 以下、実行ファイルを\verb|ShiftK.out| 、
 入力ファイル指定ファイルを\verb|namelist.def|としてコマンド例を記載します。
 
@@ -481,8 +475,10 @@ Dz = 0d0
 \end{itemize} 
   
 \newpage
-\subsubsection{InHamファイル} \label{subsubsec:ham}
-MatrixMarket形式に準ずる。
+\subsubsection{\textcolor{red}{InHamファイル}} \label{subsubsec:ham}
+MatrixMarket形式に準じ、以下のフォーマットを採用しています。\\
+
+\textcolor{red}{実際に読込対応している形式を記載する}
 
 \subsubsection{InVecファイル}\label{subsubsec:vec}
 励起ベクトルを入力するテキスト形式のファイルです。ファイル名は入出力ファイル指定ファイルで指定します。
@@ -513,7 +509,7 @@ MatrixMarket形式に準ずる。
   {\bf 形式 :} int型
   
   {\bf 説明 :} 計算対象のヒルベルト空間数を指定する整数。
-  ハミルトニアンの次元と一致しなければならない。
+  ハミルトニアンの次元と一致している必要があります。
  
 \item  $[$double01$]$, $[$double02$]$
   
@@ -643,9 +639,9 @@ MatrixMarket形式に準ずる。
 \newpage
 \subsection{出力ファイル}
 \subsubsection{リスタート用係数}\label{subsubsec:ResCoef}
-\ref{subsubsec:recoeff}と同じ形式を取る。
+\ref{subsubsec:recoeff}と同じ形式を取ります。
 \subsubsection{リスタート用ベクトル}\label{subsubsec:ResVec}
-\ref{subsubsec:revec}と同じ形式を取る。
+\ref{subsubsec:revec}と同じ形式を取ります。
 \subsubsection{動的グリーン関数ファイル}\label{subsubsec:DynamicalG}
 
 動的グリーン関数の計算結果を出力するテキスト形式のファイルです。
