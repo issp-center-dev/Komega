@@ -82,7 +82,7 @@
 \end{itemize}
 いずれの場合も Seed switching を行う.
 左ベクトルが$N_L$個, 右ベクトルが$N_R$個(典型的には1個)あるとする.
-
+以下, 各手法のアルゴリズムを記載する.
 %\newpage
 \subsection{Seed switch 付き Shifted BiCG法}
 
@@ -327,7 +327,7 @@ end do $j$
 \item 各iterationでの$\alpha, \beta, {\bf r}^{\rm L}$を保存しておき, 
 あとで利用する場合には最大反復回数\verb|itermax|を設定する.
 \end{itemize}
-ライブラリの各ルーチンの名前は仮に次のようにしておく
+ライブラリの各ルーチンの名前は仮に次のようにしておく.
 
 \begin{itemize}
 \item \verb|BiCG_init|, \verb|COCG_init|, \verb|CG_C_init|, \verb|CG_R_init|
