@@ -29,7 +29,7 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
        * `zvo_Ham.dat`: テスト用Hamiltonianファイル(入力)
  * `doc/`: ドキュメント用ディレクトリ
    * `library`: ライブラリのドキュメントのディレクトリ
-     * `ShiftK.tex`: ライブラリの設計書兼マニュアル
+     * `komega.tex`: ライブラリの設計書兼マニュアル
    * `software`: ミニアプリのドキュメントのディレクトリ
      * `KrylovSoft_ver.0.1.eps`: フロー図
      * `ShiftKSoft.tex`: ミニアプリの設計書兼マニュアル
@@ -37,12 +37,12 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
  * `makefile`: Makeファイル
  * `src/`: ライブラリのソースコードのディレクトリ
    * `makefile`: ライブラリのビルド用Makeファイル
-   * `shifted_bicg.f90`: Shifted BiCG法ライブラリ用サブルーチン群
-   * `shifted_cg_c.f90`: Shifted CG法(実Hamiltonian)ライブラリ用サブルーチン群
-   * `shifted_cg_r.f90`: Shifted CG法(複素Hamiltonian)ライブラリ用サブルーチン群
-   * `shifted_cocg.f90`: Shifted COCG法ライブラリ用サブルーチン群
-   * `shifted_krylov_math.f90`: BLASインターフェイスモジュール
-   * `shifted_krylov_vals.f90`: ライブラリ内部共通変数モジュール
+   * `komega_bicg.f90`: Shifted BiCG法ライブラリ用サブルーチン群
+   * `komega_cg_c.f90`: Shifted CG法(実Hamiltonian)ライブラリ用サブルーチン群
+   * `komega_cg_r.f90`: Shifted CG法(複素Hamiltonian)ライブラリ用サブルーチン群
+   * `komega_cocg.f90`: Shifted COCG法ライブラリ用サブルーチン群
+   * `komega_math.f90`: BLASインターフェイスモジュール
+   * `komega_vals.f90`: ライブラリ内部共通変数モジュール
  * `test/`: ライブラリのテスト用ディレクトリ
    * `krylov.in`: テスト用入力パラメーターファイル
    * `make_ham.f90`: 擬似Hamiltonianを乱数で生成するサブルーチン群
@@ -62,10 +62,10 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
 以下のものが作られる.
 
- * `src/libshiftk.a` : シリアル版静的ライブラリ
- * `src/shared/libshiftk.so` : シリアル版動的ライブラリ
- * `src/mpi/libpshiftk.a` : MPI版静的ライブラリ(Optional)
- * `src/shared_mpi/libpshiftk.so` : MPI版動的ライブラリ(Optional)
+ * `src/libkomega.a` : シリアル版静的ライブラリ
+ * `src/shared/libkomega.so` : シリアル版動的ライブラリ
+ * `src/mpi/libpkomega.a` : MPI版静的ライブラリ(Optional)
+ * `src/shared_mpi/libpkomega.so` : MPI版動的ライブラリ(Optional)
  * `app/src/Shiftk.out` : ミニアプリ
  * `app/src/mpi/Shiftk.out` : MPI版ミニアプリ (Oprional)
 
