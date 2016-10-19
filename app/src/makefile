@@ -17,11 +17,11 @@ shiftk_io.o \
 shiftk_vals.o \
 
 ifdef MPIF90
-ShiftK.out:$(OBJS) ../../src/libshiftk.a
+ShiftK.out:$(OBJS) ../../src/libkomega.a
 	$(F90) $(OBJS) -o $@ $(LIB) $(FFLAGS)
 	cd mpi; $(MPIF90) $(OBJS) -o $@ $(MPILIB) $(FFLAGS) -D MPI
 else
-ShiftK.out:$(OBJS) ../../src/libshiftk.a
+ShiftK.out:$(OBJS) ../../src/libkomega.a
 	$(F90) $(OBJS) -o $@ $(LIB) $(FFLAGS)
 endif
 
@@ -48,7 +48,7 @@ lobpcg_mod.o:ham_prod.o
 shiftk_io.o:shiftk_vals.o
 shiftk_io.o:ham_prod.o
 shiftk_io.o:lobpcg_mod.o
-dyn_mod.o:../../src/libshiftk.a
+dyn_mod.o:../../src/libkomega.a
 dyn_mod.o:shiftk_io.o
 dyn_mod.o:shiftk_vals.o
 dyn_mod.o:ham_prod.o
