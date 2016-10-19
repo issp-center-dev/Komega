@@ -28,11 +28,13 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
        * `zvo_Excited.dat`: テスト用励起ベクトルファイル(入力)
        * `zvo_Ham.dat`: テスト用Hamiltonianファイル(入力)
  * `doc/`: ドキュメント用ディレクトリ
+   * `ShiftKSoft.pdf` : ミニアプリのマニュアル
+   * `komega.pdf` : ライブラリのマニュアル
    * `library`: ライブラリのドキュメントのディレクトリ
-     * `komega.tex`: ライブラリの設計書兼マニュアル
+     * `komega.tex`: ライブラリのマニュアルのソース
    * `software`: ミニアプリのドキュメントのディレクトリ
      * `KrylovSoft_ver.0.1.eps`: フロー図
-     * `ShiftKSoft.tex`: ミニアプリの設計書兼マニュアル
+     * `ShiftKSoft.tex`: ミニアプリのマニュアルのソース
  * `make.sys`: ビルド環境指定ファイル
  * `makefile`: Makeファイル
  * `src/`: ライブラリのソースコードのディレクトリ
