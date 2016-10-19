@@ -1,22 +1,24 @@
 !
-!    Copyright 2016 Mitsuaki Kawamura
+! ISSP Math Library - A library for solving linear systems in materials science
+! Copyright (C) 2016 Mitsuaki Kawamura
+! 
+! This library is free software; you can redistribute it and/or
+! modify it under the terms of the GNU Lesser General Public
+! License as published by the Free Software Foundation; either
+! version 2.1 of the License, or (at your option) any later version.
+! 
+! This library is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+! Lesser General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public
+! License along with this library; if not, write to the Free Software
+! Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+! 
+! For more details, See `COPYING.LESSER' in the root directory of this library.
 !
-!    This file is part of ISSP Math Library.
-!
-!    ISSP Math Library is free software: you can redistribute it and/or modify
-!    it under the terms of the GNU Lesser General Public License as published by
-!    the Free Software Foundation, either version 3 of the License, or
-!    (at your option) any later version.
-!
-!    ISSP Math Library is distributed in the hope that it will be useful,
-!    but WITHOUT ANY WARRANTY; without even the implied warranty of
-!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!    GNU Lesser General Public License for more details.
-!
-!    You should have received a copy of the GNU Lesser General Public License
-!    along with ISSP Math Library.  If not, see <http://www.gnu.org/licenses/>.
-!
-MODULE shifted_krylov_math
+MODULE komega_math
   !
   IMPLICIT NONE
   !
@@ -77,7 +79,7 @@ FUNCTION ddotMPI(n,dx,dy) RESULT(prod)
   !
 #if defined(MPI)
   use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_PRECISION, MPI_SUM
-  USE shifted_krylov_parameter, ONLY : comm
+  USE komega_parameter, ONLY : comm
 #endif
   !
   IMPLICIT NONE
@@ -105,7 +107,7 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   !
 #if defined(MPI)
   use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_COMPLEX, MPI_SUM
-  USE shifted_krylov_parameter, ONLY : comm
+  USE komega_parameter, ONLY : comm
 #endif
   !
   IMPLICIT NONE
@@ -137,7 +139,7 @@ FUNCTION zdotuMPI(n,zx,zy) RESULT(prod)
   !
 #if defined(MPI)
   use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_COMPLEX, MPI_SUM
-  USE shifted_krylov_parameter, ONLY : comm
+  USE komega_parameter, ONLY : comm
 #endif
   !
   IMPLICIT NONE
@@ -169,7 +171,7 @@ FUNCTION dabsmax(array, n) RESULT(maxarray)
   !
 #if defined(MPI)
   use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_PRECISION, MPI_MAX
-  USE shifted_krylov_parameter, ONLY : comm
+  USE komega_parameter, ONLY : comm
 #endif
   !
   IMPLICIT NONE
@@ -197,7 +199,7 @@ FUNCTION zabsmax(array, n) RESULT(maxarray)
   !
 #if defined(MPI)
   use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_PRECISION, MPI_MAX
-  USE shifted_krylov_parameter, ONLY : comm
+  USE komega_parameter, ONLY : comm
 #endif
   !
   IMPLICIT NONE
@@ -219,4 +221,4 @@ FUNCTION zabsmax(array, n) RESULT(maxarray)
   !
 END FUNCTION zabsmax
 !
-end MODULE shifted_krylov_math
+end MODULE komega_math

@@ -1,3 +1,23 @@
+%
+% ISSP Math Library - A library for solving linear systems in materials science
+% Copyright (C) 2016 Mitsuaki Kawamura
+% 
+% This library is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public
+% License as published by the Free Software Foundation; either
+% version 2.1 of the License, or (at your option) any later version.
+% 
+% This library is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+% Lesser General Public License for more details.
+% 
+% You should have received a copy of the GNU Lesser General Public
+% License along with this library; if not, write to the Free Software
+% Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+% 
+% For more details, See `COPYING.LESSER' in the root directory of this library.
+%
 \documentclass[12pt,titlepage]{jarticle}
 %\documentclass[12pt,titlepage]{article}
 %\usepackage[whole]{bxcjkjatype}
@@ -46,7 +66,8 @@
 %
 % Cover
 %
-\title{Shifted Krylov法ライブラリ マニュアル}
+\title{ISSP Math Library \\
+  Shifted Krylov法ライブラリ $K(\omega)$ マニュアル}
 \author{東京大学物性研究所 ソフトウェア高度化推進チーム}
 \date{\today}
 \maketitle
@@ -59,7 +80,8 @@
 
 \section{概要}
 
-本資料はKrylov部分空間法に基づくシフト線形方程式群ソルバーに関するマニュアルである.
+本資料はISSP Math Libraryの内の、Krylov部分空間法に基づくシフト線形方程式群ソルバーライブラリ
+$K(\omega)$に関するマニュアルである.
 本ライブラリは, (射影付き)シフト線形問題
 \begin{align}
   G_{i j}(z) = \langle i | (z {\hat I} -{\hat H})^{-1}| j \rangle \equiv 
@@ -68,6 +90,28 @@
 を, Krylov部分空間法を用いて解くためのルーチンを提供する.
 言語はfortranを用いる. 
 また, BLASレベル1ルーチンを使用する.
+
+\section{著作権}
+
+\noindent
+ISSP Math Library - A library for solving linear systems in materials science \\
+Copyright (C) 2016 Mitsuaki Kawamura \\
+ \\
+This library is free software; you can redistribute it and/or \\
+modify it under the terms of the GNU Lesser General Public \\
+License as published by the Free Software Foundation; either \\
+version 2.1 of the License, or (at your option) any later version. \\
+ \\
+This library is distributed in the hope that it will be useful, \\
+but WITHOUT ANY WARRANTY; without even the implied warranty of \\
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU \\
+Lesser General Public License for more details. \\
+ \\
+You should have received a copy of the GNU Lesser General Public \\
+License along with this library; if not, write to the Free Software \\
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA \\
+ \\
+For more details, See `COPYING.LESSER' in the root directory of this library.
 
 \section{アルゴリズム}
 
@@ -614,7 +658,7 @@ COCGと同様.
 の手順で実行する.
 fortran から呼び出すときには
 \begin{verbatim}
-  USE shifted_????
+  USE komega_????
 \end{verbatim}
 のようにモジュールを呼び出す. \verb|"????"|の部分には,
 \verb|"CG_R"|, \verb|"CG_C"|, \verb|"COCG"|, \verb|"BiCG"|が入る.
@@ -630,18 +674,18 @@ fortran から呼び出すときには
 
 \noindent Fortran シリアル/OpenMP版
 \begin{verbatim}
-CALL CG_R_init(ndim, nl, nz, x, z, itermax, threshold)
-CALL CG_C_init(ndim, nl, nz, x, z, itermax, threshold)
-CALL COCG_init(ndim, nl, nz, x, z, itermax, threshold)
-CALL BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
+CALL komega_CG_R_init(ndim, nl, nz, x, z, itermax, threshold)
+CALL komega_CG_C_init(ndim, nl, nz, x, z, itermax, threshold)
+CALL komega_COCG_init(ndim, nl, nz, x, z, itermax, threshold)
+CALL komega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
 \end{verbatim}
 
 \noindent Fortran MPI/Hybrid並列版
 \begin{verbatim}
-CALL pCG_R_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-CALL pCG_C_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-CALL pCOCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-CALL pBiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL komega_pCG_R_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL komega_pCG_C_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL komega_pCOCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL komega_pBiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 \end{verbatim}
 
 \noindent パラメーター
@@ -701,13 +745,13 @@ CALL pBiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
   \noindent Fortran (シリアル/OpenMP版)
   
 \begin{verbatim}
-CALL CG_R_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+CALL komega_CG_R_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
 &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-CALL CG_C_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+CALL komega_CG_C_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
 &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-CALL COCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+CALL komega_COCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
 &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-CALL BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+CALL komega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
 &                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
 &                 z_seed, r_l_save)
 \end{verbatim}
@@ -715,13 +759,13 @@ CALL BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
   \noindent Fortran (MPI/ハイブリッド並列版)
   
 \begin{verbatim}
-CALL pCG_R_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+CALL komega_pCG_R_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
 &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-CALL pCG_C_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+CALL komega_pCG_C_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
 &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-CALL pCOCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+CALL komega_pCOCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
 &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-CALL pBiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+CALL komega_pBiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
 &                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
 &                 z_seed, r_l_save)
 \end{verbatim}
@@ -826,18 +870,18 @@ CALL pBiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
 
 \noindent Fortran (シリアル/OpenMPI版)
 \begin{verbatim}
-CALL CG_R_update(v12, v2, x, r_l, status)
-CALL CG_C_update(v12, v2, x, r_l, status)
-CALL COCG_update(v12, v2, x, r_l, status)
-CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
+CALL komega_CG_R_update(v12, v2, x, r_l, status)
+CALL komega_CG_C_update(v12, v2, x, r_l, status)
+CALL komega_COCG_update(v12, v2, x, r_l, status)
+CALL komega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 \end{verbatim}
 
 \noindent Fortran (MPI/ハイブリッド並列版)
 \begin{verbatim}
-CALL pCG_R_update(v12, v2, x, r_l, status)
-CALL pCG_C_update(v12, v2, x, r_l, status)
-CALL pCOCG_update(v12, v2, x, r_l, status)
-CALL pBiCG_update(v12, v2, v14, v4, x, r_l, status)
+CALL komega_pCG_R_update(v12, v2, x, r_l, status)
+CALL komega_pCG_C_update(v12, v2, x, r_l, status)
+CALL komega_pCOCG_update(v12, v2, x, r_l, status)
+CALL komega_pBiCG_update(v12, v2, v14, v4, x, r_l, status)
 \end{verbatim}
 
 \noindent パラメーター
@@ -911,18 +955,18 @@ CALL pBiCG_update(v12, v2, v14, v4, x, r_l, status)
 
 \noindent Fortran (シリアル/OpenMP版)
 \begin{verbatim}
-CALL CG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-CALL CG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-CALL COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-CALL BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_CG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_CG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 \end{verbatim}
 
 \noindent Fortran (MPI/ハイブリッド並列版)
 \begin{verbatim}
-CALL pCG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-CALL pCG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-CALL pCOCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-CALL pBiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_pCG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_pCG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_pCOCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_pBiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 \end{verbatim}
 
 \noindent パラメーター
@@ -964,18 +1008,18 @@ CALL pBiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 
 \noindent Fortran (シリアル/OpenMP版)
 \begin{verbatim}
-CALL CG_R_getvec(r_old)
-CALL CG_C_getvec(r_old)
-CALL COCG_getvec(r_old)
-CALL BiCG_getvec(r_old, r_tilde_old)
+CALL komega_CG_R_getvec(r_old)
+CALL komega_CG_C_getvec(r_old)
+CALL komega_COCG_getvec(r_old)
+CALL komega_BiCG_getvec(r_old, r_tilde_old)
 \end{verbatim}
 
 \noindent Fortran (MPI/ハイブリッド並列版)
 \begin{verbatim}
-CALL pCG_R_getvec(r_old)
-CALL pCG_C_getvec(r_old)
-CALL pCOCG_getvec(r_old)
-CALL pBiCG_getvec(r_old, r_tilde_old)
+CALL komega_pCG_R_getvec(r_old)
+CALL komega_pCG_C_getvec(r_old)
+CALL komega_pCOCG_getvec(r_old)
+CALL komega_pBiCG_getvec(r_old, r_tilde_old)
 \end{verbatim}
 
 \noindent パラメーター
@@ -1006,18 +1050,18 @@ CALL pBiCG_getvec(r_old, r_tilde_old)
 
 \noindent Fortran (シリアル/OpenMP版)
 \begin{verbatim}
-CALL CG_R_finalize()
-CALL CG_C_finalize()
-CALL COCG_finalize()
-CALL BiCG_finalize()
+CALL komega_CG_R_finalize()
+CALL komega_CG_C_finalize()
+CALL komega_COCG_finalize()
+CALL komega_BiCG_finalize()
 \end{verbatim}
 
 \noindent Fortran (MPI/ハイブリッド並列版)
 \begin{verbatim}
-CALL pCG_R_finalize()
-CALL pCG_C_finalize()
-CALL pCOCG_finalize()
-CALL pBiCG_finalize()
+CALL komega_pCG_R_finalize()
+CALL komega_pCG_C_finalize()
+CALL komega_pCOCG_finalize()
+CALL komega_pBiCG_finalize()
 \end{verbatim}
 
 \subsection{Shifted BiCGライブラリを使用したソースコードの例}
@@ -1027,8 +1071,8 @@ CALL pBiCG_finalize()
 \begin{lstlisting}
 PROGRAM my_prog
   !
-  USE shifted_bicg, ONLY : BiCG_init, BiCG_restart, BiCG_update, &
-  &                        BiCG_getcoef, BiCG_getvec, BiCG_finalize
+  USE komega_bicg, ONLY : komega_BiCG_init, komega_BiCG_restart, komega_BiCG_update, &
+  &                       komega_BiCG_getcoef, komega_BiCG_getvec, komega_BiCG_finalize
   USE solve_cc_routines, ONLY : input_size, input_restart, &
   &                             projection, &
   &                             hamiltonian_prod, generate_system, &
@@ -1098,7 +1142,7 @@ PROGRAM my_prog
     ! When restarting, counter
     !
     itermin = iter_old + 1
-    CALL BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
+    CALL komega_BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
     &                 status, iter_old, v2, v12, v4, v14, alpha, &
     &                 beta, z_seed, r_l_save)
     !
@@ -1118,7 +1162,7 @@ PROGRAM my_prog
      v4(1:ndim) = CONJG(v2(1:ndim))
      !v4(1:ndim) = v2(1:ndim)
      !
-     CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     CALL komega_BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
      !
   END IF
   !
@@ -1142,7 +1186,7 @@ PROGRAM my_prog
      !
      ! Update result x with BiCG
      !
-     CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
+     CALL komega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
      !
      WRITE(*,'(a,i,a,3i,a,e15.5)') "lopp : ", iter, &
      &                             ", status : ", status(1:3), &
@@ -1170,8 +1214,8 @@ PROGRAM my_prog
      !
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
      !
-     CALL BiCG_getcoef(alpha, beta, z_seed, r_l_save)
-     CALL BiCG_getvec(v12,v14)
+     CALL komega_BiCG_getcoef(alpha, beta, z_seed, r_l_save)
+     CALL komega_BiCG_getvec(v12,v14)
      !
      CALL output_restart(iter_old, z_seed, alpha, beta, &
      &                   r_l_save, v12, v14)
@@ -1184,7 +1228,7 @@ PROGRAM my_prog
   !
   ! Deallocate all intrinsic vectors
   !
-  CALL BiCG_finalize()
+  CALL komega_BiCG_finalize()
   !
   ! Output to a file
   !

@@ -1,20 +1,22 @@
 !
-!    Copyright 2016 Mitsuaki Kawamura
-!
-!    This file is part of ISSP Math Library.
-!
-!    ISSP Math Library is free software: you can redistribute it and/or modify
-!    it under the terms of the GNU Lesser General Public License as published by
-!    the Free Software Foundation, either version 3 of the License, or
-!    (at your option) any later version.
-!
-!    ISSP Math Library is distributed in the hope that it will be useful,
-!    but WITHOUT ANY WARRANTY; without even the implied warranty of
-!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!    GNU Lesser General Public License for more details.
-!
-!    You should have received a copy of the GNU Lesser General Public License
-!    along with ISSP Math Library.  If not, see <http://www.gnu.org/licenses/>.
+! ISSP Math Library - A library for solving linear systems in materials science
+! Copyright (C) 2016 Mitsuaki Kawamura
+! 
+! This library is free software; you can redistribute it and/or
+! modify it under the terms of the GNU Lesser General Public
+! License as published by the Free Software Foundation; either
+! version 2.1 of the License, or (at your option) any later version.
+! 
+! This library is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+! Lesser General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public
+! License along with this library; if not, write to the Free Software
+! Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+! 
+! For more details, See `COPYING.LESSER' in the root directory of this library.
 !
 MODULE solve_cr_vals
   !
@@ -276,8 +278,8 @@ END MODULE solve_cr_routines
 !
 PROGRAM solve_cr
   !
-  USE shifted_cg_c, ONLY : CG_C_init, CG_C_restart, CG_C_update, &
-  &                        CG_C_getcoef, CG_C_getvec, CG_C_finalize
+  USE komega_CG_C, ONLY : komega_CG_C_init, komega_CG_C_restart, komega_CG_C_update, &
+  &                        komega_CG_C_getcoef, komega_CG_C_getvec, komega_CG_C_finalize
   USE solve_cr_routines, ONLY : input_size, input_restart, generate_system, &
   &                              output_restart, output_result
   USE solve_cr_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, &
@@ -317,7 +319,7 @@ PROGRAM solve_cr
     ! When restarting, counter
     !
     itermin = iter_old + 1
-    CALL CG_C_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
+    CALL komega_CG_C_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
     &                 status, iter_old, v2, v12, alpha, beta, z_seed, r_l_save)
     !
     ! These vectors were saved in CG_C routine
@@ -334,7 +336,7 @@ PROGRAM solve_cr
      !
      v2(1:ndim) = rhs(1:ndim)
      !
-     CALL CG_C_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     CALL komega_CG_C_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
      !
   END IF
   !
@@ -358,7 +360,7 @@ test_r(1:ndim,iter) = v2(1:ndim)
      !
      ! Update result x with CG_C
      !
-     CALL CG_C_update(v12, v2, x, r_l, status)
+     CALL komega_CG_C_update(v12, v2, x, r_l, status)
      !
      WRITE(*,'(a,i8,3i5,e15.5)') "DEBUG : ", iter, status, DBLE(v12(1))
      IF(status(1) < 0) EXIT
@@ -391,8 +393,8 @@ test_r(1:ndim,iter) = v2(1:ndim)
      !
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
      !
-     CALL CG_C_getcoef(alpha, beta, z_seed, r_l_save)
-     CALL CG_C_getvec(v12)
+     CALL komega_CG_C_getcoef(alpha, beta, z_seed, r_l_save)
+     CALL komega_CG_C_getvec(v12)
      !
      CALL output_restart()
      !
@@ -404,7 +406,7 @@ test_r(1:ndim,iter) = v2(1:ndim)
   !
   ! Deallocate all intrinsic vectors
   !
-  CALL CG_C_finalize()
+  CALL komega_CG_C_finalize()
   !
   ! Output to a file
   !

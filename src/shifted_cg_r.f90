@@ -1,48 +1,52 @@
 !
-!    Copyright 2016 Mitsuaki Kawamura
-!
-!    This file is part of ISSP Math Library.
-!
-!    ISSP Math Library is free software: you can redistribute it and/or modify
-!    it under the terms of the GNU Lesser General Public License as published by
-!    the Free Software Foundation, either version 3 of the License, or
-!    (at your option) any later version.
-!
-!    ISSP Math Library is distributed in the hope that it will be useful,
-!    but WITHOUT ANY WARRANTY; without even the implied warranty of
-!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!    GNU Lesser General Public License for more details.
-!
-!    You should have received a copy of the GNU Lesser General Public License
-!    along with ISSP Math Library.  If not, see <http://www.gnu.org/licenses/>.
+! ISSP Math Library - A library for solving linear systems in materials science
+! Copyright (C) 2016 Mitsuaki Kawamura
+! 
+! This library is free software; you can redistribute it and/or
+! modify it under the terms of the GNU Lesser General Public
+! License as published by the Free Software Foundation; either
+! version 2.1 of the License, or (at your option) any later version.
+! 
+! This library is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+! Lesser General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public
+! License along with this library; if not, write to the Free Software
+! Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+! 
+! For more details, See `COPYING.LESSER' in the root directory of this library.
 !
 !
 ! Routines for real-valiable CG
 !
 #if defined(MPI)
-MODULE pshifted_cg_r
+MODULE pkomega_cg_r
 #else
-MODULE shifted_cg_r
+MODULE komega_cg_r
 #endif
   !
   PRIVATE
   !
 #if defined(MPI)
-  PUBLIC pCG_R_init, pCG_R_restart, pCG_R_update, pCG_R_getcoef, pCG_R_getvec, pCG_R_finalize
+  PUBLIC pkomega_CG_R_init, pkomega_CG_R_restart, pkomega_CG_R_update, &
+  &      pkomega_CG_R_getcoef, pkomega_CG_R_getvec, pkomega_CG_R_finalize
 #else
-  PUBLIC CG_R_init, CG_R_restart, CG_R_update, CG_R_getcoef, CG_R_getvec, CG_R_finalize
+  PUBLIC komega_CG_R_init, komega_CG_R_restart, komega_CG_R_update, &
+  &      komega_CG_R_getcoef, komega_CG_R_getvec, komega_CG_R_finalize
 #endif
   !
 CONTAINS
 !
 ! Shifted Part
 !
-SUBROUTINE CG_R_shiftedeqn(r_l, x)
+SUBROUTINE komega_CG_R_shiftedeqn(r_l, x)
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, nl, nz
-  USE shifted_krylov_vals_r, ONLY : alpha, alpha_old, beta, pi, pi_old, pi_save, z, z_seed
-  USE shifted_krylov_vecs_r, ONLY : p
-  USE shifted_krylov_math, ONLY : daxpy
+  USE komega_parameter, ONLY : iter, itermax, nl, nz
+  USE komega_vals_r, ONLY : alpha, alpha_old, beta, pi, pi_old, pi_save, z, z_seed
+  USE komega_vecs_r, ONLY : p
+  USE komega_math, ONLY : daxpy
   !
   IMPLICIT NONE
   !
@@ -66,17 +70,17 @@ SUBROUTINE CG_R_shiftedeqn(r_l, x)
      !
   END DO
   !
-END SUBROUTINE CG_R_shiftedeqn
+END SUBROUTINE komega_CG_R_shiftedeqn
 !
 ! Seed Switching
 !
-SUBROUTINE CG_R_seed_switch(v2,status)
+SUBROUTINE komega_CG_R_seed_switch(v2,status)
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, iz_seed, almost0
-  USE shifted_krylov_vals_r, ONLY : alpha, alpha_save, beta_save, pi, pi_old, &
+  USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, iz_seed, almost0
+  USE komega_vals_r, ONLY : alpha, alpha_save, beta_save, pi, pi_old, &
   &                               pi_save, rho, z, z_seed
-  USE shifted_krylov_vecs_r, ONLY : v3, r_l_save
-  USE shifted_krylov_math, ONLY : dscal
+  USE komega_vecs_r, ONLY : v3, r_l_save
+  USE komega_math, ONLY : dscal
   !
   IMPLICIT NONE
   !
@@ -132,25 +136,25 @@ SUBROUTINE CG_R_seed_switch(v2,status)
      !
   END IF
   !
-END SUBROUTINE CG_R_seed_switch
+END SUBROUTINE komega_CG_R_seed_switch
 !
 ! Allocate & initialize variables
 !
 #if defined(MPI)
-SUBROUTINE pCG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+SUBROUTINE pkomega_CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
 #else
-SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+SUBROUTINE komega_CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
 #endif
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, &
+  USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, &
   &                                    threshold, iz_seed
 #if defined(MPI)
-  USE shifted_krylov_parameter, ONLY : comm
+  USE komega_parameter, ONLY : comm
 #endif
-  USE shifted_krylov_vals_r, ONLY : alpha, alpha_save, beta, beta_save, pi, &
+  USE komega_vals_r, ONLY : alpha, alpha_save, beta, beta_save, pi, &
   &                               pi_old, pi_save, rho, z, z_seed 
-  USE shifted_krylov_vecs_r, ONLY : p, r_l_save, v3
-  USE shifted_krylov_math, ONLY : dcopy
+  USE komega_vecs_r, ONLY : p, r_l_save, v3
+  USE komega_math, ONLY : dcopy
   !
   IMPLICIT NONE
   !
@@ -192,25 +196,25 @@ SUBROUTINE CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   END IF
   !
 #if defined(MPI)
-END SUBROUTINE pCG_R_init
+END SUBROUTINE pkomega_CG_R_init
 #else
-END SUBROUTINE CG_R_init
+END SUBROUTINE komega_CG_R_init
 #endif
 !
 ! Restart by input
 !
 #if defined(MPI)
-SUBROUTINE pCG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
+SUBROUTINE pkomega_CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
 &                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0)
 #else
-SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
+SUBROUTINE komega_CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
 &                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0)
 #endif
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed
-  USE shifted_krylov_vals_r, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed
-  USE shifted_krylov_vecs_r, ONLY : r_l_save, v3
-  USE shifted_krylov_math, ONLY : dcopy, ddotMPI, dabsmax
+  USE komega_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed
+  USE komega_vals_r, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed
+  USE komega_vecs_r, ONLY : r_l_save, v3
+  USE komega_math, ONLY : dcopy, ddotMPI, dabsmax
   !
   IMPLICIT NONE
   !
@@ -232,9 +236,9 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   REAL(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
   !
 #if defined(MPI)
-  CALL pCG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+  CALL pkomega_CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
 #else
-  CALL CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+  CALL komega_CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
 #endif
   z_seed = z_seed0
   iz_seed = 0
@@ -257,7 +261,7 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
      !
      ! Shifted equation
      !
-     CALL CG_R_shiftedeqn(r_l_save0(1:nl,iter), x)
+     CALL komega_CG_R_shiftedeqn(r_l_save0(1:nl,iter), x)
      !
   END DO
   !
@@ -270,7 +274,7 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   !
   ! Seed Switching
   !
-  CALL CG_R_seed_switch(v2,status)
+  CALL komega_CG_R_seed_switch(v2,status)
   !
   ! Convergence check
   !
@@ -302,24 +306,24 @@ SUBROUTINE CG_R_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
   END IF
   !
 #if defined(MPI)
-END SUBROUTINE pCG_R_restart
+END SUBROUTINE pkomega_CG_R_restart
 #else
-END SUBROUTINE CG_R_restart
+END SUBROUTINE komega_CG_R_restart
 #endif
 !
 ! Update x, p, r
 !
 #if defined(MPI)
-SUBROUTINE pCG_R_update(v12, v2, x, r_l, status)
+SUBROUTINE pkomega_CG_R_update(v12, v2, x, r_l, status)
 #else
-SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
+SUBROUTINE komega_CG_R_update(v12, v2, x, r_l, status)
 #endif
   !
-  USE shifted_krylov_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold, almost0
-  USE shifted_krylov_vals_r, ONLY : alpha, alpha_old, alpha_save, &
+  USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold, almost0
+  USE komega_vals_r, ONLY : alpha, alpha_old, alpha_save, &
   &                               beta, beta_save, rho, z_seed
-  USE shifted_krylov_vecs_r, ONLY : r_l_save, v3
-  USE shifted_krylov_math, ONLY : ddotMPI, dcopy, dabsmax
+  USE komega_vecs_r, ONLY : r_l_save, v3
+  USE komega_math, ONLY : ddotMPI, dcopy, dabsmax
   !
   IMPLICIT NONE
   !
@@ -358,7 +362,7 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   !
   ! Shifted equation
   !
-  CALL CG_R_shiftedeqn(r_l, x)
+  CALL komega_CG_R_shiftedeqn(r_l, x)
   !
   ! Update residual
   !
@@ -370,7 +374,7 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   !
   ! Seed Switching
   !
-  CALL CG_R_seed_switch(v2,status)
+  CALL komega_CG_R_seed_switch(v2,status)
   !
   ! Convergence check
   !
@@ -407,23 +411,23 @@ SUBROUTINE CG_R_update(v12, v2, x, r_l, status)
   END IF
   !
 #if defined(MPI)
-END SUBROUTINE pCG_R_update
+END SUBROUTINE pkomega_CG_R_update
 #else
-END SUBROUTINE CG_R_update
+END SUBROUTINE komega_CG_R_update
 #endif
 !
 ! Return saved alpha, beta, r_l
 !
 #if defined(MPI)
-SUBROUTINE pCG_R_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
+SUBROUTINE pkomega_CG_R_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
 #else
-SUBROUTINE CG_R_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
+SUBROUTINE komega_CG_R_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
 #endif
   !
-  USE shifted_krylov_parameter, ONLY : iter, nl
-  USE shifted_krylov_vals_r, ONLY : alpha_save, beta_save, z_seed
-  USE shifted_krylov_vecs_r, ONLY : r_l_save
-  USE shifted_krylov_math, ONLY : dcopy
+  USE komega_parameter, ONLY : iter, nl
+  USE komega_vals_r, ONLY : alpha_save, beta_save, z_seed
+  USE komega_vecs_r, ONLY : r_l_save
+  USE komega_math, ONLY : dcopy
   !
   IMPLICIT NONE
   !
@@ -436,22 +440,22 @@ SUBROUTINE CG_R_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0)
   CALL dcopy(nl*iter,r_l_save,1,r_l_save0,1)
   !
 #if defined(MPI)
-END SUBROUTINE pCG_R_getcoef
+END SUBROUTINE pkomega_CG_R_getcoef
 #else
-END SUBROUTINE CG_R_getcoef
+END SUBROUTINE komega_CG_R_getcoef
 #endif
 !
 ! Return r_old
 !
 #if defined(MPI)
-SUBROUTINE pCG_R_getvec(r_old)
+SUBROUTINE pkomega_CG_R_getvec(r_old)
 #else
-SUBROUTINE CG_R_getvec(r_old)
+SUBROUTINE komega_CG_R_getvec(r_old)
 #endif
   !
-  USE shifted_krylov_parameter, ONLY : ndim
-  USE shifted_krylov_vecs_r, ONLY : v3
-  USE shifted_krylov_math, ONLY : dcopy
+  USE komega_parameter, ONLY : ndim
+  USE komega_vecs_r, ONLY : v3
+  USE komega_math, ONLY : dcopy
   !
   IMPLICIT NONE
   !
@@ -460,23 +464,23 @@ SUBROUTINE CG_R_getvec(r_old)
   CALL dcopy(ndim,v3,1,r_old,1)
   !
 #if defined (MPI)
-END SUBROUTINE pCG_R_getvec
+END SUBROUTINE pkomega_CG_R_getvec
 #else
-END SUBROUTINE CG_R_getvec
+END SUBROUTINE komega_CG_R_getvec
 #endif
 !
 ! Deallocate private arrays
 !
 #if defined(MPI)
-SUBROUTINE pCG_R_finalize()
+SUBROUTINE pkomega_CG_R_finalize()
 #else
-SUBROUTINE CG_R_finalize()
+SUBROUTINE komega_CG_R_finalize()
 #endif
   !
-  USE shifted_krylov_parameter, ONLY : itermax
-  USE shifted_krylov_vals_r, ONLY : alpha_save, beta_save, &
+  USE komega_parameter, ONLY : itermax
+  USE komega_vals_r, ONLY : alpha_save, beta_save, &
   &                                 pi, pi_old, pi_save, z
-  USE shifted_krylov_vecs_r, ONLY : p, r_l_save, v3
+  USE komega_vecs_r, ONLY : p, r_l_save, v3
   !
   IMPLICIT NONE
   !
@@ -487,13 +491,13 @@ SUBROUTINE CG_R_finalize()
   END IF
   !
 #if defined(MPI)
-END SUBROUTINE pCG_R_finalize
+END SUBROUTINE pkomega_CG_R_finalize
 #else
-END SUBROUTINE CG_R_finalize
+END SUBROUTINE komega_CG_R_finalize
 #endif
 !
 #if defined (MPI)
-END MODULE pshifted_cg_r
+END MODULE pkomega_cg_r
 #else
-END MODULE shifted_cg_r
+END MODULE komega_cg_r
 #endif

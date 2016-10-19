@@ -1,20 +1,22 @@
 !
-!    Copyright 2016 Mitsuaki Kawamura
-!
-!    This file is part of ISSP Math Library.
-!
-!    ISSP Math Library is free software: you can redistribute it and/or modify
-!    it under the terms of the GNU Lesser General Public License as published by
-!    the Free Software Foundation, either version 3 of the License, or
-!    (at your option) any later version.
-!
-!    ISSP Math Library is distributed in the hope that it will be useful,
-!    but WITHOUT ANY WARRANTY; without even the implied warranty of
-!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!    GNU Lesser General Public License for more details.
-!
-!    You should have received a copy of the GNU Lesser General Public License
-!    along with ISSP Math Library.  If not, see <http://www.gnu.org/licenses/>.
+! ISSP Math Library - A library for solving linear systems in materials science
+! Copyright (C) 2016 Mitsuaki Kawamura
+! 
+! This library is free software; you can redistribute it and/or
+! modify it under the terms of the GNU Lesser General Public
+! License as published by the Free Software Foundation; either
+! version 2.1 of the License, or (at your option) any later version.
+! 
+! This library is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+! Lesser General Public License for more details.
+! 
+! You should have received a copy of the GNU Lesser General Public
+! License along with this library; if not, write to the Free Software
+! Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+! 
+! For more details, See `COPYING.LESSER' in the root directory of this library.
 !
 MODULE solve_cc_vals
   !
@@ -287,8 +289,8 @@ END MODULE solve_cc_routines
 !
 PROGRAM solve_cc
   !
-  USE shifted_bicg, ONLY : BiCG_init, BiCG_restart, BiCG_update, &
-  &                        BiCG_getcoef, BiCG_getvec, BiCG_finalize
+  USE komega_BiCG, ONLY : komega_BiCG_init, komega_BiCG_restart, komega_BiCG_update, &
+  &                        komega_BiCG_getcoef, komega_BiCG_getvec, komega_BiCG_finalize
   USE solve_cc_routines, ONLY : input_size, input_restart, generate_system, &
   &                              output_restart, output_result
   USE solve_cc_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, &
@@ -328,7 +330,7 @@ PROGRAM solve_cc
     ! When restarting, counter
     !
     itermin = iter_old + 1
-    CALL BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
+    CALL komega_BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
     &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
     !
     ! These vectors were saved in BiCG routine
@@ -347,7 +349,7 @@ PROGRAM solve_cc
      v4(1:ndim) = CONJG(v2(1:ndim))
      !v4(1:ndim) = v2(1:ndim)
      !
-     CALL BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     CALL komega_BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
      !
   END IF
   !
@@ -373,7 +375,7 @@ test_r(1:ndim,iter,2) = v4(1:ndim)
      !
      ! Update result x with BiCG
      !
-     CALL BiCG_update(v12, v2, v14, v4, x, r_l, status)
+     CALL komega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
      !
      WRITE(*,'(a,i8,3i5,e15.5)') "DEBUG : ", iter, status, DBLE(v12(1))
      IF(status(1) < 0) EXIT
@@ -407,8 +409,8 @@ test_r(1:ndim,iter,2) = v4(1:ndim)
      !
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
      !
-     CALL BiCG_getcoef(alpha, beta, z_seed, r_l_save)
-     CALL BiCG_getvec(v12,v14)
+     CALL komega_BiCG_getcoef(alpha, beta, z_seed, r_l_save)
+     CALL komega_BiCG_getvec(v12,v14)
      !
      CALL output_restart()
      !
@@ -420,7 +422,7 @@ test_r(1:ndim,iter,2) = v4(1:ndim)
   !
   ! Deallocate all intrinsic vectors
   !
-  CALL BiCG_finalize()
+  CALL komega_BiCG_finalize()
   !
   ! Output to a file
   !

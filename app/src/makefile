@@ -3,8 +3,8 @@ include ../../make.sys
 .SUFFIXES :
 .SUFFIXES : .o .f90
 
-LIB = -L ../../src/ -lshiftk
-MPILIB = -L ../../../src/mpi/ -lpshiftk
+LIB = -L ../../src/ -lkomega
+MPILIB = -L ../../../src/mpi/ -lpkomega
 INCLUDE = -I ../../src/
 MPIINCLUDE = -I ../../../src/mpi/
 

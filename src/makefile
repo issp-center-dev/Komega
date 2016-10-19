@@ -4,25 +4,25 @@ include ../make.sys
 .SUFFIXES : .o .f90
 
 OBJS = \
-shifted_cg_c.o \
-shifted_cg_r.o \
-shifted_cocg.o \
-shifted_bicg.o \
-shifted_krylov_math.o \
-shifted_krylov_vals.o
+komega_cg_c.o \
+komega_cg_r.o \
+komega_cocg.o \
+komega_bicg.o \
+komega_math.o \
+komega_vals.o
 
-libshiftk:libshiftk.a
+libshiftk:libkomega.a
 
 ifdef MPIF90
-libshiftk.a:$(OBJS)
-	ar cr libshiftk.a $(OBJS)
-	cd shared; $(F90) -shared $(OBJS) $(FFLAGS) -fPIC -o libshiftk.so
-	cd mpi; ar cr libpshiftk.a $(OBJS)
-	cd shared_mpi; $(F90) -shared $(OBJS) $(FFLAGS) -fPIC -o libpshiftk.so -D MPI
+libkomega.a:$(OBJS)
+	ar cr libkomega.a $(OBJS)
+	cd shared; $(F90) -shared $(OBJS) $(FFLAGS) -fPIC -o libkomega.so
+	cd mpi; ar cr libpkomega.a $(OBJS)
+	cd shared_mpi; $(F90) -shared $(OBJS) $(FFLAGS) -fPIC -o libpkomega.so -D MPI
 else
-libshiftk.a:$(OBJS)
-	ar cr libshiftk.a $(OBJS)
-	cd shared; $(F90) -shared $(OBJS) $(FFLAGS) -fPIC -o libshiftk.so
+libkomega.a:$(OBJS)
+	ar cr libkomega.a $(OBJS)
+	cd shared; $(F90) -shared $(OBJS) $(FFLAGS) -fPIC -o libkomega.so
 endif
 
 ifdef MPIF90
@@ -43,13 +43,13 @@ clean:
 	cd mpi; rm -f *.o *.a *.mod
 	cd shared_mpi; rm -f *.o *.so *.mod
 
-shifted_cg_c.o:shifted_krylov_math.o
-shifted_cg_c.o:shifted_krylov_vals.o
-shifted_cg_r.o:shifted_krylov_math.o
-shifted_cg_r.o:shifted_krylov_vals.o
-shifted_cocg.o:shifted_krylov_math.o
-shifted_cocg.o:shifted_krylov_vals.o
-shifted_bicg.o:shifted_krylov_math.o
-shifted_bicg.o:shifted_krylov_vals.o
-shifted_krylov_math.o:shifted_krylov_vals.o
+komega_cg_c.o:komega_math.o
+komega_cg_c.o:komega_vals.o
+komega_cg_r.o:komega_math.o
+komega_cg_r.o:komega_vals.o
+komega_cocg.o:komega_math.o
+komega_cocg.o:komega_vals.o
+komega_bicg.o:komega_math.o
+komega_bicg.o:komega_vals.o
+komega_math.o:komega_vals.o
 

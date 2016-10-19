@@ -1,3 +1,23 @@
+%
+% ISSP Math Library - A library for solving linear systems in materials science
+% Copyright (C) 2016 Mitsuaki Kawamura
+% 
+% This library is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public
+% License as published by the Free Software Foundation; either
+% version 2.1 of the License, or (at your option) any later version.
+% 
+% This library is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+% Lesser General Public License for more details.
+% 
+% You should have received a copy of the GNU Lesser General Public
+% License along with this library; if not, write to the Free Software
+% Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+% 
+% For more details, See `COPYING.LESSER' in the root directory of this library.
+%
 \documentclass[12pt,titlepage]{jarticle}
 
 %\documentclass[12pt,titlepage]{article}
@@ -50,7 +70,9 @@
 %
 % Cover
 %
-\title{Shifted Krylov法ミニアプリマニュアル \\
+\title{ISSP Math Library \\
+  $K(\omega)$を使用したミニアプリ\\
+  マニュアル \\
   ver.0.1.1}
 \author{東京大学物性研究所 ソフトウェア高度化推進チーム}
 \date{\today}
@@ -66,9 +88,9 @@
 \newpage
 \section{概要}
 
-本資料はKrylov部分空間法に基づくシフト線形方程式群ライブラリを用いた
+本資料はISSP Math Libraryの内の、Krylov部分空間法に基づくシフト線形方程式群ライブラリ $K(\omega)$ を用いた
 Green関数計算用ミニアプリのマニュアルです。
-ライブラリに関する使用方法については、「Shifted Krylov法ライブラリマニュアル」に記載しました。
+ライブラリに関する使用方法については、「$K(\omega)$マニュアル」に記載しました。
 
 \subsection{ソフトウェア概要}
 本ソフトウェアでは、Green関数
@@ -91,6 +113,27 @@ Green関数計算用ミニアプリのマニュアルです。
 \end{itemize}
 の手法を用意しています。デフォルトでは入力条件および入力ファイルからどのタイプかを自動判定し計算が行われます。ただし、各手法を手動で選択させ計算させることも可能となっています。
 
+\section{著作権}
+
+\noindent
+ISSP Math Library - A library for solving linear systems in materials science \\
+Copyright (C) 2016 Mitsuaki Kawamura \\
+ \\
+This library is free software; you can redistribute it and/or \\
+modify it under the terms of the GNU Lesser General Public \\
+License as published by the Free Software Foundation; either \\
+version 2.1 of the License, or (at your option) any later version. \\
+ \\
+This library is distributed in the hope that it will be useful, \\
+but WITHOUT ANY WARRANTY; without even the implied warranty of \\
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU \\
+Lesser General Public License for more details. \\
+ \\
+You should have received a copy of the GNU Lesser General Public \\
+License along with this library; if not, write to the Free Software \\
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA \\
+ \\
+For more details, See `COPYING.LESSER' in the root directory of this library.
 
 \subsection{開発環境}
 
