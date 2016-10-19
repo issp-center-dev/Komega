@@ -419,7 +419,7 @@ ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
 \vspace{-1em}
 \begin{leftbar}
   \noindent
-  \verb|BiCG_init(N_H, N_L, N_z, v_2, v_4, x, z, itermax)| start
+  \verb|komega_BiCG_init(N_H, N_L, N_z, v_2, v_4, x, z, itermax)| start
   \\ \hspace{0.5cm}
   Allocate ${\boldsymbol v}_3$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm old}\}$, $\{{\bf p}_k\}$
   \\ \hspace{0.5cm}
@@ -440,7 +440,7 @@ ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
   ${\boldsymbol v}_4 \equiv {\tilde {\boldsymbol r}}$, 
   ${\boldsymbol v}_5 \equiv {\tilde {\boldsymbol r}}^{\rm old}$. )
   \\
-  \verb|BiCG_init| finish
+  \verb|komega_BiCG_init| finish
 \end{leftbar}
 \vspace{-1em}
 \noindent
@@ -456,7 +456,7 @@ $ [ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H}
 \begin{leftbar}
   \noindent
   \hspace{0.5cm}
-  \verb|BiCG_update(v_12, v_14, v_2, v_4, x, r_small)| start
+  \verb|komega_BiCG_update(v_12, v_14, v_2, v_4, x, r_small)| start
   \\\hspace{1.0cm}
   $\circ$シード方程式
   \\\hspace{1.0cm}
@@ -510,7 +510,7 @@ $ [ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H}
   \\\hspace{1.0cm}
   $\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
   \\\hspace{0.5cm}
-\verb|BiCG_update| finish
+\verb|komega_BiCG_update| finish
 \end{leftbar}
 \vspace{-1em}
 \noindent
@@ -521,11 +521,11 @@ end do iteration
 \vspace{-1em}
 \begin{leftbar}
 \noindent
-\verb|BiCG_finalize| start
+\verb|komega_BiCG_finalize| start
 \\ \hspace{0.5cm}
 Deallocate ${\boldsymbol v}_4$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm old}\}$, $\{{\bf p}_k\}$
 \\
-\verb|BiCG_finalize| finish
+\verb|komega_BiCG_finalize| finish
 \end{leftbar}
 
 \subsection{Shifted COCGライブラリの動作イメージ}
@@ -662,6 +662,11 @@ fortran から呼び出すときには
 \end{verbatim}
 のようにモジュールを呼び出す. \verb|"????"|の部分には,
 \verb|"CG_R"|, \verb|"CG_C"|, \verb|"COCG"|, \verb|"BiCG"|が入る.
+MPI/Hybrid並列版のルーチンを利用するときには,
+\begin{verbatim}
+  USE pkomega_????
+\end{verbatim}
+のようにする.
 
 \subsection{各ルーチンの説明}
 
@@ -682,10 +687,10 @@ CALL komega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
 
 \noindent Fortran MPI/Hybrid並列版
 \begin{verbatim}
-CALL komega_pCG_R_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-CALL komega_pCG_C_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-CALL komega_pCOCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-CALL komega_pBiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL pkomega_CG_R_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL pkomega_CG_C_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL pkomega_COCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL pkomega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 \end{verbatim}
 
 \noindent パラメーター
@@ -759,13 +764,13 @@ CALL komega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
   \noindent Fortran (MPI/ハイブリッド並列版)
   
 \begin{verbatim}
-CALL komega_pCG_R_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+CALL pkomega_CG_R_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
 &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-CALL komega_pCG_C_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+CALL pkomega_CG_C_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
 &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-CALL komega_pCOCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+CALL pkomega_COCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
 &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-CALL komega_pBiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+CALL pkomega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
 &                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
 &                 z_seed, r_l_save)
 \end{verbatim}
@@ -878,10 +883,10 @@ CALL komega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 
 \noindent Fortran (MPI/ハイブリッド並列版)
 \begin{verbatim}
-CALL komega_pCG_R_update(v12, v2, x, r_l, status)
-CALL komega_pCG_C_update(v12, v2, x, r_l, status)
-CALL komega_pCOCG_update(v12, v2, x, r_l, status)
-CALL komega_pBiCG_update(v12, v2, v14, v4, x, r_l, status)
+CALL pkomega_CG_R_update(v12, v2, x, r_l, status)
+CALL pkomega_CG_C_update(v12, v2, x, r_l, status)
+CALL pkomega_COCG_update(v12, v2, x, r_l, status)
+CALL pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 \end{verbatim}
 
 \noindent パラメーター
@@ -963,10 +968,10 @@ CALL komega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 
 \noindent Fortran (MPI/ハイブリッド並列版)
 \begin{verbatim}
-CALL komega_pCG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-CALL komega_pCG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-CALL komega_pCOCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-CALL komega_pBiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL pkomega_CG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL pkomega_CG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL pkomega_COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL pkomega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 \end{verbatim}
 
 \noindent パラメーター
@@ -1016,10 +1021,10 @@ CALL komega_BiCG_getvec(r_old, r_tilde_old)
 
 \noindent Fortran (MPI/ハイブリッド並列版)
 \begin{verbatim}
-CALL komega_pCG_R_getvec(r_old)
-CALL komega_pCG_C_getvec(r_old)
-CALL komega_pCOCG_getvec(r_old)
-CALL komega_pBiCG_getvec(r_old, r_tilde_old)
+CALL pkomega_CG_R_getvec(r_old)
+CALL pkomega_CG_C_getvec(r_old)
+CALL pkomega_COCG_getvec(r_old)
+CALL pkomega_BiCG_getvec(r_old, r_tilde_old)
 \end{verbatim}
 
 \noindent パラメーター
@@ -1058,10 +1063,10 @@ CALL komega_BiCG_finalize()
 
 \noindent Fortran (MPI/ハイブリッド並列版)
 \begin{verbatim}
-CALL komega_pCG_R_finalize()
-CALL komega_pCG_C_finalize()
-CALL komega_pCOCG_finalize()
-CALL komega_pBiCG_finalize()
+CALL pkomega_CG_R_finalize()
+CALL pkomega_CG_C_finalize()
+CALL pkomega_COCG_finalize()
+CALL pkomega_BiCG_finalize()
 \end{verbatim}
 
 \subsection{Shifted BiCGライブラリを使用したソースコードの例}
