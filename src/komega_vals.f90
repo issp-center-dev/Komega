@@ -37,6 +37,9 @@ MODULE komega_parameter
   REAL(8),SAVE :: &
   & threshold
   !
+  LOGICAL,ALLOCATABLE,SAVE :: &
+  & lz_conv(:)
+  !
 END MODULE komega_parameter
 !
 !

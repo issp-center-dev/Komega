@@ -43,7 +43,7 @@ CONTAINS
 !
 SUBROUTINE komega_CG_R_shiftedeqn(r_l, x)
   !
-  USE komega_parameter, ONLY : iter, itermax, nl, nz
+  USE komega_parameter, ONLY : iter, itermax, nl, nz, lz_conv
   USE komega_vals_r, ONLY : alpha, alpha_old, beta, pi, pi_old, pi_save, z, z_seed
   USE komega_vecs_r, ONLY : p
   USE komega_math, ONLY : daxpy
@@ -57,6 +57,8 @@ SUBROUTINE komega_CG_R_shiftedeqn(r_l, x)
   REAL(8) :: pi_new
   !
   DO iz = 1, nz
+     !
+     IF(lz_conv(iz)) cycle
      !
      pi_new = (1d0 + alpha * (z(iz) - z_seed)) * pi(iz) &
      &      - alpha * beta / alpha_old * (pi_old(iz) - pi(iz))
@@ -76,7 +78,7 @@ END SUBROUTINE komega_CG_R_shiftedeqn
 !
 SUBROUTINE komega_CG_R_seed_switch(v2,status)
   !
-  USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, iz_seed, almost0
+  USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, iz_seed, almost0, lz_conv
   USE komega_vals_r, ONLY : alpha, alpha_save, beta_save, pi, pi_old, &
   &                               pi_save, rho, z, z_seed
   USE komega_vecs_r, ONLY : v3, r_l_save
@@ -90,7 +92,7 @@ SUBROUTINE komega_CG_R_seed_switch(v2,status)
   INTEGER :: jter
   REAL(8) :: scale
   !
-  status(3) = MINLOC(ABS(pi(1:nz)), 1)
+  status(3) = MINLOC(ABS(pi(1:nz)), 1, .NOT. lz_conv(1:nz))
   !
   IF(ABS(pi(status(3))) < almost0) THEN
      status(2) = 3
@@ -147,7 +149,7 @@ SUBROUTINE komega_CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
 #endif
   !
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, &
-  &                                    threshold, iz_seed
+  &                            threshold, iz_seed, lz_conv
 #if defined(MPI)
   USE komega_parameter, ONLY : comm
 #endif
@@ -188,6 +190,7 @@ SUBROUTINE komega_CG_R_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   iz_seed = 1
   z_seed = z(iz_seed)
   iter = 0
+  lz_conv(1:nz) = .FALSE.
   !
   IF(itermax > 0) THEN
      ALLOCATE(alpha_save(itermax), beta_save(itermax), &
@@ -477,7 +480,7 @@ SUBROUTINE pkomega_CG_R_finalize()
 SUBROUTINE komega_CG_R_finalize()
 #endif
   !
-  USE komega_parameter, ONLY : itermax
+  USE komega_parameter, ONLY : itermax, lz_conv
   USE komega_vals_r, ONLY : alpha_save, beta_save, &
   &                                 pi, pi_old, pi_save, z
   USE komega_vecs_r, ONLY : p, r_l_save, v3
@@ -487,7 +490,7 @@ SUBROUTINE komega_CG_R_finalize()
   DEALLOCATE(z, v3, pi, pi_old, p)
   !
   IF(itermax > 0) THEN
-     DEALLOCATE(alpha_save, beta_save, r_l_save, pi_save)
+     DEALLOCATE(alpha_save, beta_save, r_l_save, pi_save, lz_conv)
   END IF
   !
 #if defined(MPI)
