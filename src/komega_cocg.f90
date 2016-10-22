@@ -214,8 +214,8 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
 &                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0)
 #endif
   !
-  USE komega_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed
-  USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed
+  USE komega_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed, lz_conv, nz
+  USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed, pi
   USE komega_vecs_c, ONLY : r_l_save, v3
   USE komega_math, ONLY : zcopy, zdotuMPI, zabsmax
   !
@@ -237,6 +237,8 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   & alpha_save0(iter_old), beta_save0(iter_old), z_seed0
   COMPLEX(8),INTENT(IN) :: r_l_save0(nl0,iter_old)
   COMPLEX(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
+  !
+  INTEGER :: iz
   !
 #if defined(MPI)
   CALL pkomega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
@@ -283,6 +285,10 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   !
   v12(1) = CMPLX(zabsmax(v2, ndim), 0d0, KIND(0d0))
   !
+  DO iz = 1, nz
+     IF(ABS(v12(1)/pi(iz)) < threshold) lz_conv(iz) = .TRUE.
+  END DO
+  !
   IF(DBLE(v12(1)) < threshold) THEN
      !
      ! Converged
@@ -322,9 +328,10 @@ SUBROUTINE pkomega_COCG_update(v12, v2, x, r_l, status)
 SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status)
 #endif
   !
-  USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, threshold, almost0
+  USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, &
+  &                            threshold, almost0, lz_conv
   USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, &
-  &                               beta, beta_save, rho, z_seed
+  &                         beta, beta_save, rho, z_seed, pi
   USE komega_vecs_c, ONLY : r_l_save, v3
   USE komega_math, ONLY : zdotuMPI, zcopy, zabsmax
   !
@@ -334,6 +341,7 @@ SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status)
   COMPLEX(8),INTENT(IN) :: r_l(nl)
   INTEGER,INTENT(INOUT) :: status(3)
   !
+  INTEGER :: iz
   COMPLEX(8) :: rho_old, alpha_denom
   !
   iter = iter + 1
@@ -384,6 +392,10 @@ SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status)
   ! Convergence check
   !
   v12(1) = CMPLX(zabsmax(v2, ndim), 0d0, KIND(0d0))
+  !
+  DO iz = 1, nz
+     IF(ABS(v12(1)/pi(iz)) < threshold) lz_conv(iz) = .TRUE.
+  END DO
   !
   IF(DBLE(v12(1)) < threshold) THEN
      !
