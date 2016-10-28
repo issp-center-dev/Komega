@@ -227,7 +227,7 @@ SUBROUTINE komega_BICG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed, lz_conv, nz
   USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed, pi
   USE komega_vecs_c, ONLY : r_l_save, v3, v5
-  USE komega_math, ONLY : zcopy, zdotcMPI, zabsmax
+  USE komega_math, ONLY : zcopy, zdotcMPI
   !
   IMPLICIT NONE
   !
@@ -295,7 +295,7 @@ SUBROUTINE komega_BICG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   !
   ! Convergence check
   !
-  v12(1) = CMPLX(zabsmax(v2, ndim), 0d0, KIND(0d0))
+  v12(1) = CMPLX(SQRT(DBLE(zdotcMPI(ndim,v2,v2))), 0d0, KIND(0d0))
   !
   DO iz = 1, nz
      IF(ABS(v12(1)/pi(iz)) < threshold) lz_conv(iz) = .TRUE.
@@ -409,7 +409,7 @@ SUBROUTINE komega_BICG_update(v12, v2, v14, v4, x, r_l, status)
   !
   ! Convergence check
   !
-  v12(1) = CMPLX(zabsmax(v2, ndim), 0d0, KIND(0d0))
+  v12(1) = CMPLX(SQRT(DBLE(zdotcMPI(ndim,v2,v2))), 0d0, KIND(0d0))
   !
   DO iz = 1, nz
      IF(ABS(v12(1)/pi(iz)) < threshold) lz_conv(iz) = .TRUE.

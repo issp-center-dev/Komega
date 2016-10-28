@@ -283,7 +283,7 @@ SUBROUTINE komega_CG_C_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   !
   ! Convergence check
   !
-  v12(1) = CMPLX(zabsmax(v2, ndim), 0d0, KIND(0d0))
+  v12(1) = CMPLX(SQRT(DBLE(zdotcMPI(ndim,v2,v2))), 0d0, KIND(0d0))
   !
   DO iz = 1, nz
      IF(ABS(v12(1)/pi(iz)) < threshold) lz_conv(iz) = .TRUE.
@@ -389,7 +389,7 @@ SUBROUTINE komega_CG_C_update(v12, v2, x, r_l, status)
   !
   ! Convergence check
   !
-  v12(1) = CMPLX(zabsmax(v2, ndim), 0d0, KIND(0d0))
+  v12(1) = CMPLX(SQRT(DBLE(zdotcMPI(ndim,v2,v2))), 0d0, KIND(0d0))
   !
   DO iz = 1, nz
      IF(ABS(v12(1)/pi(iz)) < threshold) lz_conv(iz) = .TRUE.
