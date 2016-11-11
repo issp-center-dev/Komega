@@ -698,7 +698,7 @@ SUBROUTINE output_result_debug()
   !
   USE shiftk_vals, ONLY : v2, ndim, x_l, rhs, z, nomega, myrank, stdout
   USE ham_prod_mod, ONLY : ham_prod
-  USE lobpcg_mod, ONLY : zabsmax, zdotcMPI
+  USE lobpcg_mod, ONLY : zdotcMPI
   !
   IMPLICIT NONE
   !
@@ -721,7 +721,7 @@ SUBROUTINE output_result_debug()
      CALL ham_prod(x_l(1:ndim,iz), v2)
      v2(1:ndim) = z(iz) * x_l(1:ndim,iz) - v2(1:ndim) - rhs(1:ndim)
      !
-     res = zabsmax(v2(1:ndim), ndim)
+     res = SQRT(DBLE(zdotcMPI(ndim, v2(1:ndim), v2(1:ndim))))
      !write(*,form) v2(1:ndim)
      IF (myrank == 0) write(*,'(a,i5,a,2e13.5,a,e13.5)') &
      &        "DEBUG (", iz, "), omega = ", z(iz), ", Res. = ", res

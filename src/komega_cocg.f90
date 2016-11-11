@@ -30,11 +30,11 @@ MODULE komega_cocg
   PRIVATE
   !
 #if defined(MPI)
-  PUBLIC pkomega_COCG_init, pkomega_COCG_restart, pkomega_COCG_update, &
-  &      pkomega_COCG_getcoef, pkomega_COCG_getvec, pkomega_COCG_finalize
+  PUBLIC pkomega_COCG_init, pkomega_COCG_restart, pkomega_COCG_update, pkomega_COCG_getcoef, &
+  &      pkomega_COCG_getvec, pkomega_COCG_finalize, pkomega_COCG_getresidual
 #else
-  PUBLIC komega_COCG_init, komega_COCG_restart, komega_COCG_update, &
-  &      komega_COCG_getcoef, komega_COCG_getvec, komega_COCG_finalize
+  PUBLIC komega_COCG_init, komega_COCG_restart, komega_COCG_update, komega_COCG_getcoef, &
+  &      komega_COCG_getvec, komega_COCG_finalize, komega_COCG_getresidual
 #endif
   !
 CONTAINS
@@ -177,7 +177,7 @@ SUBROUTINE komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
   comm = comm0
 #endif
   !
-  ALLOCATE(z(nz), v3(ndim), pi(nz), pi_old(nz), p(nl,nz))
+  ALLOCATE(z(nz), v3(ndim), pi(nz), pi_old(nz), p(nl,nz), lz_conv(nz))
   CALL zcopy(nz,z0,1,z,1)
   v3(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
   p(1:nl,1:nz) = CMPLX(0d0, 0d0, KIND(0d0))
@@ -214,7 +214,7 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
 &                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0)
 #endif
   !
-  USE komega_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed, lz_conv, nz
+  USE komega_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed, lz_conv, nz, resnorm
   USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed, pi
   USE komega_vecs_c, ONLY : r_l_save, v3
   USE komega_math, ONLY : zcopy, zdotuMPI, zdotcMPI
@@ -284,6 +284,7 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   ! Convergence check
   !
   v12(1) = CMPLX(SQRT(DBLE(zdotcMPI(ndim,v2,v2))), 0d0, KIND(0d0))
+  resnorm = DBLE(v12(1))
   !
   DO iz = 1, nz
      IF(ABS(v12(1)/pi(iz)) < threshold) lz_conv(iz) = .TRUE.
@@ -329,7 +330,7 @@ SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status)
 #endif
   !
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, &
-  &                            threshold, almost0, lz_conv
+  &                            threshold, almost0, lz_conv, resnorm
   USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, &
   &                         beta, beta_save, rho, z_seed, pi
   USE komega_vecs_c, ONLY : r_l_save, v3
@@ -392,6 +393,7 @@ SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status)
   ! Convergence check
   !
   v12(1) = CMPLX(SQRT(DBLE(zdotcMPI(ndim,v2,v2))), 0d0, KIND(0d0))
+  resnorm = DBLE(v12(1))
   !
   DO iz = 1, nz
      IF(ABS(v12(1)/pi(iz)) < threshold) lz_conv(iz) = .TRUE.
@@ -489,6 +491,29 @@ SUBROUTINE komega_COCG_getvec(r_old)
 END SUBROUTINE pkomega_COCG_getvec
 #else
 END SUBROUTINE komega_COCG_getvec
+#endif
+!
+! Return Residual Norm
+!
+#if defined(MPI)
+SUBROUTINE pkomega_COCG_getresidual(res)
+#else
+SUBROUTINE komega_COCG_getresidual(res)
+#endif
+  !
+  USE komega_parameter, ONLY : nz, resnorm
+  USE komega_vals_c, ONLY : pi
+  !
+  IMPLICIT NONE
+  !
+  REAL(8),INTENT(OUT) :: res(nz)
+  !
+  res(1:nz) = resnorm / ABS(pi(1:nz))
+  !
+#if defined(MPI)
+END SUBROUTINE pkomega_COCG_getresidual
+#else
+END SUBROUTINE komega_COCG_getresidual
 #endif
 !
 ! Deallocate private arrays

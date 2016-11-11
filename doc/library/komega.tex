@@ -356,11 +356,10 @@ end do $j$
 以下では$N_R$のループは省略する(各右辺ベクトルごとに同じ事をすればいいので).
 また$G_{i j}(z_k)$の代わりに$N_z$個の$N_L$次元の解ベクトル${\bf x}_{k}$を求める.
 
-ユーザーが用意するもの.
+注意事項. 
 \begin{itemize}
-\item ベクトル(ヒルベルト空間)のサイズ$N_H$, $N_z$個の$z$
-\item サイズ$N_H$のベクトルを2本(BiCGの時には4本)Allocateしておく.
-\item ハミルトニアン-ベクトル積を行う部分
+\item \verb|komega_????_init|を呼び出す前にサイズ$N_H$のベクトルを2本(BiCGの時には4本)Allocateしておく.
+\item ハミルトニアン-ベクトル積を行う部分はあらかじめ作成しておく.
 \item 解ベクトルをAllocateしておく. ただし, これは必ずしも$N_H \times N_z$である必要はない.
   実際前節の場合は$N_L \times N_z$である.この時(双)共役勾配ベクトル${{\bf p}_k}$も
   $N_z$個の$N_L$次元のベクトルである.
@@ -369,44 +368,50 @@ end do $j$
     {\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol r}, \qquad
     {\hat P} \equiv ({\boldsymbol \varphi}_1, \cdots, {\boldsymbol \varphi}_{N_L})
   \end{align}
+\item \verb|komega_????_update|の出力\verb|status|の第一成分が負の値になった場合には,
+  解が収束した, 若しくは破たんしたことを表す.
+  したがって\verb|status(1) < 0|でループを抜けるようにしておく.
+\item \verb|komega_????_update|内での収束判定には, シード点での残差ベクトルの2-ノルムが使われる.
+  すなわち, すべてのシフト点での残差ベクトルの2-ノルムが\verb|threshold|を下回った時に収束したと見做される.
 \item 各iterationでの$\alpha, \beta, {\bf r}^{\rm L}$を保存しておき, 
 あとで利用する場合には最大反復回数\verb|itermax|を設定する.
 \end{itemize}
-ライブラリの各ルーチンの名前は仮に次のようにしておく.
+
+ライブラリの各ルーチンの名前は次の通りである.
 
 \begin{itemize}
-\item \verb|BiCG_init|, \verb|COCG_init|, \verb|CG_C_init|, \verb|CG_R_init|
+\item \verb|komega_BiCG_init|, \verb|komega_COCG_init|, \verb|komega_CG_C_init|, \verb|komega_CG_R_init|
 
 ライブラリ内部で使う(ユーザーの目に触れない)変数のAllocateや初期値設定を行う.
 
-\item \verb|BiCG_update|, \verb|COCG_update|, \verb|CG_C_update|, \verb|CG_R_update|
+\item \verb|komega_BiCG_update|, \verb|komega_COCG_update|, \verb|komega_CG_C_update|, \verb|komega_CG_R_update|
 
 Iteration の中で呼び出される. 解ベクトル群の更新等を行う.
 
-%%\item \verb|BiCG_update1|, \verb|BiCG_update2|
+%%\item \verb|komega_BiCG_update1|, \verb|komega_BiCG_update2|
 %%
-%%BiCGで, ベクトルの本数を1本減らしてメモリを節約したいときに\verb|BiCG_update|の代わりに用いる.
-%%この場合には\verb|BiCG_init|の代わりに\verb|BiCG_init0|を使う.
+%%BiCGで, ベクトルの本数を1本減らしてメモリを節約したいときに\verb|komega_BiCG_update|の代わりに用いる.
+%%この場合には\verb|komega_BiCG_init|の代わりに\verb|komega_BiCG_init0|を使う.
 
-\item \verb|BiCG_finalize|, \verb|COCG_finalize|, \verb|CG_C_finalize|, \verb|CG_R_finalize|
+\item \verb|komega_BiCG_finalize|, \verb|komega_COCG_finalize|, \verb|komega_CG_C_finalize|, \verb|komega_CG_R_finalize|
 
 Allocateしたライブラリ内部ベクトルを開放する.
 
-\item \verb|BiCG_getcoef|, \verb|COCG_getcoef|, \verb|CG_C_getcoef|, \verb|CG_R_getcoef|
+\item \verb|komega_BiCG_getcoef|, \verb|komega_COCG_getcoef|, \verb|komega_CG_C_getcoef|, \verb|komega_CG_R_getcoef|
 
 各iterationで保存しておいた$\alpha$, $\beta$, $z_{\rm seed}$, ${\bf r}^{\rm L}$を取り出す.
 
-\item \verb|BiCG_getvec|, \verb|COCG_getvec|, \verb|CG_C_getvec|, \verb|CG_R_getvec|
+\item \verb|komega_BiCG_getvec|, \verb|komega_COCG_getvec|, \verb|komega_CG_C_getvec|, \verb|komega_CG_R_getvec|
 
 ${\boldsymbol r}$, ${\boldsymbol r}^{\rm old}$, 
 ${\tilde {\boldsymbol r}}$, ${\tilde {\boldsymbol r}}^{\rm old}$
 を取り出す.
 
-\item \verb|BiCG_restart|, \verb|COCG_restart|, \verb|CG_C_restart|, \verb|CG_R_restart|
+\item \verb|komega_BiCG_restart|, \verb|komega_COCG_restart|, \verb|komega_CG_C_restart|, \verb|komega_CG_R_restart|
 
 保存しておいた$\alpha$等を用いて, 新規の$z$での計算を行う.
 ${\boldsymbol r}$等も有る場合には
-\verb|BiCG_init|, \verb|COCG_init|, \verb|CG_C_init|, \verb|CG_R_init|
+\verb|komega_BiCG_init|, \verb|komega_COCG_init|, \verb|komega_CG_C_init|, \verb|komega_CG_R_init|
 の代わりに用いてリスタートすることもできる.
 
 \end{itemize}
@@ -420,7 +425,7 @@ ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
 \vspace{-1em}
 \begin{leftbar}
   \noindent
-  \verb|komega_BiCG_init(N_H, N_L, N_z, v_2, v_4, x, z, itermax)| start
+  \verb|komega_BiCG_init(N_H, N_L, N_z, x, z, itermax, threshold)| start
   \\ \hspace{0.5cm}
   Allocate ${\boldsymbol v}_3$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm old}\}$, $\{{\bf p}_k\}$
   \\ \hspace{0.5cm}
@@ -457,7 +462,7 @@ $ [ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H}
 \begin{leftbar}
   \noindent
   \hspace{0.5cm}
-  \verb|komega_BiCG_update(v_12, v_14, v_2, v_4, x, r_small)| start
+  \verb|komega_BiCG_update(v_12, v_2, v_14, v_4, x, r_small, status)| start
   \\\hspace{1.0cm}
   $\circ$シード方程式
   \\\hspace{1.0cm}
@@ -516,7 +521,7 @@ $ [ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H}
 \vspace{-1em}
 \noindent
 \hspace{0.5cm}
-if($|{\boldsymbol v}_2| < $Threshold) exit
+if(status(1) < 0 (これは$|{\boldsymbol v}_2| < $Threshold となった事を意味する)) exit
 \\
 end do iteration
 \vspace{-1em}
@@ -538,7 +543,7 @@ ${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
 \vspace{-1em}
 \begin{leftbar}
   \noindent
-  \verb|COCG_init(N_H, N_L, N_z, x, z)| start
+  \verb|COCG_init(N_H, N_L, N_z, x, z, itermax, threshold)| start
   \\ \hspace{0.5cm}
   Allocate ${\boldsymbol v}_3$, $\{\pi_k\}$, $\{\pi_k^{\rm old}\}$, $\{{\bf p}_k\}$
   \\ \hspace{0.5cm}
@@ -569,7 +574,7 @@ ${\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2$
 \begin{leftbar}
   \noindent
   \hspace{0.5cm}
-  \verb|COCG_update(v_1, v_2, x, p, r_small)| start
+  \verb|COCG_update(v_1, v_2, x, r_small, status)| start
   \\\hspace{1.0cm}
   $\circ$シード方程式
   \\\hspace{1.0cm}
@@ -621,7 +626,7 @@ ${\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2$
 \vspace{-1em}
 \noindent
 \hspace{0.5cm}
-if($|{\boldsymbol v}_2| < $Threshold) exit
+if(status(1) < 0 (これは$|{\boldsymbol v}_2| < $Threshold となった事を意味する)) exit
 \\
 end do iteration
 \vspace{-1em}
@@ -671,7 +676,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 
 \subsection{各ルーチンの説明}
 
-\subsubsection{\texttt{????\_init}, \texttt{p????\_init}}
+\subsubsection{\texttt{komega\_????\_init}, \texttt{pkomega\_????\_init}}
 
 ライブラリ内部変数の割り付けおよび初期化を行う.
 シフト線形方程式を解く前に, 一番初めに実行する.
@@ -731,7 +736,7 @@ CALL pkomega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 \item \verb|threshold|
 
   \verb|DOUBLE PRECISION|. スカラー. 入力. 収束判定用しきい値.
-  シード方程式の残差ベクトルの各成分の絶対値の中で最大のものがこの値を下回った時に収束したと判定する.
+  シード方程式の残差ベクトルの2-ノルムがこの値を下回った時に収束したと判定する.
 
 \item \verb|comm|
 
@@ -740,7 +745,7 @@ CALL pkomega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 
 \end{itemize}
 
-\subsubsection{\texttt{????\_restart}, \texttt{p????\_restart}}
+\subsubsection{\texttt{komega\_????\_restart}, \texttt{pkomega\_????\_restart}}
 
   リスタートを行う場合に\verb|?_init|の代わりに用いる.
   ライブラリ内部変数の割り付けおよび初期化を行う.
@@ -868,7 +873,7 @@ CALL pkomega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, 
 
 \end{itemize}
 
-\subsubsection{\texttt{????\_update}, \texttt{p????\_update}}
+\subsubsection{\texttt{komega\_????\_update}, \texttt{pkomega\_????\_update}}
 
 ループ内で行列ベクトル積と交互に呼ばれて解を更新する.
 
@@ -900,7 +905,7 @@ CALL pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
   \verb|DOUBLE COMPLEX| (それ以外).
   長さ\verb|ndim|の配列. 入出力.
   入力は残差ベクトル(\verb|v2|)と行列の積.
-  出力は, 更新された残差ベクトルの各要素の絶対値のなかで最大のものが,
+  出力は, 更新された残差ベクトルの2-ノルムが,
   先頭の要素に格納される(これは収束の具合を表示して調べる時などに用いる).
 
 \item \verb|v2|
@@ -951,7 +956,7 @@ CALL pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 
 \end{itemize}
 
-\subsubsection{\texttt{????\_getcoef}, \texttt{p????\_getcoef}}
+\subsubsection{\texttt{komega\_????\_getcoef}, \texttt{pkomega\_????\_getcoef}}
 
 後でリスタートを刷るときに必要な係数を取得する.
 このルーチンを呼び出すためには,
@@ -1004,7 +1009,7 @@ CALL pkomega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
   各反復での射影された残差ベクトル.
 \end{itemize}
 
-\subsubsection{\texttt{????\_getvec}, \texttt{p????\_getvec}}
+\subsubsection{\texttt{komega\_????\_getvec}, \texttt{pkomega\_????\_getvec}}
 
 後でリスタートをするときに必要な残差ベクトルを取得する.
 このルーチンを呼び出すためには,
@@ -1048,7 +1053,44 @@ CALL pkomega_BiCG_getvec(r_old, r_tilde_old)
 
 \end{itemize}
 
-\subsubsection{\texttt{????\_finalize}, \texttt{p????\_finalize}}
+\subsubsection{\texttt{komega\_????\_getresidual}, \texttt{pkomega\_????\_getresidual}}
+
+各シフト点での残差ベクトルの2-ノルムを取得する.
+このルーチンは\verb|komega_????_init|と\verb|komega_????_finalize|の間の
+任意の場所で呼び出すことが出来る.
+また, いつ何回呼び出しても最終的な計算結果には影響を与えない.
+
+\noindent 構文
+
+\noindent Fortran (シリアル/OpenMP版)
+\begin{verbatim}
+CALL komega_CG_R_getresidual(res)
+CALL komega_CG_C_getresidual(res)
+CALL komega_COCG_getresidual(res)
+CALL komega_BiCG_getresidual(res)
+\end{verbatim}
+
+\noindent Fortran (MPI/ハイブリッド並列版)
+\begin{verbatim}
+CALL pkomega_CG_R_getresidual(res)
+CALL pkomega_CG_C_getresidual(res)
+CALL pkomega_COCG_getresidual(res)
+CALL pkomega_BiCG_getresidual(res)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+  
+\item \verb|res|
+
+  \verb|DOUBLE PRECISION|.
+  長さ\verb|nz|の配列. 出力.
+  各シフト点での残差ベクトルの2-ノルム.
+
+\end{itemize}
+
+\subsubsection{\texttt{komega\_????\_finalize}, \texttt{pkomega\_????\_finalize}}
 
 ライブラリ内部で割りつけた配列のメモリを解放する.
 

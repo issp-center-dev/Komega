@@ -26,7 +26,7 @@ MODULE lobpcg_mod
   IMPLICIT NONE
   !
   PRIVATE
-  PUBLIC lobpcg_driver, zabsmax, zdotcMPI
+  PUBLIC lobpcg_driver, zdotcMPI
   !
   INTERFACE
      DOUBLE COMPLEX FUNCTION zdotc(n,zx,incx,zy,incy)
@@ -119,7 +119,7 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   REAL(8),INTENT(OUT) :: eig
   !
   INTEGER :: lwork = 5, info, iter, ii, jj, jtarget
-  REAL(8) :: dnorm, rwork(7), eig3(3), res
+  REAL(8) :: dnorm, rwork(7), eig3(3)
   COMPLEX(8) :: hsub(3,3), ovrp(3,3), work(5)
   !
   ! Initial guess of re
@@ -133,14 +133,20 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
   x( 1:ndim,3) = CMPLX(0d0, 0d0, KIND(0d0))
   hx(1:ndim,3) = CMPLX(0d0, 0d0, KIND(0d0))
   eig = DBLE(zdotcMPI(ndim, x(1:ndim,2), hx(1:ndim,2)))
-  x(1:ndim, 1) = hx(1:ndim,2) - eig * x(1:ndim,2)
   !
-  res = zabsmax(x(1:ndim,1), ndim)
-  WRITE(stdout,'(a)')        "    iter      Residual       Energy"
-  WRITE(stdout,'(i8,2e15.5)')        0,        res,             eig
-  IF(res < threshold) GOTO 10
+  WRITE(stdout,'(a)') "    Iter      Residual      Energy" 
   !
   DO iter = 1, maxloops
+     !
+     x(1:ndim, 1) = hx(1:ndim, 2) - eig * x(1:ndim, 2)
+     !
+     dnorm = SQRT(DBLE(zdotcMPI(ndim, x(1:ndim, 1), x(1:ndim, 1))))
+     WRITE(stdout,'(i8,2e15.5)') iter, dnorm, eig
+     IF(dnorm < threshold) exit
+     !
+     IF(iter /= 1) THEN
+        x(1:ndim, 1) = x(1:ndim, 1) / dnorm
+     END IF
      !
      CALL ham_prod(x(1:ndim,1), hx(1:ndim, 1))
      !
@@ -171,7 +177,7 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
            jtarget = 3
         END IF
         !
-    END IF
+     END IF
      !
      eig = 0.5d0 * (eig + eig3(jtarget))
      !
@@ -186,47 +192,11 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
         hx(1:ndim, ii) = hx(1:ndim, ii) / dnorm
      END DO
      !
-     x(1:ndim, 1) = hx(1:ndim, 2) - eig * x(1:ndim, 2)
-     !
-     res = zabsmax(x(1:ndim,1), ndim)
-     WRITE(stdout,'(i8,2e15.5)') iter, res, eig
-     IF(res < threshold) exit
-     !
-     dnorm = SQRT(DBLE(zdotcMPI(ndim, x(1:ndim, 1), x(1:ndim, 1))))
-     x(1:ndim, 1) = x(1:ndim, 1) / dnorm
-     !
   END DO
   !
 10 CONTINUE
   !
 END SUBROUTINE lobpcg
-!
-! MAXVAL with MPI allreduce (for complex(8))
-!
-FUNCTION zabsmax(array, n) RESULT(maxarray)
-  !
-#if defined(MPI)
-  use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_PRECISION, MPI_MAX, MPI_COMM_WORLD
-#endif
-  !
-  IMPLICIT NONE
-  !
-  INTEGER,INTENT(IN) :: n
-  COMPLEX(8),INTENT(IN) :: array(n)
-  REAL(8) maxarray
-  !
-#if defined(MPI)
-  INTEGER :: ierr
-#endif
-  !
-  maxarray = MAXVAL(ABS(array))
-  !
-#if defined(MPI)
-  call MPI_allREDUCE(MPI_IN_PLACE, maxarray, 1, &
-  &                  MPI_DOUBLE_PRECISION, MPI_MAX, MPI_COMM_WORLD, ierr)
-#endif
-  !
-END FUNCTION zabsmax
 !
 ! zdotc with MPI allreduce
 !

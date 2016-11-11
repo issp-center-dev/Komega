@@ -33,19 +33,19 @@ SUBROUTINE dyn()
   !
   USE shiftk_io, ONLY : input_restart_parameter, input_restart_vector, &
   &                     output_result, output_result_debug, output_restart_parameter, output_restart_vector
-  USE shiftk_vals, ONLY : alpha, beta, calctype, ndim, nomega, maxloops, iter_old, lBiCG, nl, &
+  USE shiftk_vals, ONLY : alpha, beta, calctype, ndim, nomega, maxloops, iter_old, lBiCG, nl, myrank, &
   &                       outrestart, v12, v2, v14, v4, rhs, r_l, r_l_save, stdout, threshold, x_l, z, z_seed
   !
 #if defined(MPI)
-  USE pkomega_cocg, ONLY : pkomega_COCG_init, pkomega_COCG_restart, pkomega_COCG_update, &
-  &                         pkomega_COCG_getcoef, pkomega_COCG_getvec, pkomega_COCG_finalize
-  USE pkomega_bicg, ONLY : pkomega_BiCG_init, pkomega_BiCG_restart, pkomega_BiCG_update, &
-  &                         pkomega_BiCG_getcoef, pkomega_BiCG_getvec, pkomega_BiCG_finalize
+  USE pkomega_cocg, ONLY : pkomega_COCG_init, pkomega_COCG_restart, pkomega_COCG_update, pkomega_COCG_getcoef, &
+  &                        pkomega_COCG_getresidual, pkomega_COCG_getvec, pkomega_COCG_finalize
+  USE pkomega_bicg, ONLY : pkomega_BiCG_init, pkomega_BiCG_restart, pkomega_BiCG_update, pkomega_BiCG_getcoef, &
+  &                        pkomega_BiCG_getresidual, pkomega_BiCG_getvec, pkomega_BiCG_finalize
 #else
-  USE komega_cocg, ONLY : komega_COCG_init, komega_COCG_restart, komega_COCG_update, &
-  &                        komega_COCG_getcoef, komega_COCG_getvec, komega_COCG_finalize
-  USE komega_bicg, ONLY : komega_BiCG_init, komega_BiCG_restart, komega_BiCG_update, &
-  &                        komega_BiCG_getcoef, komega_BiCG_getvec, komega_BiCG_finalize
+  USE komega_cocg, ONLY : komega_COCG_init, komega_COCG_restart, komega_COCG_update, komega_COCG_getcoef, &
+  &                       komega_COCG_getresidual, komega_COCG_getvec, komega_COCG_finalize
+  USE komega_bicg, ONLY : komega_BiCG_init, komega_BiCG_restart, komega_BiCG_update, komega_BiCG_getcoef, &
+  &                       komega_BiCG_getresidual, komega_BiCG_getvec, komega_BiCG_finalize
 #endif
   USE lobpcg_mod, ONLY : zdotcMPI
 #if defined (MPI)
@@ -58,7 +58,11 @@ SUBROUTINE dyn()
   !
   INTEGER :: &
   & iter, & ! Counter for Iteration
-  & status(3)
+  & status(3), &
+  & fres = 30, &
+  & iomega
+  !
+  REAL(8) :: res2norm(nomega)
   !
 #if defined(NO_PROJ)
   INTEGER :: jter
@@ -186,6 +190,8 @@ SUBROUTINE dyn()
   WRITE(stdout,*) "#####  BiCG Iteration  #####"
   WRITE(stdout,*)
   !
+  IF(myrank == 0) OPEN(fres, file = "residual.dat")
+  !
   WRITE(stdout,'(a)') "    iter status1 status2 status3      Residual       Proj. Res."
   !
   DO iter = 1, maxloops
@@ -229,10 +235,33 @@ SUBROUTINE dyn()
 #endif
      END IF
      !
+     IF(lBiCG) THEN
+#if defined (MPI)
+        CALL pkomega_BiCG_getresidual(res2norm)
+#else
+        CALL komega_BiCG_getresidual(res2norm)
+#endif
+     ELSE
+#if defined (MPI)
+        CALL pkomega_COCG_getresidual(res2norm)
+#else
+        CALL komega_COCG_getresidual(res2norm)
+#endif
+     END IF
+     !
+     IF(myrank == 0) THEN
+        DO iomega = 1, nomega
+           WRITE(fres, '(2i8,5e25.15)') iter, iomega, z(iomega), x_l(1,iomega), res2norm(iomega)
+        END DO
+        WRITE(fres,*)
+     END IF
+     !
      WRITE(stdout,'(i8,3i8,2e15.5)') iter, status, DBLE(v12(1)), ABS(r_l(1))
      IF(status(1) < 0) EXIT
      !
   END DO
+  !
+  CLOSE(fres)
   !
   IF(status(2) == 0) THEN
      WRITE(stdout,*) "  Converged in iteration ", ABS(status(1))
