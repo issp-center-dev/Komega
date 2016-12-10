@@ -1,4 +1,4 @@
-<a name= "japanese"> [jpn] /  [[en]("english")]
+<a name= "japanese"> 日本語 /  [English](#english)
 
 # What ? 
 
@@ -122,8 +122,8 @@ $ ifort myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
      
 ----
    
-[[jp]("japanese")] /<a name= "english">  [en]
-   
+[日本語]( #japanese ) / <a name= "english"> English 
+  
 # What ? 
 
 This package provides the solver library based on Shifted-Krylov subspace method and the software to calculate dynamical Green function by inputting the Hamiltonian and the vector of the excited state.
