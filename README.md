@@ -1,4 +1,4 @@
-[jp][japanese]/[en][english]
+<a name= "japanese"> [jpn] /  [[en]("english")]
 
 # What ? 
 
@@ -122,7 +122,7 @@ $ ifort myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
      
 ----
    
-[jp][japanese]/[en][english]
+[[jp]("japanese")] /<a name= "english">  [en]
    
 # What ? 
 
