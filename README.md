@@ -42,8 +42,8 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
  * `src/`: ライブラリのソースコードのディレクトリ
    * `makefile`: ライブラリのビルド用Makeファイル
    * `komega_bicg.f90`: Shifted BiCG法ライブラリ用サブルーチン群
-   * `komega_cg_c.f90`: Shifted CG法(実Hamiltonian)ライブラリ用サブルーチン群
-   * `komega_cg_r.f90`: Shifted CG法(複素Hamiltonian)ライブラリ用サブルーチン群
+   * `komega_cg_c.f90`: Shifted CG法(複素Hamiltonian)ライブラリ用サブルーチン群
+   * `komega_cg_r.f90`: Shifted CG法(実Hamiltonian)ライブラリ用サブルーチン群
    * `komega_cocg.f90`: Shifted COCG法ライブラリ用サブルーチン群
    * `komega_math.f90`: BLASインターフェイスモジュール
    * `komega_vals.f90`: ライブラリ内部共通変数モジュール
@@ -167,8 +167,8 @@ This package provides the solver library based on Shifted-Krylov subspace method
  * `src/`: The source directory for the libraries
    * `makefile`: Makefile to build the libraries
    * `komega_bicg.f90`: Subroutines of the libraries for Shifted BiCG method
-   * `komega_cg_c.f90`: Subroutines of the libraries for Shifted CG method (real Hamiltonian)
-   * `komega_cg_r.f90`: Subroutines of the libraries for Shifted CG method (complex Hamiltonian)
+   * `komega_cg_c.f90`: Subroutines of the libraries for Shifted CG method (complex Hamiltonian)
+   * `komega_cg_r.f90`: Subroutines of the libraries for Shifted CG method (real Hamiltonian)
    * `komega_cocg.f90`: Subroutines of the libraries for Shifted COCG method
    * `komega_math.f90`: Interface modules of BLAS
    * `komega_vals.f90`: Modules for the internal common variables
