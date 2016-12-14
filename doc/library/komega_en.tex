@@ -1,0 +1,1271 @@
+%
+% ISSP Math Library - A library for solving linear systems in materials science
+% Copyright (C) 2016 Mitsuaki Kawamura
+% 
+% This library is free software; you can redistribute it and/or
+% modify it under the terms of the GNU Lesser General Public
+% License as published by the Free Software Foundation; either
+% version 2.1 of the License, or (at your option) any later version.
+% 
+% This library is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+% Lesser General Public License for more details.
+% し
+% You should have received a copy of the GNU Lesser General Public
+% License along with this library; if not, write to the Free Software
+% Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+% 
+% For more details, See `COPYING.LESSER' in the root directory of this library.
+%
+\documentclass[12pt,titlepage]{jarticle}
+%\documentclass[12pt,titlepage]{article}
+%\usepackage[whole]{bxcjkjatype}
+%\setminchofont{ipaexm.ttf}
+%\setgothicfont{ipaexg.ttf}
+%\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{bm}% bold math
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage {framed,color}
+\usepackage[dvipdfmx]{hyperref}
+
+%
+%\pagestyle{fancy}
+%
+\topmargin=-30mm
+\textheight=27cm
+\textwidth=17cm
+\oddsidemargin=-0.04 cm
+\evensidemargin=-1.04cm
+%1inchi = 2.54cm
+%A4 = 21.0 * 29.7
+%
+\makeatletter
+\renewenvironment{leftbar}{%
+%  \def\FrameCommand{\vrule width 3pt \hspace{10pt}}%  デフォルトの線の太さは3pt
+  \def\FrameCommand{\vrule width 1pt \hspace{0pt}}% 
+  \MakeFramed {\advance\hsize-\width \FrameRestore}}%
+ {\endMakeFramed}
+\makeatother
+
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage{lmodern}
+\usepackage{listings}
+\lstset{language=[90]Fortran,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color[rgb]{0,0,0.7},
+  commentstyle=\color[rgb]{0.5,0,0},
+  morecomment=[l]{!\ }% Comment only with space after !
+}
+
+
+
+\begin{document}
+%
+% Cover
+%
+\title{User guide: $K(\omega)$ ver. 1.0}
+\author{{\it \copyright 2016- The University of Tokyo}\\
+{\it  All rights reserved.}
+}
+\date{Dec. 12, 2016}
+\maketitle
+%
+
+%
+% Contents
+%
+\tableofcontents
+
+\section{Overview}
+
+本資料はISSP Math Libraryの内の、Krylov部分空間法に基づくシフト線形方程式群ソルバーライブラリ
+$K(\omega)$に関するマニュアルである.
+本ライブラリは, (射影付き)シフト線形問題
+\begin{align}
+  G_{i j}(z) = \langle i | (z {\hat I} -{\hat H})^{-1}| j \rangle \equiv 
+  {\boldsymbol \varphi}_i^{*} \cdot (z{\hat I}-{\hat H})^{-1} {\boldsymbol \varphi}_j
+\end{align}
+を, Krylov部分空間法を用いて解くためのルーチンを提供する.
+言語はfortranを用いる. 
+また, BLASレベル1ルーチンを使用する.
+
+\section{Copyright}
+
+\noindent
+ISSP Math Library - A library for solving linear systems in materials science \\
+{\copyright 2016 - The University of Tokyo}, {\it  All rights reserved.}
+ \\ \\
+This library is free software; you can redistribute it and/or \\
+modify it under the terms of the GNU Lesser General Public \\
+License as published by the Free Software Foundation; either \\
+version 2.1 of the License, or (at your option) any later version. \\
+ \\
+This library is distributed in the hope that it will be useful, \\
+but WITHOUT ANY WARRANTY; without even the implied warranty of \\
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU \\
+Lesser General Public License for more details. \\
+ \\
+You should have received a copy of the GNU Lesser General Public \\
+License along with this library; if not, write to the Free Software \\
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA \\
+ \\
+For more details, See `COPYING.LESSER' in the root directory of this library.
+
+\section{Algorithm}
+
+このライブラリは, ${\hat H}$および$z$が複素数であるか実数であるかに応じて,
+次の4種類の計算をサポートする(${\hat H}$は複素数の場合はエルミート行列, 実数の場合は実対称行列).
+
+\begin{itemize}
+\item ${\hat H}$も$z$も両方複素数の場合 : Shifted Bi-Conjugate Gradient(BiCG)法 \cite{BiCG} or Shifted Conjugate Orthogonal Conjugate Gradient(COCG)法 \cite{COCG}
+\item ${\hat H}$が実数で$z$が複素数の場合 : Shifted Conjugate Orthogonal Conjugate Gradient(COCG)法 \cite{COCG}
+\item ${\hat H}$が複素数で$z$が実数の場合 : Shifted Conjugate Gradient(CG)法 (複素ベクトル)
+\item ${\hat H}$も$z$も両方実数の場合 : Shifted Conjugate Gradient(CG)法 (実ベクトル)
+\end{itemize}
+いずれの場合も Seed switching を行う.
+左ベクトルが$N_L$個, 右ベクトルが$N_R$個(典型的には1個)あるとする.
+以下, 各手法のアルゴリズムを記載する.
+%\newpage
+\subsection{Shifted BiCG method with seed switching technique}
+
+\noindent
+$G_{i j}(z_k) = 0 (i=1 \cdots N_L,\; j = 1 \cdots N_R,\; k=1 \cdots N_z)$
+\\
+do $j = 1 \cdots N_R$
+\\\hspace{0.5cm}
+${\boldsymbol r} = {\boldsymbol \varphi_j}$, ${\tilde {\boldsymbol r}} = $ an arbitrary vector,
+${\boldsymbol r}^{\rm old} = {\tilde {\boldsymbol r}}^{\rm old} = {\bf 0}$
+\\\hspace{0.5cm}
+$p_{i k} = 0(i=1 \cdots N_L,\; k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
+\\\hspace{0.5cm}
+$\rho = \infty,\; \alpha = 1,\; z_{\rm seed}=0$ 
+\\\hspace{0.5cm}
+do iteration
+\\\hspace{1.0cm}
+$\circ$Seed equation
+\\\hspace{1.0cm}
+$\rho^{\rm old} = \rho,\; \rho = {\tilde {\boldsymbol r}}^* \cdot {\boldsymbol r}$
+\\\hspace{1.0cm}
+$\beta = \rho / \rho^{\rm old}$
+\\\hspace{1.0cm}
+${\boldsymbol q} = (z_{\rm seed} {\hat I} - {\hat H}){\boldsymbol r}$
+\\\hspace{1.0cm}
+$\alpha^{\rm old} = \alpha,\; 
+\alpha = \frac{\rho}{{\tilde {\boldsymbol r}}^*\cdot{\boldsymbol q} - \beta \rho / \alpha }$
+\\\hspace{1.0cm}
+$\circ$Shifted equation
+\\\hspace{1.0cm}
+do $k = 1 \cdots N_z$
+\\\hspace{1.5cm}
+$\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)$
+\\\hspace{1.5cm}
+do $i = 1 \cdots N_L$
+\\\hspace{2.0cm}
+$p_{i k} = \frac{1}{\pi_k} {\boldsymbol \varphi}_i^* \cdot {\boldsymbol r} + 
+\frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta p_{i k}$
+\\\hspace{2.0cm}
+$G_{i j}(z_k) = G_{i j}(z_k) + \frac{\pi_k}{\pi_k^{\rm new}} \alpha p_{i k}$
+\\\hspace{2.0cm}
+$\pi_k^{\rm old} = \pi_k$, $\pi_k = \pi_k^{\rm new}$
+\\\hspace{1.5cm}
+end do $i$
+\\\hspace{1.0cm}
+end do $k$
+\\\hspace{1.0cm}
+${\boldsymbol q} = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\boldsymbol r}
+- \alpha {\boldsymbol q} - \frac{\alpha \beta}{\alpha^{\rm old}} {\boldsymbol r}^{\rm old},\; 
+{\boldsymbol r}^{\rm old} = {\boldsymbol r},\; {\boldsymbol r} = {\boldsymbol q}$
+\\\hspace{1.0cm}
+${\boldsymbol q} = (z_{\rm seed}^* {\hat I} - {\hat H}) {\tilde {\boldsymbol r}},\;
+{\boldsymbol q} = \left( 1 + \frac{\alpha^* \beta^*}{\alpha^{{\rm old} *}} \right) {\tilde {\boldsymbol r}}
+- \alpha^* {\boldsymbol q} - \frac{\alpha^* \beta^*}{\alpha^{{\rm old} *}} {\tilde {\boldsymbol r}}^{\rm old},\; 
+{\tilde {\boldsymbol r}}^{\rm old} = {\tilde {\boldsymbol r}},\; {\tilde {\boldsymbol r}} = {\boldsymbol q}$
+\\\hspace{1.0cm}
+$\circ$ Seed switch
+\\\hspace{1.0cm}
+Search $k$ which gives the minimum value of $|\pi_k|$.
+$\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
+\\\hspace{1.0cm}
+${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed},\; 
+{\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}^{\rm old},\; 
+{\tilde {\boldsymbol r}} = {\tilde {\boldsymbol r}} / \pi_{\rm seed}^{ *},\; 
+{\tilde {\boldsymbol r}}^{\rm old} = {\tilde {\boldsymbol r}}^{\rm old} / \pi_{\rm seed}^{{\rm old}*}$
+\\\hspace{1.0cm}
+$\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
+$\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})$
+\\\hspace{1.0cm}
+$\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
+\\\hspace{1.0cm}
+if($|{\boldsymbol r}| < $Threshold) exit
+\\\hspace{0.5cm}
+end do iteration
+\\
+end do $j$
+
+%\newpage
+\subsection{Shifted COCG method with seed switching technique}
+
+BiCGのアルゴリズムで, ${\tilde {\boldsymbol r}} = {\boldsymbol r}^*,\; 
+{\tilde {\boldsymbol r}}^{\rm old} = {\boldsymbol r}^{{\rm old}*}$とすると得られる.
+
+\noindent
+$G_{i j}(z_k) = 0 (i=1 \cdots N_L,\; j = 1 \cdots N_R,\; k=1 \cdots N_z)$
+\\
+do $j = 1 \cdots N_R$
+\\\hspace{0.5cm}
+${\boldsymbol r} = {\boldsymbol \varphi_j}$, 
+${\boldsymbol r}^{\rm old} = {\bf 0}$
+\\\hspace{0.5cm}
+$p_{i k} = 0(i=1 \cdots N_L,\; k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
+\\\hspace{0.5cm}
+$\rho = \infty,\; \alpha = 1,\; z_{\rm seed}=0$ 
+\\\hspace{0.5cm}
+do iteration
+\\\hspace{1.0cm}
+$\circ$Seed equation
+\\\hspace{1.0cm}
+$\rho^{\rm old} = \rho,\; \rho = {\boldsymbol r} \cdot {\boldsymbol r}$
+\\\hspace{1.0cm}
+$\beta = \rho / \rho^{\rm old}$
+\\\hspace{1.0cm}
+${\boldsymbol q} = (z_{\rm seed} {\hat I} - {\hat H}){\boldsymbol r}$
+\\\hspace{1.0cm}
+$\alpha^{\rm old} = \alpha,\; 
+\alpha = \frac{\rho}{{\boldsymbol r}\cdot{\boldsymbol q} - \beta \rho / \alpha }$
+\\\hspace{1.0cm}
+$\circ$Shifted equation
+\\\hspace{1.0cm}
+do $k = 1 \cdots N_z$
+\\\hspace{1.5cm}
+$\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)$
+\\\hspace{1.5cm}
+do $i = 1 \cdots N_L$
+\\\hspace{2.0cm}
+$p_{i k} = \frac{1}{\pi_k} {\boldsymbol \varphi}_i^* \cdot {\boldsymbol r} + 
+\frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta p_{i k}$
+\\\hspace{2.0cm}
+$G_{i j}(z_k) = G_{i j}(z_k) + \frac{\pi_k}{\pi_k^{\rm new}} \alpha p_{i k}$
+\\\hspace{2.0cm}
+$\pi_k^{\rm old} = \pi_k$, $\pi_k = \pi_k^{\rm new}$
+\\\hspace{1.5cm}
+end do $i$
+\\\hspace{1.0cm}
+end do $k$
+\\\hspace{1.0cm}
+${\boldsymbol q} = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\boldsymbol r}
+- \alpha {\boldsymbol q} - \frac{\alpha \beta}{\alpha^{\rm old}} {\boldsymbol r}^{\rm old},\; 
+{\boldsymbol r}^{\rm old} = {\boldsymbol r},\; {\boldsymbol r} = {\boldsymbol q}$
+\\\hspace{1.0cm}
+$\circ$ Seed switch
+\\\hspace{1.0cm}
+Search $k$ which gives the minimum value of $|\pi_k|$.
+$\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
+\\\hspace{1.0cm}
+${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed},\; 
+{\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}^{\rm old}$
+\\\hspace{1.0cm}
+$\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
+$\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})$
+\\\hspace{1.0cm}
+$\{\pi_k = \pi_k/\pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
+\\\hspace{1.0cm}
+if($|{\boldsymbol r}| < $Threshold) exit
+\\\hspace{0.5cm}
+end do iteration
+\\
+end do $j$
+
+%\newpage
+\subsection{Shifted CG method with seed switching technique}
+
+BiCGのアルゴリズムで, ${\tilde {\boldsymbol r}} = {\boldsymbol r},\; 
+{\tilde {\boldsymbol r}}^{\rm old} = {\boldsymbol r}^{\rm old}$とすると得られる.
+
+\noindent
+$G_{i j}(z_k) = 0 (i=1 \cdots N_L,\; j = 1 \cdots N_R,\; k=1 \cdots N_z)$
+\\
+do $j = 1 \cdots N_R$
+\\\hspace{0.5cm}
+${\boldsymbol r} = {\boldsymbol \varphi_j}$, 
+${\boldsymbol r}^{\rm old} = {\bf 0}$
+\\\hspace{0.5cm}
+$p_{i k} = 0(i=1 \cdots N_L,\; k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
+\\\hspace{0.5cm}
+$\rho = \infty,\; \alpha = 1,\; z_{\rm seed}=0$ 
+\\\hspace{0.5cm}
+do iteration
+\\\hspace{1.0cm}
+$\circ$Seed equation
+\\\hspace{1.0cm}
+$\rho^{\rm old} = \rho,\; \rho = {\boldsymbol r}^* \cdot {\boldsymbol r}$
+\\\hspace{1.0cm}
+$\beta = \rho / \rho^{\rm old}$
+\\\hspace{1.0cm}
+${\boldsymbol q} = (z_{\rm seed} {\hat I} - {\hat H}){\boldsymbol r}$
+\\\hspace{1.0cm}
+$\alpha^{\rm old} = \alpha,\; 
+\alpha = \frac{\rho}{{\boldsymbol r}^* \cdot {\boldsymbol q} - \beta \rho / \alpha }$
+\\\hspace{1.0cm}
+$\circ$Shifted equation
+\\\hspace{1.0cm}
+do $k = 1 \cdots N_z$
+\\\hspace{1.5cm}
+$\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)$
+\\\hspace{1.5cm}
+do $i = 1 \cdots N_L$
+\\\hspace{2.0cm}
+$p_{i k} = \frac{1}{\pi_k} {\boldsymbol \varphi}_i^* \cdot {\boldsymbol r} + 
+\left(\frac{\pi^{\rm old}_k}{\pi_k } \right)^2 \beta p_{i k}$
+\\\hspace{2.0cm}
+$G_{i j}(z_k) = G_{i j}(z_k) + \frac{\pi_k}{\pi_k^{\rm new}} \alpha p_{i k}$
+\\\hspace{2.0cm}
+$\pi_k^{\rm old} = \pi_k$, $\pi_k = \pi_k^{\rm new}$
+\\\hspace{1.5cm}
+end do $i$
+\\\hspace{1.0cm}
+end do $k$
+\\\hspace{1.0cm}
+${\boldsymbol q} = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\boldsymbol r}
+- \alpha {\boldsymbol q} - \frac{\alpha \beta}{\alpha^{\rm old}} {\boldsymbol r}^{\rm old},\; 
+{\boldsymbol r}^{\rm old} = {\boldsymbol r},\; {\boldsymbol r} = {\boldsymbol q}$
+\\\hspace{1.0cm}
+$\circ$ Seed switch
+\\\hspace{1.0cm}
+Search $k$ which gives the minimum value of $|\pi_k|$.
+$\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
+\\\hspace{1.0cm}
+${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed},\; 
+{\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}^{\rm old}$
+\\\hspace{1.0cm}
+$\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
+$\rho = \rho / {\pi_{\rm seed}^{\rm old}}^2$
+\\\hspace{1.0cm}
+$\{\pi_k = \pi_k/\pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old}/\pi_{\rm seed}^{\rm old}\}$
+\\\hspace{1.0cm}
+if($|{\boldsymbol r}| < $Threshold) exit
+\\\hspace{0.5cm}
+end do iteration
+\\
+end do $j$
+
+\section{The schematic workflow of libraries in the program}
+
+以下では$N_R$のループは省略する(各右辺ベクトルごとに同じ事をすればいいので).
+また$G_{i j}(z_k)$の代わりに$N_z$個の$N_L$次元の解ベクトル${\bf x}_{k}$を求める.
+
+ユーザーが用意するもの.
+\begin{itemize}
+\item ベクトル(ヒルベルト空間)のサイズ$N_H$, $N_z$個の$z$
+\item サイズ$N_H$のベクトルを2本(BiCGの時には4本)Allocateしておく.
+\item ハミルトニアン-ベクトル積を行う部分
+\item 解ベクトルをAllocateしておく. ただし, これは必ずしも$N_H \times N_z$である必要はない.
+  実際前節の場合は$N_L \times N_z$である.この時(双)共役勾配ベクトル${{\bf p}_k}$も
+  $N_z$個の$N_L$次元のベクトルである.
+  $N_H$次元の残差ベクトルを$N_L$次元へ変換するところはユーザーが行う.
+  \begin{align}
+    {\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol r}, \qquad
+    {\hat P} \equiv ({\boldsymbol \varphi}_1, \cdots, {\boldsymbol \varphi}_{N_L})
+  \end{align}
+\item 各iterationでの$\alpha, \beta, {\bf r}^{\rm L}$を保存しておき, 
+あとで利用する場合には最大反復回数\verb|itermax|を設定する.
+\end{itemize}
+ライブラリの各ルーチンの名前は仮に次のようにしておく.
+
+\begin{itemize}
+\item \verb|BiCG_init|, \verb|COCG_init|, \verb|CG_C_init|, \verb|CG_R_init|
+
+ライブラリ内部で使う(ユーザーの目に触れない)変数のAllocateや初期値設定を行う.
+
+\item \verb|BiCG_update|, \verb|COCG_update|, \verb|CG_C_update|, \verb|CG_R_update|
+
+Iteration の中で呼び出される. 解ベクトル群の更新等を行う.
+
+%%\item \verb|BiCG_update1|, \verb|BiCG_update2|
+%%
+%%BiCGで, ベクトルの本数を1本減らしてメモリを節約したいときに\verb|BiCG_update|の代わりに用いる.
+%%この場合には\verb|BiCG_init|の代わりに\verb|BiCG_init0|を使う.
+
+\item \verb|BiCG_finalize|, \verb|COCG_finalize|, \verb|CG_C_finalize|, \verb|CG_R_finalize|
+
+Allocateしたライブラリ内部ベクトルを開放する.
+
+\item \verb|BiCG_getcoef|, \verb|COCG_getcoef|, \verb|CG_C_getcoef|, \verb|CG_R_getcoef|
+
+各iterationで保存しておいた$\alpha$, $\beta$, $z_{\rm seed}$, ${\bf r}^{\rm L}$を取り出す.
+
+\item \verb|BiCG_getvec|, \verb|COCG_getvec|, \verb|CG_C_getvec|, \verb|CG_R_getvec|
+
+${\boldsymbol r}$, ${\boldsymbol r}^{\rm old}$, 
+${\tilde {\boldsymbol r}}$, ${\tilde {\boldsymbol r}}^{\rm old}$
+を取り出す.
+
+\item \verb|BiCG_restart|, \verb|COCG_restart|, \verb|CG_C_restart|, \verb|CG_R_restart|
+
+保存しておいた$\alpha$等を用いて, 新規の$z$での計算を行う.
+${\boldsymbol r}$等も有る場合には
+\verb|BiCG_init|, \verb|COCG_init|, \verb|CG_C_init|, \verb|CG_R_init|
+の代わりに用いてリスタートすることもできる.
+
+\end{itemize}
+
+\subsection{The schematic workflow of shifted BiCG library}%%(メモリ節約なし)}
+
+\noindent
+Allocate ${\boldsymbol v}_{1 2}$, ${\boldsymbol v}_{1 3}$, 
+${\boldsymbol v}_2$, ${\boldsymbol v}_3$, $\{{\bf x}_k\}, {\bf r}^{\rm L}$
+${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
+\vspace{-1em}
+\begin{leftbar}
+  \noindent
+  \verb|komega_BiCG_init(N_H, N_L, N_z, v_2, v_4, x, z, itermax)| start
+  \\ \hspace{0.5cm}
+  Allocate ${\boldsymbol v}_3$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm old}\}$, $\{{\bf p}_k\}$
+  \\ \hspace{0.5cm}
+  Copy $\{z_k\}$
+  \\ \hspace{0.5cm}
+  \verb|itermax|$\neq$\verb|0|ならば$\alpha$, $\beta$, ${\bf r}^{\rm L}$を保存する配列を確保する.
+  \\ \hspace{0.5cm}
+  ${\boldsymbol v}_4 = {\boldsymbol v}_2^*$(n) (n is an arbitrary number),
+  ${\boldsymbol v}_3 = {\boldsymbol v}_5 = {\bf 0}$,
+  \\ \hspace{0.5cm}
+  ${\bf p}_{k} = {\bf x}_k = {\bf 0}(k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
+  \\ \hspace{0.5cm}
+  $\rho = \infty,\; \alpha = 1,\; z_{\rm seed}=0$ 
+  \\ \hspace{0.5cm}
+  (
+  ${\boldsymbol v}_2 \equiv {\boldsymbol r}$, 
+  ${\boldsymbol v}_3 \equiv {\boldsymbol r}^{\rm old}$,
+  ${\boldsymbol v}_4 \equiv {\tilde {\boldsymbol r}}$, 
+  ${\boldsymbol v}_5 \equiv {\tilde {\boldsymbol r}}^{\rm old}$. )
+  \\
+  \verb|komega_BiCG_init| finish
+\end{leftbar}
+\vspace{-1em}
+\noindent
+do iteration
+\\\hspace{0.5cm}
+${\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2$
+\\\hspace{0.5cm}
+${\boldsymbol v}_{1 2} = {\hat H} {\boldsymbol v}_2$, 
+${\boldsymbol v}_{1 4} = {\hat H} {\boldsymbol v}_4$  
+$ [ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H}
+  ({\boldsymbol v}_2, {\boldsymbol v}_4)とも書ける]$
+\vspace{-1em}
+\begin{leftbar}
+  \noindent
+  \hspace{0.5cm}
+  \verb|komega_BiCG_update(v_12, v_14, v_2, v_4, x, r_small)| start
+  \\\hspace{1.0cm}
+  $\circ$Seed equation
+  \\\hspace{1.0cm}
+  $\rho^{\rm old} = \rho,\; \rho = {\boldsymbol v}_4^* \cdot {\boldsymbol v}_2$
+  \\\hspace{1.0cm}
+  $\beta = \rho / \rho^{\rm old}$
+  \\\hspace{1.0cm}
+  ${\boldsymbol v}_{1 2} = z_{\rm seed} {\boldsymbol v}_2 - {\boldsymbol v}_{1 2}$, 
+  ${\boldsymbol v}_{1 4} = z_{\rm seed}^* {\boldsymbol v}_4 - {\boldsymbol v}_{1 4}$
+  \\\hspace{1.0cm}
+  $\alpha^{\rm old} = \alpha,\; 
+  \alpha = \frac{\rho}{{\boldsymbol v}_3^* \cdot {\boldsymbol v}_{1 2} - \beta \rho / \alpha }$
+  \\\hspace{1.0cm}
+  $\circ$Shifted equation
+  \\\hspace{1.0cm}
+  do $k = 1 \cdots N_z$
+  \\\hspace{1.5cm}
+  $\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)$
+  \\\hspace{1.5cm}
+  ${\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm L} + 
+  \frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta {\bf p}_{k}$
+  \\\hspace{1.5cm}
+  ${\bf x}_{k} = {\bf x}_{k} + \frac{\pi_k}{\pi_k^{\rm new}} \alpha {\bf p}_{k}$
+  \\\hspace{1.5cm}
+  $\pi_k^{\rm old} = \pi_k$, $\pi_k = \pi_k^{\rm new}$
+  \\\hspace{1.0cm}
+  end do $k$
+  \\\hspace{1.0cm}
+  ${\boldsymbol v}_{1 2} = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\boldsymbol v}_2
+  - \alpha {\boldsymbol v}_{1 2} - \frac{\alpha \beta}{\alpha^{\rm old}} {\boldsymbol v}_3$, 
+  ${\boldsymbol v}_3 = {\boldsymbol v}_2,\;
+  {\boldsymbol v}_2 = {\boldsymbol v}_{1 2}$
+  \\\hspace{1.0cm}
+  ${\boldsymbol v}_{1 4} = \left( 1 + \frac{\alpha^* \beta^*}{\alpha^{{\rm old} *}} \right) {\boldsymbol v}_4
+  - \alpha^* {\boldsymbol v}_{1 4} - \frac{\alpha^* \beta^*}{\alpha^{{\rm old} *}} {\boldsymbol v}_5$, 
+  ${\boldsymbol v}_5 = {\boldsymbol v}_4,\; 
+  {\boldsymbol v}_4 = {\boldsymbol v}_{1 4}$
+  \\\hspace{1.0cm}
+  $\circ$ Seed switch
+  \\\hspace{1.0cm}
+  Search $k$ which gives the minimum value of $|\pi_k|$.
+  $\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
+  \\\hspace{1.0cm}
+  ${\boldsymbol v}_2 = {\boldsymbol v}_2 / \pi_{\rm seed}$,
+  ${\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}^{\rm old}$,
+  ${\boldsymbol v}_4 = {\boldsymbol v}_4 / \pi_{\rm seed}^{*}$, 
+  ${\boldsymbol v}_5 = {\boldsymbol v}_5 / \pi_{\rm seed}^{\rm old *}$
+  \\\hspace{1.0cm}
+  $\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
+  $\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})$
+  \\\hspace{1.0cm}
+  $\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
+  \\\hspace{0.5cm}
+\verb|komega_BiCG_update| finish
+\end{leftbar}
+\vspace{-1em}
+\noindent
+\hspace{0.5cm}
+if($|{\boldsymbol v}_2| < $Threshold) exit
+\\
+end do iteration
+\vspace{-1em}
+\begin{leftbar}
+\noindent
+\verb|komega_BiCG_finalize| start
+\\ \hspace{0.5cm}
+Deallocate ${\boldsymbol v}_4$, ${\boldsymbol v}_5$, $\{\pi_k\}$, $\{\pi_k^{\rm old}\}$, $\{{\bf p}_k\}$
+\\
+\verb|komega_BiCG_finalize| finish
+\end{leftbar}
+
+\subsection{The schematic workflow of shifted COCG library}
+
+\noindent
+Allocate ${\boldsymbol v}_1$, ${\boldsymbol v}_2$, $\{{\bf x}_k\}, {\bf r}^{\rm L}$
+\\ 
+${\boldsymbol v}_2 = {\boldsymbol \varphi_j}$
+\vspace{-1em}
+\begin{leftbar}
+  \noindent
+  \verb|COCG_init(N_H, N_L, N_z, x, z)| start
+  \\ \hspace{0.5cm}
+  Allocate ${\boldsymbol v}_3$, $\{\pi_k\}$, $\{\pi_k^{\rm old}\}$, $\{{\bf p}_k\}$
+  \\ \hspace{0.5cm}
+  Copy $\{z_k\}$
+  \\ \hspace{0.5cm}
+  \verb|itermax|$\neq$\verb|0|ならば$\alpha$, $\beta$, ${\bf r}^{\rm L}$を保存する配列を確保する.
+  \\ \hspace{0.5cm}
+  ${\boldsymbol v}_3 = {\bf 0}$,
+  \\ \hspace{0.5cm}
+  ${\bf p}_{k} = {\bf x}_k = {\bf 0}(k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)$ 
+  \\ \hspace{0.5cm}
+  $\rho = \infty,\; \alpha = 1,\; \beta=0,\; z_{\rm seed}=0$ 
+  \\ \hspace{0.5cm}
+  (
+  ${\boldsymbol v}_2 \equiv {\boldsymbol r}$, 
+  ${\boldsymbol v}_3 \equiv {\boldsymbol r}^{\rm old}$. )
+  \\
+  \verb|COCG_init| finish
+\end{leftbar}
+\vspace{-1em}
+\noindent
+do iteration
+\\\hspace{0.5cm}
+${\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2$
+\\\hspace{0.5cm}
+${\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2$
+\vspace{-1em}
+\begin{leftbar}
+  \noindent
+  \hspace{0.5cm}
+  \verb|COCG_update(v_1, v_2, x, p, r_small)| start
+  \\\hspace{1.0cm}
+  $\circ$Seed equation
+  \\\hspace{1.0cm}
+  $\rho^{\rm old} = \rho,\; \rho = {\boldsymbol v}_2 \cdot {\boldsymbol v}_2$
+  \\\hspace{1.0cm}
+  $\beta = \rho / \rho^{\rm old}$
+  \\\hspace{1.0cm}
+  ${\boldsymbol v}_1 = z_{\rm seed} {\boldsymbol v}_2 - {\boldsymbol v}_1$
+  \\\hspace{1.0cm}
+  $\alpha^{\rm old} = \alpha,\; 
+  \alpha = \frac{\rho}{{\boldsymbol v}_2 \cdot {\boldsymbol v}_1 - \beta \rho / \alpha }$
+  \\\hspace{1.0cm}
+  $\circ$Shifted equation
+  \\\hspace{1.0cm}
+  do $k = 1 \cdots N_z$
+  \\\hspace{1.5cm}
+  $\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)$
+  \\\hspace{1.5cm}
+  ${\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm L} + 
+  \frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta {\bf p}_{k}$
+  \\\hspace{1.5cm}
+  ${\bf x}_{k} = {\bf x}_{k} + \frac{\pi_k}{\pi_k^{\rm new}} \alpha {\bf p}_{k}$
+  \\\hspace{1.5cm}
+  $\pi_k^{\rm old} = \pi_k,\; \pi_k = \pi_k^{\rm new}$
+  \\\hspace{1.0cm}
+  end do $k$
+  \\\hspace{1.0cm}
+  ${\boldsymbol v}_1 = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\boldsymbol v}_2
+  - \alpha {\boldsymbol v}_1 - \frac{\alpha \beta}{\alpha^{\rm old}} {\boldsymbol v}_3$
+  \\\hspace{1.0cm}
+  ${\boldsymbol v}_3 = {\boldsymbol v}_2$,
+  ${\boldsymbol v}_2 = {\boldsymbol v}_1$
+  \\\hspace{1.0cm}
+  $\circ$ Seed switch
+  \\\hspace{1.0cm}
+  Search $k$ which gives the minimum value of $|\pi_k|$.
+  $\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old} $
+  \\\hspace{1.0cm}
+  ${\boldsymbol v}_2 = {\boldsymbol v}_2 / \pi_{\rm seed}$,
+  ${\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}^{\rm old}$
+  \\\hspace{1.0cm}
+  $\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha$,
+  $\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})$
+  \\\hspace{1.0cm}
+  $\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}$
+  \\\hspace{0.5cm}
+  \verb|COCG_update| finish
+\end{leftbar}
+\vspace{-1em}
+\noindent
+\hspace{0.5cm}
+if($|{\boldsymbol v}_2| < $Threshold) exit
+\\
+end do iteration
+\vspace{-1em}
+\begin{leftbar}
+  \noindent
+  \verb|COCG_finalize| start
+  \\ \hspace{0.5cm}
+  Deallocate ${\boldsymbol v}_3$, $\{\pi_k\}$, $\{\pi_k^{\rm old}\}$, $\{{\bf p}_k\}$
+  \\
+  \verb|COCG_finalize| finish
+\end{leftbar}
+\vspace{-1em}
+
+\subsection{The schematic workflow of shifted CG library}
+
+The workflow is same as that of shifted COCG library.
+
+\section{Usage}
+
+各ライブラリともユーザーはライブラリ名および型を指定し, 
+\begin{itemize}
+\item 初期設定 (init関数)
+\item アップデート (update関数)
+\item 計算情報出力 (getcoef, getvec関数などを呼び出力)
+\item 終了関数 (finalize関数)
+\end{itemize}
+の手順で関数を使用することで, 計算が実施される. 
+なお, リスタートを行う場合には
+\begin{itemize}
+\item 初期設定関数(restart関数)
+\item アップデート (update関数)
+\item 計算情報出力 (getcoef, getvec関数などを呼び出力)
+\item 終了関数 (finalize関数)
+\end{itemize}
+の手順で実行する.
+fortran から呼び出すときには
+\begin{verbatim}
+  USE komega_????
+\end{verbatim}
+のようにモジュールを呼び出す. \verb|"????"|の部分には,
+\verb|"CG_R"|, \verb|"CG_C"|, \verb|"COCG"|, \verb|"BiCG"|が入る.
+MPI/Hybrid並列版のルーチンを利用するときには,
+\begin{verbatim}
+  USE pkomega_????
+\end{verbatim}
+のようにする.
+
+\subsection{Details of each routines}
+
+\subsubsection{\texttt{????\_init}, \texttt{p????\_init}}
+
+ライブラリ内部変数の割り付けおよび初期化を行う.
+シフト線形方程式を解く前に, 一番初めに実行する.
+
+\noindent 構文
+
+\noindent Fortran シリアル/OpenMP版
+\begin{verbatim}
+CALL komega_CG_R_init(ndim, nl, nz, x, z, itermax, threshold)
+CALL komega_CG_C_init(ndim, nl, nz, x, z, itermax, threshold)
+CALL komega_COCG_init(ndim, nl, nz, x, z, itermax, threshold)
+CALL komega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
+\end{verbatim}
+
+\noindent Fortran MPI/Hybrid並列版
+\begin{verbatim}
+CALL pkomega_CG_R_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL pkomega_CG_C_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL pkomega_COCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+CALL pkomega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+
+\item \verb|ndim|
+
+  \verb|INTEGER|. スカラー. 入力. 線形方程式の次元.
+
+\item \verb|nl|
+
+  \verb|INTEGER|. スカラー. 入力. 射影された解ベクトルの次元.
+
+\item \verb|nz|
+
+  \verb|INTEGER|. スカラー. 入力. シフト点の数.
+
+\item \verb|x|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_init|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ \verb|nl*nz|の配列. 出力.
+  解ベクトル. \verb|0|ベクトルが返される.
+
+\item \verb|z|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_init|, \verb|CG_C_init|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|nz|の配列. 入力. シフト点.
+
+\item \verb|itermax|
+
+  \verb|INTEGER|. スカラー. 入力. リスタート用配列の割り付けのための最大反復回数.
+  これを\verb|0|にした場合にはリスタート用配列を割りつけない(したがって後述のリスタート用変数の出力を行えない)
+
+\item \verb|threshold|
+
+  \verb|DOUBLE PRECISION|. スカラー. 入力. 収束判定用しきい値.
+  Seed equationの残差ベクトルの各成分の絶対値の中で最大のものがこの値を下回った時に収束したと判定する.
+
+\item \verb|comm|
+
+  \verb|INTEGER|. スカラー. 入力. MPI/Hybrid並列版のみ.
+  MPIのコミニュケーター(\verb|MPI_COMM_WORLD|など)を入れる.
+
+\end{itemize}
+
+\subsubsection{\texttt{????\_restart}, \texttt{p????\_restart}}
+
+  リスタートを行う場合に\verb|?_init|の代わりに用いる.
+  ライブラリ内部変数の割り付けおよび初期化を行う.
+  シフト線形方程式を解く前に, 一番初めに実行する.
+
+  \noindent 構文
+  
+  \noindent Fortran (シリアル/OpenMP版)
+  
+\begin{verbatim}
+CALL komega_CG_R_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_CG_C_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_COCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+&                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
+&                 z_seed, r_l_save)
+\end{verbatim}
+
+  \noindent Fortran (MPI/ハイブリッド並列版)
+  
+\begin{verbatim}
+CALL pkomega_CG_R_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL pkomega_CG_C_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL pkomega_COCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+&                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+CALL pkomega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+&                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
+&                 z_seed, r_l_save)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+
+\item \verb|ndim, nl, nz, x, z, itermax, threshold, comm|
+
+  \verb|?_init|と同様.
+
+\item \verb|status|
+
+  \verb|INTEGER|. 長さ\verb|3|の配列. 出力. エラーコードを返す.
+  \begin{description}
+  \item [第一成分(\texttt{status(1)})]
+    現在の総反復回数が返される.
+    解が収束した場合, もしくは計算が破綻した場合には現在の総反復回数に
+    マイナスが付いた値が返される.
+    それ以外の場合には\verb|0|が返される.
+    \verb|status(1)|が正の値の時のみ反復を続行できる.
+    それ以外の場合は反復を進めても有意な結果は得られない.
+    
+  \item [第二成分(\texttt{status(2)})]
+    \verb|itermax|を有限にして, かつ\verb|itermax|回の反復で
+    収束に達しなかった場合には\verb|1|が返される.
+    $\alpha$が発散した場合には\verb|2|が返される.
+    $\pi_{\rm seed}$が0にになった場合には\verb|3|が返される.
+    \verb|COCG_restart|もしくは\verb|BiCG_restart|で,
+    残差ベクトルと影の残差ベクトルが直交した場合には\verb|4|が返される.
+    それ以外の場合には\verb|0|が返される.
+
+  \item [第三成分(\texttt{status(3)})]
+    シード点のindexが返される.
+  \end{description}
+
+\item \verb|iter_old|
+
+  \verb|INTEGER|. スカラー. 入力. 先行する計算での反復回数.
+
+\item \verb|v2|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|ndim|の配列. 入力.
+  先行する計算での最後の残差ベクトル.
+
+\item \verb|v12|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|ndim|の配列. 入力.
+  先行する計算での最後から2番目の残差ベクトル.
+
+\item \verb|alpha_save|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のパラメーター$\alpha$.
+
+\item \verb|beta_save|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のパラメーター$\beta$.
+
+\item \verb|z_seed|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  スカラー. 入力. 先行する計算でのシードシフト.
+
+\item \verb|r_l_save|
+  
+  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|nl*iter_old|の配列. 入力.
+  先行する計算での各反復での射影された残差ベクトル.
+
+\item \verb|v4|
+
+  \verb|BiCG_restart|の場合のみ使用.
+  \verb|DOUBLE COMPLEX|.
+  長さ\verb|ndim|の配列. 入力.
+  先行する計算での最後の影の残差ベクトル.
+
+\item \verb|v14|
+
+  \verb|BiCG_restart|の場合のみ使用.
+  \verb|DOUBLE COMPLEX|.
+  長さ\verb|ndim|の配列. 入力.
+  先行する計算での最後から2番目の影の残差ベクトル.
+
+\end{itemize}
+
+\subsubsection{\texttt{????\_update}, \texttt{p????\_update}}
+
+ループ内で行列ベクトル積と交互に呼ばれて解を更新する.
+
+\noindent 構文
+
+\noindent Fortran (シリアル/OpenMPI版)
+\begin{verbatim}
+CALL komega_CG_R_update(v12, v2, x, r_l, status)
+CALL komega_CG_C_update(v12, v2, x, r_l, status)
+CALL komega_COCG_update(v12, v2, x, r_l, status)
+CALL komega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
+\end{verbatim}
+
+\noindent Fortran (MPI/ハイブリッド並列版)
+\begin{verbatim}
+CALL pkomega_CG_R_update(v12, v2, x, r_l, status)
+CALL pkomega_CG_C_update(v12, v2, x, r_l, status)
+CALL pkomega_COCG_update(v12, v2, x, r_l, status)
+CALL pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+
+\item \verb|v12|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_update|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|ndim|の配列. 入出力.
+  入力は残差ベクトル(\verb|v2|)と行列の積.
+  出力は, 更新された残差ベクトルの各要素の絶対値のなかで最大のものが,
+  先頭の要素に格納される(これは収束の具合を表示して調べる時などに用いる).
+
+\item \verb|v2|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_update|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|ndim|の配列. 入出力.
+  入力は残差ベクトル.
+  出力は更新された残差ベクトル.
+
+\item \verb|v14|
+  
+  \verb|BiCG_update|の場合のみ使用. \verb|DOUBLE COMPLEX|.
+  長さ\verb|ndim|の配列. 入力.
+  影の残差ベクトル(\verb|v4|)と行列の積.
+  
+\item \verb|v4|
+  
+  \verb|BiCG_update|の場合のみ使用. \verb|DOUBLE COMPLEX|.
+  長さ\verb|ndim|の配列. 入出力.
+  入力は影の残差ベクトル.
+  出力は更新された影の残差ベクトル.
+
+\item \verb|status|
+
+  \verb|INTEGER|. 長さ\verb|3|の配列. 出力. エラーコードを返す.
+  \begin{description}
+  \item [第一成分(\texttt{status(1)})]
+    現在の総反復回数が返される.
+    解が収束した場合, もしくは計算が破綻した場合には現在の総反復回数に
+    マイナスが付いた値が返される.
+    それ以外の場合には\verb|0|が返される.
+    \verb|status(1)|が正の値の時のみ反復を続行できる.
+    それ以外の場合は反復を進めても有意な結果は得られない.
+    
+  \item [第二成分(\texttt{status(2)})]
+    \verb|?_init|ルーチンで, \verb|itermax|を有限にして, かつ\verb|itermax|回の反復で
+    収束に達しなかった場合には\verb|1|が返される.
+    $\alpha$が発散した場合には\verb|2|が返される.
+    $\pi_{\rm seed}$が0にになった場合には\verb|3|が返される.
+    \verb|COCG_update|もしくは\verb|BiCG_update|で,
+    残差ベクトルと影の残差ベクトルが直交した場合には\verb|4|が返される.
+    それ以外の場合には\verb|0|が返される.
+
+  \item [第三成分(\texttt{status(3)})]
+    シード点のindexが返される.
+  \end{description}
+
+\end{itemize}
+
+\subsubsection{\texttt{????\_getcoef}, \texttt{p????\_getcoef}}
+
+後でリスタートを刷るときに必要な係数を取得する.
+このルーチンを呼び出すためには,
+\verb|?_init|ルーチンで\verb|itermax|を\verb|0|以外の値にしておく必要がある.
+
+\noindent 構文
+
+\noindent Fortran (シリアル/OpenMP版)
+\begin{verbatim}
+CALL komega_CG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_CG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL komega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+\end{verbatim}
+
+\noindent Fortran (MPI/ハイブリッド並列版)
+\begin{verbatim}
+CALL pkomega_CG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL pkomega_CG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL pkomega_COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+CALL pkomega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+\item \verb|alpha_save|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のパラメーター$\alpha$.
+
+\item \verb|beta_save|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のパラメーター$\beta$.
+
+\item \verb|z_seed|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  スカラー. 出力. シードシフト.
+
+\item \verb|r_l_save|
+  
+  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  \verb|nl|$\times$総反復回数の長さ配列. 出力.
+  各反復での射影された残差ベクトル.
+\end{itemize}
+
+\subsubsection{\texttt{????\_getvec}, \texttt{p????\_getvec}}
+
+後でリスタートをするときに必要な残差ベクトルを取得する.
+このルーチンを呼び出すためには,
+\verb|?_init|ルーチンで\verb|itermax|を\verb|0|以外の値にしておく必要がある.
+
+\noindent 構文
+
+\noindent Fortran (シリアル/OpenMP版)
+\begin{verbatim}
+CALL komega_CG_R_getvec(r_old)
+CALL komega_CG_C_getvec(r_old)
+CALL komega_COCG_getvec(r_old)
+CALL komega_BiCG_getvec(r_old, r_tilde_old)
+\end{verbatim}
+
+\noindent Fortran (MPI/ハイブリッド並列版)
+\begin{verbatim}
+CALL pkomega_CG_R_getvec(r_old)
+CALL pkomega_CG_C_getvec(r_old)
+CALL pkomega_COCG_getvec(r_old)
+CALL pkomega_BiCG_getvec(r_old, r_tilde_old)
+\end{verbatim}
+
+\noindent パラメーター
+
+\begin{itemize}
+  
+\item \verb|r_old|
+
+  \verb|DOUBLE PRECISION| (\verb|CG_R_getvec|の場合),
+  \verb|DOUBLE COMPLEX| (それ以外).
+  長さ\verb|ndim|の配列. 出力.
+  先行する計算での最後から2番目の残差ベクトル.
+
+\item \verb|r_tilde_old|
+
+  \verb|BiCG_getvec|の場合のみ使用.
+  \verb|DOUBLE COMPLEX|.
+  長さ\verb|ndim|の配列. 出力.
+  先行する計算での最後から2番目の影の残差ベクトル.
+
+\end{itemize}
+
+\subsubsection{\texttt{????\_finalize}, \texttt{p????\_finalize}}
+
+ライブラリ内部で割りつけた配列のメモリを解放する.
+
+\noindent 構文
+
+\noindent Fortran (シリアル/OpenMP版)
+\begin{verbatim}
+CALL komega_CG_R_finalize()
+CALL komega_CG_C_finalize()
+CALL komega_COCG_finalize()
+CALL komega_BiCG_finalize()
+\end{verbatim}
+
+\noindent Fortran (MPI/ハイブリッド並列版)
+\begin{verbatim}
+CALL pkomega_CG_R_finalize()
+CALL pkomega_CG_C_finalize()
+CALL pkomega_COCG_finalize()
+CALL pkomega_BiCG_finalize()
+\end{verbatim}
+
+\subsection{Sample codes for using shifted BiCG library}
+
+As a typical example, the usage of shifted BiCG library is shown below.
+
+\begin{lstlisting}
+PROGRAM my_prog
+  !
+  USE komega_bicg, ONLY : komega_BiCG_init, komega_BiCG_restart, komega_BiCG_update, &
+  &                       komega_BiCG_getcoef, komega_BiCG_getvec, komega_BiCG_finalize
+  USE solve_cc_routines, ONLY : input_size, input_restart, &
+  &                             projection, &
+  &                             hamiltonian_prod, generate_system, &
+  &                             output_restart, output_result
+  !
+  IMPLICIT NONE
+  !
+  INTEGER,SAVE :: &
+  & rnd_seed, &
+  & ndim,    & ! Size of Hilvert space
+  & nz,      & ! Number of frequencies
+  & nl,      & ! Number of Left vector
+  & itermax, & ! Max. number of iteraction
+  & iter_old   ! Number of iteraction of previous run
+  !
+  REAL(8),SAVE :: &
+  & threshold ! Convergence Threshold
+  !
+  COMPLEX(8),SAVE :: &
+  & z_seed ! Seed frequency
+  !
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
+  & z(:)         ! (nz): Frequency
+  !
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
+  & ham(:,:), &
+  & rhs(:), &
+  & v12(:), v2(:), & ! (ndim): Working vector
+  & v14(:), v4(:), & ! (ndim): Working vector
+  & r_l(:), & ! (nl) : Projeccted residual vector 
+  & x(:,:) ! (nl,nz) : Projected result 
+  !
+  ! Variables for Restart
+  !
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
+  & alpha(:), beta(:) ! (iter_old) 
+  !
+  COMPLEX(8),ALLOCATABLE,SAVE :: &
+  & r_l_save(:,:) ! (nl,iter_old) Projected residual vectors
+  !
+  ! Variables for Restart
+  !
+  INTEGER :: &
+  & itermin, & ! First iteration in this run
+  & iter,    & ! Counter for Iteration
+  & status(3)
+  !
+  ! Input Size of vectors
+  !
+  CALL input_size(ndim,nl,nz)
+  !
+  ALLOCATE(v12(ndim), v2(ndim), v14(ndim), v4(ndim), r_l(nl), &
+  &        x(nl,nz), z(nz), ham(ndim,ndim), rhs(ndim))
+  !
+  CALL generate_system(ndim, ham, rhs, z)
+  !
+  ! Check: Whether the restart file is exist.
+  !
+  CALL input_restart(iter_old, zseed, alpha, beta, r_l_save)
+  !
+  WRITE(*,*)
+  WRITE(*,*) "#####  CG Initialization  #####"
+  WRITE(*,*)
+  !
+  IF(iter_old > 0) THEN
+    !
+    ! When restarting, counter
+    !
+    itermin = iter_old + 1
+    CALL komega_BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
+    &                 status, iter_old, v2, v12, v4, v14, alpha, &
+    &                 beta, z_seed, r_l_save)
+    !
+    ! These vectors were saved in BiCG routine
+    !
+    DEALLOCATE(alpha, beta, r_l_save)
+    !
+    IF(status(1) /= 0) GOTO 10
+    !
+  ELSE
+     !
+     itermin = 1
+     !
+     ! Generate Right Hand Side Vector
+     !
+     v2(1:ndim) = rhs(1:ndim)
+     v4(1:ndim) = CONJG(v2(1:ndim))
+     !v4(1:ndim) = v2(1:ndim)
+     !
+     CALL komega_BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     !
+  END IF
+  !
+  ! BiCG Loop
+  !
+  WRITE(*,*)
+  WRITE(*,*) "#####  CG Iteration  #####"
+  WRITE(*,*)
+  !
+  DO iter = 1, abs(itermax)
+     !
+     ! Projection of Residual vector into the space
+     ! spaned by left vectors
+     !
+     r_l(1:nl) = projection(v2(1:nl))
+     !
+     ! Matrix-vector product
+     !
+     CALL hamiltonian_prod(Ham, v2, v12)
+     CALL hamiltonian_prod(Ham, v4, v14)
+     !
+     ! Update result x with BiCG
+     !
+     CALL komega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
+     !
+     WRITE(*,'(a,i,a,3i,a,e15.5)') "lopp : ", iter, &
+     &                             ", status : ", status(1:3), &
+     &                             ", Res. : ", DBLE(v12(1))
+     IF(status(1) < 0) EXIT
+     !
+  END DO
+  !
+  IF(status(2) == 0) THEN
+     WRITE(*,*) "  Converged in iteration ", ABS(status(1))
+  ELSE IF(status(2) == 1) THEN
+     WRITE(*,*) "  Not Converged in iteration ", ABS(status(1))
+  ELSE IF(status(2) == 2) THEN
+     WRITE(*,*) "  Alpha becomes infinity", ABS(status(1))
+  ELSE IF(status(2) == 3) THEN
+     WRITE(*,*) "  Pi_seed becomes zero", ABS(status(1))
+  ELSE IF(status(2) == 4) THEN
+     WRITE(*,*) "  Residual & Shadow residual are orthogonal", ABS(status(1))
+  END IF
+  iter_old = ABS(status(1))
+  !
+  ! Get these vectors for restart in the Next run
+  !
+  IF(itermax > 0) THEN
+     !
+     ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
+     !
+     CALL komega_BiCG_getcoef(alpha, beta, z_seed, r_l_save)
+     CALL komega_BiCG_getvec(v12,v14)
+     !
+     CALL output_restart(iter_old, z_seed, alpha, beta, &
+     &                   r_l_save, v12, v14)
+     !
+     DEALLOCATE(alpha, beta, r_l_save)
+     !     
+  END IF
+  !
+10 CONTINUE
+  !
+  ! Deallocate all intrinsic vectors
+  !
+  CALL komega_BiCG_finalize()
+  !
+  ! Output to a file
+  !
+  CALL output_result(nl, nz, z, x, r_l)
+  !
+  DEALLOCATE(v12, v2, v14, v4, r_l, x, z)
+  !
+  WRITE(*,*)
+  WRITE(*,*) "#####  Done  #####"
+  WRITE(*,*)
+  !
+END PROGRAM my_prog
+\end{lstlisting}
+
+\section{Contact}
+
+If you have any comments, questions, bug reports etc. about this library,
+please contact to the main developer (Mitsuaki Kawamura) by sending the e-mail (the address is shown below),
+\begin{verbatim}
+mkawamura_at_issp.u-tokyo.ac.jp .
+\end{verbatim}
+Please change \verb|_at_| as \verb|@|, when you will send the e-mail.
+
+\begin{thebibliography}{99}
+\bibitem{BiCG}
+  A. Frommer, Computing {\bf 70}, 87 (2003).
+  
+\bibitem{COCG}
+  S. Yamamoto, T. Sogabe, T. Hoshi, S.-L. Zhang, and T. Fujiwara, J. Phys. Soc. Jpn. {\bf 77}, 114713 (2008).
+\end{thebibliography}
+
+\end{document}
