@@ -674,6 +674,22 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 \end{verbatim}
 のようにする.
 
+C/C++で書かれたプログラムから呼び出すときには、
+\begin{verbatim}
+#include komega_????.h
+\end{verbatim}
+のようにヘッダーファイルを読み込む。
+また、スカラー引数はすべてポインタとして渡す。
+MPI/Hybrid並列版のルーチンを利用するときには,
+\begin{verbatim}
+#include pkomega_????.h
+\end{verbatim}
+のようにする。
+またライブラリに渡すコミュニケーター変数を、次のようにC/C++のものからfortranのものに変換する。
+\begin{verbatim}
+  comm_f = MPI_Comm_c2f(comm_c);
+\end{verbatim}
+
 \subsection{各ルーチンの説明}
 
 \subsubsection{\texttt{komega\_????\_init}, \texttt{pkomega\_????\_init}}
@@ -697,6 +713,22 @@ CALL pkomega_CG_R_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 CALL pkomega_CG_C_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 CALL pkomega_COCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 CALL pkomega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+\end{verbatim}
+
+\noindent C/C++ シリアル/OpenMP版
+\begin{verbatim}
+komega_CG_R_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
+komega_CG_C_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
+komega_COCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
+komega_BiCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
+\end{verbatim}
+
+\noindent C/C++ MPI/Hybrid並列版
+\begin{verbatim}
+pkomega_CG_R_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+pkomega_CG_C_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+pkomega_COCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+pkomega_BiCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
 \end{verbatim}
 
 \noindent パラメーター
@@ -779,6 +811,34 @@ CALL pkomega_COCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, 
 CALL pkomega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
 &                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
 &                 z_seed, r_l_save)
+\end{verbatim}
+
+  \noindent C/C++ (シリアル/OpenMP版)
+  
+\begin{verbatim}
+komega_CG_R_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+ komega_CG_C_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+komega_COCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+komega_BiCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
+&                 &iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
+&                 &z_seed, r_l_save);
+\end{verbatim}
+
+  \noindent C/C++ (MPI/ハイブリッド並列版)
+  
+\begin{verbatim}
+pkomega_CG_R_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_CG_C_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_COCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_BiCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
+&                 &iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
+&                 &z_seed, r_l_save);
 \end{verbatim}
 
 \noindent パラメーター
@@ -895,6 +955,22 @@ CALL pkomega_COCG_update(v12, v2, x, r_l, status)
 CALL pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 \end{verbatim}
 
+\noindent C/C++ (シリアル/OpenMPI版)
+\begin{verbatim}
+komega_CG_R_update(v12, v2, x, r_l, status);
+komega_CG_C_update(v12, v2, x, r_l, status);
+komega_COCG_update(v12, v2, x, r_l, status);
+komega_BiCG_update(v12, v2, v14, v4, x, r_l, status);
+\end{verbatim}
+
+\noindent C/C++ (MPI/ハイブリッド並列版)
+\begin{verbatim}
+pkomega_CG_R_update(v12, v2, x, r_l, status);
+pkomega_CG_C_update(v12, v2, x, r_l, status);
+pkomega_COCG_update(v12, v2, x, r_l, status);
+pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status);
+\end{verbatim}
+
 \noindent パラメーター
 
 \begin{itemize}
@@ -980,6 +1056,22 @@ CALL pkomega_COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 CALL pkomega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 \end{verbatim}
 
+\noindent C/C++ (シリアル/OpenMP版)
+\begin{verbatim}
+komega_CG_R_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+komega_CG_C_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+komega_COCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+komega_BiCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+\end{verbatim}
+
+\noindent C/C++ (MPI/ハイブリッド並列版)
+\begin{verbatim}
+pkomega_CG_R_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_CG_C_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_COCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_BiCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+\end{verbatim}
+
 \noindent パラメーター
 
 \begin{itemize}
@@ -1033,6 +1125,22 @@ CALL pkomega_COCG_getvec(r_old)
 CALL pkomega_BiCG_getvec(r_old, r_tilde_old)
 \end{verbatim}
 
+\noindent C/C++ (シリアル/OpenMP版)
+\begin{verbatim}
+komega_CG_R_getvec(r_old);
+komega_CG_C_getvec(r_old);
+komega_COCG_getvec(r_old);
+komega_BiCG_getvec(r_old, r_tilde_old);
+\end{verbatim}
+
+\noindent C/C++ (MPI/ハイブリッド並列版)
+\begin{verbatim}
+pkomega_CG_R_getvec(r_old);
+pkomega_CG_C_getvec(r_old);
+pkomega_COCG_getvec(r_old);
+pkomega_BiCG_getvec(r_old, r_tilde_old);
+\end{verbatim}
+
 \noindent パラメーター
 
 \begin{itemize}
@@ -1078,6 +1186,22 @@ CALL pkomega_COCG_getresidual(res)
 CALL pkomega_BiCG_getresidual(res)
 \end{verbatim}
 
+\noindent C/C++ (シリアル/OpenMP版)
+\begin{verbatim}
+komega_CG_R_getresidual(res);
+komega_CG_C_getresidual(res);
+komega_COCG_getresidual(res);
+komega_BiCG_getresidual(res);
+\end{verbatim}
+
+\noindent C/C++ (MPI/ハイブリッド並列版)
+\begin{verbatim}
+pkomega_CG_R_getresidual(res);
+pkomega_CG_C_getresidual(res);
+pkomega_COCG_getresidual(res);
+pkomega_BiCG_getresidual(res);
+\end{verbatim}
+
 \noindent パラメーター
 
 \begin{itemize}
@@ -1110,6 +1234,22 @@ CALL pkomega_CG_R_finalize()
 CALL pkomega_CG_C_finalize()
 CALL pkomega_COCG_finalize()
 CALL pkomega_BiCG_finalize()
+\end{verbatim}
+
+\noindent C/C++ (シリアル/OpenMP版)
+\begin{verbatim}
+komega_CG_R_finalize();
+komega_CG_C_finalize();
+komega_COCG_finalize();
+komega_BiCG_finalize();
+\end{verbatim}
+
+\noindent C/C++ (MPI/ハイブリッド並列版)
+\begin{verbatim}
+pkomega_CG_R_finalize();
+pkomega_CG_C_finalize();
+pkomega_COCG_finalize();
+pkomega_BiCG_finalize();
 \end{verbatim}
 
 \subsection{Shifted BiCGライブラリを使用したソースコードの例}
