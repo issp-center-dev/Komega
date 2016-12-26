@@ -18,7 +18,7 @@
 % 
 % For more details, See `COPYING.LESSER' in the root directory of this library.
 %
-\documentclass[12pt,titlepage]{jarticle}
+\documentclass[12pt,titlepage]{article}
 %\documentclass[12pt,titlepage]{article}
 %\usepackage[whole]{bxcjkjatype}
 %\setminchofont{ipaexm.ttf}
@@ -453,8 +453,8 @@ ${\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2$
 \\\hspace{0.5cm}
 ${\boldsymbol v}_{1 2} = {\hat H} {\boldsymbol v}_2$, 
 ${\boldsymbol v}_{1 4} = {\hat H} {\boldsymbol v}_4$  
-$ [ ({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H}
-  ({\boldsymbol v}_2, {\boldsymbol v}_4)とも書ける]$
+$ [({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H}
+  ({\boldsymbol v}_2, {\boldsymbol v}_4)]$
 \vspace{-1em}
 \begin{leftbar}
   \noindent
@@ -665,7 +665,7 @@ fortran から呼び出すときには
 \end{verbatim}
 のようにモジュールを呼び出す. \verb|"????"|の部分には,
 \verb|"CG_R"|, \verb|"CG_C"|, \verb|"COCG"|, \verb|"BiCG"|が入る.
-MPI/Hybrid並列版のルーチンを利用するときには,
+MPI / Hybrid parallelization versionのルーチンを利用するときには,
 \begin{verbatim}
   USE pkomega_????
 \end{verbatim}
@@ -680,7 +680,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 
 \noindent 構文
 
-\noindent Fortran シリアル/OpenMP版
+\noindent Fortran Serial / OpenMP version
 \begin{verbatim}
 CALL komega_CG_R_init(ndim, nl, nz, x, z, itermax, threshold)
 CALL komega_CG_C_init(ndim, nl, nz, x, z, itermax, threshold)
@@ -688,7 +688,7 @@ CALL komega_COCG_init(ndim, nl, nz, x, z, itermax, threshold)
 CALL komega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
 \end{verbatim}
 
-\noindent Fortran MPI/Hybrid並列版
+\noindent Fortran MPI / Hybrid parallelization version
 \begin{verbatim}
 CALL pkomega_CG_R_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 CALL pkomega_CG_C_init(ndim, nl, nz, x, z, itermax, threshold, comm)
@@ -737,7 +737,7 @@ CALL pkomega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 
 \item \verb|comm|
 
-  \verb|INTEGER|. スカラー. 入力. MPI/Hybrid並列版のみ.
+  \verb|INTEGER|. スカラー. 入力. MPI / Hybrid parallelization versionのみ.
   MPIのコミニュケーター(\verb|MPI_COMM_WORLD|など)を入れる.
 
 \end{itemize}
@@ -750,7 +750,7 @@ CALL pkomega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 
   \noindent 構文
   
-  \noindent Fortran (シリアル/OpenMP版)
+  \noindent Fortran (Serial / OpenMP version)
   
 \begin{verbatim}
 CALL komega_CG_R_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
@@ -961,7 +961,7 @@ CALL pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 
 \noindent 構文
 
-\noindent Fortran (シリアル/OpenMP版)
+\noindent Fortran (Serial / OpenMP version)
 \begin{verbatim}
 CALL komega_CG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 CALL komega_CG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
@@ -1014,7 +1014,7 @@ CALL pkomega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 
 \noindent 構文
 
-\noindent Fortran (シリアル/OpenMP版)
+\noindent Fortran (Serial / OpenMP version)
 \begin{verbatim}
 CALL komega_CG_R_getvec(r_old)
 CALL komega_CG_C_getvec(r_old)
@@ -1056,7 +1056,7 @@ CALL pkomega_BiCG_getvec(r_old, r_tilde_old)
 
 \noindent 構文
 
-\noindent Fortran (シリアル/OpenMP版)
+\noindent Fortran (Serial / OpenMP version)
 \begin{verbatim}
 CALL komega_CG_R_finalize()
 CALL komega_CG_C_finalize()
@@ -1064,7 +1064,7 @@ CALL komega_COCG_finalize()
 CALL komega_BiCG_finalize()
 \end{verbatim}
 
-\noindent Fortran (MPI/ハイブリッド並列版)
+\noindent Fortran (MPI / Hybrid parallelization version)
 \begin{verbatim}
 CALL pkomega_CG_R_finalize()
 CALL pkomega_CG_C_finalize()
