@@ -698,7 +698,23 @@ CALL pkomega_COCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 CALL pkomega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 \end{verbatim}
 
-\noindent パラメーター
+\noindent C/C++ Serial / OpenMP version
+\begin{verbatim}
+komega_CG_R_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
+komega_CG_C_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
+komega_COCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
+komega_BiCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
+\end{verbatim}
+
+\noindent C/C++ MPI / Hybrid parallelization version
+\begin{verbatim}
+pkomega_CG_R_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+pkomega_CG_C_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+pkomega_COCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+pkomega_BiCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+\end{verbatim}
+
+\noindent Parameters
 
 \begin{itemize}
 
@@ -766,7 +782,7 @@ CALL komega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
 &                 z_seed, r_l_save)
 \end{verbatim}
 
-  \noindent Fortran (MPI/ハイブリッド並列版)
+  \noindent Fortran MPI / Hybrid parallelization version
   
 \begin{verbatim}
 CALL pkomega_CG_R_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
@@ -780,7 +796,36 @@ CALL pkomega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, 
 &                 z_seed, r_l_save)
 \end{verbatim}
 
-\noindent パラメーター
+\noindent C/C++ Serial / OpenMP version
+  
+\begin{verbatim}
+komega_CG_R_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+ komega_CG_C_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+komega_COCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+komega_BiCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
+&                 &iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
+&                 &z_seed, r_l_save);
+\end{verbatim}
+
+\noindent C/C++ MPI / Hybrid parallelization version
+  
+\begin{verbatim}
+pkomega_CG_R_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_CG_C_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_COCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
+&                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_BiCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
+&                 &iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
+&                 &z_seed, r_l_save);
+\end{verbatim}
+
+
+\noindent Parameters
 
 \begin{itemize}
 
@@ -835,13 +880,13 @@ CALL pkomega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, 
 
   \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
   \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のパラメーター$\alpha$.
+  長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のParameters$\alpha$.
 
 \item \verb|beta_save|
 
   \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
   \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のパラメーター$\beta$.
+  長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のParameters$\beta$.
 
 \item \verb|z_seed|
 
@@ -878,7 +923,7 @@ CALL pkomega_BiCG_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, 
 
 \noindent 構文
 
-\noindent Fortran (シリアル/OpenMPI版)
+\noindent Fortran Serial / OpenMP version
 \begin{verbatim}
 CALL komega_CG_R_update(v12, v2, x, r_l, status)
 CALL komega_CG_C_update(v12, v2, x, r_l, status)
@@ -886,7 +931,7 @@ CALL komega_COCG_update(v12, v2, x, r_l, status)
 CALL komega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 \end{verbatim}
 
-\noindent Fortran (MPI/ハイブリッド並列版)
+\noindent Fortran MPI / Hybrid parallelization version
 \begin{verbatim}
 CALL pkomega_CG_R_update(v12, v2, x, r_l, status)
 CALL pkomega_CG_C_update(v12, v2, x, r_l, status)
@@ -894,7 +939,24 @@ CALL pkomega_COCG_update(v12, v2, x, r_l, status)
 CALL pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 \end{verbatim}
 
-\noindent パラメーター
+\noindent C/C++ Serial / OpenMP version
+
+\begin{verbatim}
+komega_CG_R_update(v12, v2, x, r_l, status);
+komega_CG_C_update(v12, v2, x, r_l, status);
+komega_COCG_update(v12, v2, x, r_l, status);
+komega_BiCG_update(v12, v2, v14, v4, x, r_l, status);
+\end{verbatim}
+
+\noindent C/C++ MPI / Hybrid parallelization version
+\begin{verbatim}
+pkomega_CG_R_update(v12, v2, x, r_l, status);
+pkomega_CG_C_update(v12, v2, x, r_l, status);
+pkomega_COCG_update(v12, v2, x, r_l, status);
+pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status);
+\end{verbatim}
+
+\noindent Parameters
 
 \begin{itemize}
 
@@ -963,7 +1025,7 @@ CALL pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 
 \noindent 構文
 
-\noindent Fortran (Serial / OpenMP version)
+\noindent  Fortran Serial / OpenMP version
 \begin{verbatim}
 CALL komega_CG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 CALL komega_CG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
@@ -971,7 +1033,7 @@ CALL komega_COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 CALL komega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 \end{verbatim}
 
-\noindent Fortran (MPI/ハイブリッド並列版)
+\noindent Fortran MPI / Hybrid parallelization version
 \begin{verbatim}
 CALL pkomega_CG_R_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 CALL pkomega_CG_C_getcoef(alpha_save, beta_save, z_seed, r_l_save)
@@ -979,20 +1041,36 @@ CALL pkomega_COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 CALL pkomega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 \end{verbatim}
 
-\noindent パラメーター
+\noindent C/C++ Serial / OpenMP version
+\begin{verbatim}
+komega_CG_R_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+komega_CG_C_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+komega_COCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+komega_BiCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+\end{verbatim}
+
+\noindent C/C++ MPI / Hybrid parallelization version
+\begin{verbatim}
+pkomega_CG_R_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_CG_C_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_COCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+pkomega_BiCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
+\end{verbatim}
+
+\noindent Parameters
 
 \begin{itemize}
 \item \verb|alpha_save|
 
   \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
   \verb|DOUBLE COMPLEX| (それ以外).
-  総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のパラメーター$\alpha$.
+  総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のParameters$\alpha$.
 
 \item \verb|beta_save|
 
   \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
   \verb|DOUBLE COMPLEX| (それ以外).
-  総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のパラメーター$\beta$.
+  総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のParameters$\beta$.
 
 \item \verb|z_seed|
 
@@ -1016,7 +1094,7 @@ CALL pkomega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 
 \noindent 構文
 
-\noindent Fortran (Serial / OpenMP version)
+\noindent Fortran Serial / OpenMP version
 \begin{verbatim}
 CALL komega_CG_R_getvec(r_old)
 CALL komega_CG_C_getvec(r_old)
@@ -1024,7 +1102,7 @@ CALL komega_COCG_getvec(r_old)
 CALL komega_BiCG_getvec(r_old, r_tilde_old)
 \end{verbatim}
 
-\noindent Fortran (MPI/ハイブリッド並列版)
+\noindent Fortran MPI / Hybrid parallelization version
 \begin{verbatim}
 CALL pkomega_CG_R_getvec(r_old)
 CALL pkomega_CG_C_getvec(r_old)
@@ -1032,7 +1110,23 @@ CALL pkomega_COCG_getvec(r_old)
 CALL pkomega_BiCG_getvec(r_old, r_tilde_old)
 \end{verbatim}
 
-\noindent パラメーター
+\noindent C/C++ Serial / OpenMP version
+\begin{verbatim}
+komega_CG_R_getvec(r_old);
+komega_CG_C_getvec(r_old);
+komega_COCG_getvec(r_old);
+komega_BiCG_getvec(r_old, r_tilde_old);
+\end{verbatim}
+
+\noindent C/C++ MPI / Hybrid parallelization version
+\begin{verbatim}
+pkomega_CG_R_getvec(r_old);
+pkomega_CG_C_getvec(r_old);
+pkomega_COCG_getvec(r_old);
+pkomega_BiCG_getvec(r_old, r_tilde_old);
+\end{verbatim}
+
+\noindent Parameters
 
 \begin{itemize}
   
@@ -1052,13 +1146,66 @@ CALL pkomega_BiCG_getvec(r_old, r_tilde_old)
 
 \end{itemize}
 
+\subsubsection{\texttt{komega\_????\_getresidual}, \texttt{pkomega\_????\_getresidual}}
+
+各シフト点での残差ベクトルの2-ノルムを取得する.
+このルーチンは\verb|komega_????_init|と\verb|komega_????_finalize|の間の
+任意の場所で呼び出すことが出来る.
+また, いつ何回呼び出しても最終的な計算結果には影響を与えない.
+
+\noindent 構文
+
+\noindent Fortran Serial / OpenMP version
+\begin{verbatim}
+CALL komega_CG_R_getresidual(res)
+CALL komega_CG_C_getresidual(res)
+CALL komega_COCG_getresidual(res)
+CALL komega_BiCG_getresidual(res)
+\end{verbatim}
+
+\noindent Fortran MPI / Hybrid parallelization version
+\begin{verbatim}
+CALL pkomega_CG_R_getresidual(res)
+CALL pkomega_CG_C_getresidual(res)
+CALL pkomega_COCG_getresidual(res)
+CALL pkomega_BiCG_getresidual(res)
+\end{verbatim}
+
+\noindent C/C++ Serial / OpenMP version
+\begin{verbatim}
+komega_CG_R_getresidual(res);
+komega_CG_C_getresidual(res);
+komega_COCG_getresidual(res);
+komega_BiCG_getresidual(res);
+\end{verbatim}
+
+\noindent C/C++ MPI / Hybrid parallelization version
+\begin{verbatim}
+pkomega_CG_R_getresidual(res);
+pkomega_CG_C_getresidual(res);
+pkomega_COCG_getresidual(res);
+pkomega_BiCG_getresidual(res);
+\end{verbatim}
+
+\noindent Parameters
+
+\begin{itemize}
+  
+\item \verb|res|
+
+  \verb|DOUBLE PRECISION|.
+  長さ\verb|nz|の配列. 出力.
+  各シフト点での残差ベクトルの2-ノルム.
+
+\end{itemize}
+
 \subsubsection{\texttt{????\_finalize}, \texttt{p????\_finalize}}
 
 ライブラリ内部で割りつけた配列のメモリを解放する.
 
 \noindent 構文
 
-\noindent Fortran (Serial / OpenMP version)
+\noindent Fortran Serial / OpenMP version
 \begin{verbatim}
 CALL komega_CG_R_finalize()
 CALL komega_CG_C_finalize()
@@ -1066,13 +1213,30 @@ CALL komega_COCG_finalize()
 CALL komega_BiCG_finalize()
 \end{verbatim}
 
-\noindent Fortran (MPI / Hybrid parallelization version)
+\noindent Fortran MPI / Hybrid parallelization version
 \begin{verbatim}
 CALL pkomega_CG_R_finalize()
 CALL pkomega_CG_C_finalize()
 CALL pkomega_COCG_finalize()
 CALL pkomega_BiCG_finalize()
 \end{verbatim}
+
+\noindent C/C++ Serial / OpenMP version
+\begin{verbatim}
+komega_CG_R_finalize();
+komega_CG_C_finalize();
+komega_COCG_finalize();
+komega_BiCG_finalize();
+\end{verbatim}
+
+\noindent C/C++ MPI / Hybrid parallelization version
+\begin{verbatim}
+pkomega_CG_R_finalize();
+pkomega_CG_C_finalize();
+pkomega_COCG_finalize();
+pkomega_BiCG_finalize();
+\end{verbatim}
+
 
 \subsection{Sample codes for using shifted BiCG library}
 
