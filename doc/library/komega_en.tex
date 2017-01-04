@@ -668,42 +668,49 @@ The workflow is same as that of shifted COCG library.
 
 \section{Usage}
 
-各ライブラリともユーザーはライブラリ名および型を指定し, 
+The calculation is done to utilize functions by the following procedures.
+%各ライブラリともユーザーはライブラリ名および型を指定し, 
 \begin{itemize}
-\item 初期設定 (init関数)
-\item アップデート (update関数)
-\item 計算情報出力 (getcoef, getvec関数などを呼び出力)
-\item 終了関数 (finalize関数)
+\item Initialization (init function)
+\item Update (update function)
+\item Output numerical results (call getcoef, getvec functions and output informations)
+\item Finalization (finalize function)
 \end{itemize}
-の手順で関数を使用することで, 計算が実施される. 
-なお, リスタートを行う場合には
+%の手順で関数を使用することで, 計算が実施される. 
+
+The restart calculation can be done by the following procedures.
+%なお, リスタートを行う場合には
 \begin{itemize}
-\item 初期設定関数(restart関数)
-\item アップデート (update関数)
-\item 計算情報出力 (getcoef, getvec関数などを呼び出力)
-\item 終了関数 (finalize関数)
+\item Initialization(restart function)
+\item Update (update function)
+\item Output numerical results (call getcoef, getvec functions and output informations)
+\item Finalization (finalize function)
 \end{itemize}
-の手順で実行する.
-fortran から呼び出すときには
+%の手順で実行する.
+
+For FORTRAN, the modules can be called by 
+%fortran から呼び出すときには
 \begin{verbatim}
   USE komega_????
 \end{verbatim}
-のようにモジュールを呼び出す. \verb|"????"|の部分には,
-\verb|"CG_R"|, \verb|"CG_C"|, \verb|"COCG"|, \verb|"BiCG"|が入る.
-MPI / Hybrid parallelization versionのルーチンを利用するときには,
+%のようにモジュールを呼び出す. 
+, where \verb|"????"|  is selected from the following words(methods) \verb|"CG_R"|, \verb|"CG_C"|, \verb|"COCG"|, \verb|"BiCG"|.
+To utilize routines of MPI / Hybrid parallelization version,
+the modules can be called by
 \begin{verbatim}
-  USE pkomega_????
+  USE pkomega_???? .
 \end{verbatim}
-のようにする.
 
 \subsection{Details of each routines}
 
 \subsubsection{\texttt{????\_init}, \texttt{p????\_init}}
 
-ライブラリ内部変数の割り付けおよび初期化を行う.
-シフト線形方程式を解く前に, 一番初めに実行する.
+Set and initialize internal variables in libraries.
+These routines should be called first before solving the shifted equation.
+%ライブラリ内部変数の割り付けおよび初期化を行う.
+%シフト線形方程式を解く前に, 一番初めに実行する.
 
-\noindent 構文
+\noindent Construction
 
 \noindent Fortran Serial / OpenMP version
 \begin{verbatim}
@@ -743,53 +750,56 @@ pkomega_BiCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
 
 \item \verb|ndim|
 
-  \verb|INTEGER|. スカラー. 入力. 線形方程式の次元.
+  \verb|INTEGER|. Scalar. Input. The dimension of solution vectors for the linearized equation.
 
 \item \verb|nl|
 
-  \verb|INTEGER|. スカラー. 入力. 射影された解ベクトルの次元.
+  \verb|INTEGER|. Scalar. Input.  The dimension of projected solution vectors.
 
 \item \verb|nz|
 
-  \verb|INTEGER|. スカラー. 入力. シフト点の数.
+  \verb|INTEGER|. Scalar. Input. The number of shifted points.
 
 \item \verb|x|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_init|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  長さ \verb|nl*nz|の配列. 出力.
-  解ベクトル. \verb|0|ベクトルが返される.
-
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_init|),
+  \verb|DOUBLE COMPLEX| (otherwise).
+  The array with the length of \verb|nl*nz|. Output.
+  The solution vector. In this procedure,  \verb|0| vector is returned.
+  
 \item \verb|z|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_init|, \verb|CG_C_init|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|nz|の配列. 入力. シフト点.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_init|, \verb|CG_C_init|),
+  \verb|DOUBLE COMPLEX| (othewise).
+The array with the length of \verb|nz|. Input. Shifted points.
 
 \item \verb|itermax|
 
-  \verb|INTEGER|. スカラー. 入力. リスタート用配列の割り付けのための最大反復回数.
-  これを\verb|0|にした場合にはリスタート用配列を割りつけない(したがって後述のリスタート用変数の出力を行えない)
+  \verb|INTEGER|. Scalar. Input. The maximum iteration number to restore the array for the restart calculation.
+  The array is not restored when \verb|0| is input. In this case, variables for the restart calculation as described below cannot be output.
 
 \item \verb|threshold|
 
-  \verb|DOUBLE PRECISION|. スカラー. 入力. 収束判定用しきい値.
-  Seed equationの残差ベクトルの各成分の絶対値の中で最大のものがこの値を下回った時に収束したと判定する.
+  \verb|DOUBLE PRECISION|. Scalar. Input. The threshold value for the convergence determination.
+  When the maximum absolute value for the residual vector of the seed equation becomes small compared to this value,
+  the calculation is finished.
 
 \item \verb|comm|
 
-  \verb|INTEGER|. スカラー. 入力. MPI / Hybrid parallelization versionのみ.
-  MPIのコミニュケーター(\verb|MPI_COMM_WORLD|など)を入れる.
+  \verb|INTEGER|. Scalar. Input. Only for MPI / Hybrid parallelization version.
+  Communicators for MPI such as \verb|MPI_COMM_WORLD| are input.
 
 \end{itemize}
 
 \subsubsection{\texttt{????\_restart}, \texttt{p????\_restart}}
 
-  リスタートを行う場合に\verb|?_init|の代わりに用いる.
-  ライブラリ内部変数の割り付けおよび初期化を行う.
-  シフト線形方程式を解く前に, 一番初めに実行する.
+ For restart calculation, these modules are used instead of \verb|?_init|.
+Set and initialize internal variables in libraries.
+These routines should be called first before solving the shifted equation.
+%ライブラリ内部変数の割り付けおよび初期化を行う.
+ %シフト線形方程式を解く前に, 一番初めに実行する.
 
-  \noindent 構文
+  \noindent Construction
   
   \noindent Fortran (Serial / OpenMP version)
   
@@ -854,21 +864,29 @@ pkomega_BiCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status,
 
 \item \verb|ndim, nl, nz, x, z, itermax, threshold, comm|
 
-  \verb|?_init|と同様.
+  The definition is same as \verb|?_init|. See the parameters in \verb|?_init|.
+%  \verb|?_init|と同様.
 
 \item \verb|status|
 
-  \verb|INTEGER|. 長さ\verb|3|の配列. 出力. エラーコードを返す.
+  \verb|INTEGER|. 
+  The array with the length of \verb|3|.
+  Output. The error code is returned.
+  %長さ\verb|3|の配列. 出力. エラーコードを返す.
   \begin{description}
-  \item [第一成分(\texttt{status(1)})]
-    現在の総反復回数が返される.
-    解が収束した場合, もしくは計算が破綻した場合には現在の総反復回数に
-    マイナスが付いた値が返される.
-    それ以外の場合には\verb|0|が返される.
+  \item [First component(\texttt{status(1)})]
+   The current total number of iterations is returned.
+   If the solution is converged or the calculation is abnormally terminated,
+   the minus sign will be multiplied. In other cases, \verb|0| is returned.
+   
+    %現在の総反復回数が返される.
+    %解が収束した場合, もしくは計算が破綻した場合には現在の総反復回数に
+    %マイナスが付いた値が返される.
+    %それ以外の場合には\verb|0|が返される.
     \verb|status(1)|が正の値の時のみ反復を続行できる.
     それ以外の場合は反復を進めても有意な結果は得られない.
     
-  \item [第二成分(\texttt{status(2)})]
+  \item [Second component(\texttt{status(2)})]
     \verb|itermax|を有限にして, かつ\verb|itermax|回の反復で
     収束に達しなかった場合には\verb|1|が返される.
     $\alpha$が発散した場合には\verb|2|が返される.
@@ -877,7 +895,7 @@ pkomega_BiCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status,
     残差ベクトルと影の残差ベクトルが直交した場合には\verb|4|が返される.
     それ以外の場合には\verb|0|が返される.
 
-  \item [第三成分(\texttt{status(3)})]
+  \item [Third component(\texttt{status(3)})]
     シード点のindexが返される.
   \end{description}
 
@@ -944,7 +962,7 @@ pkomega_BiCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status,
 
 ループ内で行列ベクトル積と交互に呼ばれて解を更新する.
 
-\noindent 構文
+\noindent Construction
 
 \noindent Fortran Serial / OpenMP version
 \begin{verbatim}
@@ -1046,7 +1064,7 @@ pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status);
 このルーチンを呼び出すためには,
 \verb|?_init|ルーチンで\verb|itermax|を\verb|0|以外の値にしておく必要がある.
 
-\noindent 構文
+\noindent Construction
 
 \noindent  Fortran Serial / OpenMP version
 \begin{verbatim}
@@ -1115,7 +1133,7 @@ pkomega_BiCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
 このルーチンを呼び出すためには,
 \verb|?_init|ルーチンで\verb|itermax|を\verb|0|以外の値にしておく必要がある.
 
-\noindent 構文
+\noindent Construction
 
 \noindent Fortran Serial / OpenMP version
 \begin{verbatim}
@@ -1176,7 +1194,7 @@ pkomega_BiCG_getvec(r_old, r_tilde_old);
 任意の場所で呼び出すことが出来る.
 また, いつ何回呼び出しても最終的な計算結果には影響を与えない.
 
-\noindent 構文
+\noindent Construction
 
 \noindent Fortran Serial / OpenMP version
 \begin{verbatim}
@@ -1226,7 +1244,7 @@ pkomega_BiCG_getresidual(res);
 
 ライブラリ内部で割りつけた配列のメモリを解放する.
 
-\noindent 構文
+\noindent Construction
 
 \noindent Fortran Serial / OpenMP version
 \begin{verbatim}
