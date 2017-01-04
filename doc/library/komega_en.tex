@@ -763,14 +763,14 @@ pkomega_BiCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
 \item \verb|x|
 
   \verb|DOUBLE PRECISION| (for \verb|CG_R_init|),
-  \verb|DOUBLE COMPLEX| (otherwise).
+  \verb|DOUBLE COMPLEX| (for other cases).
   The array with the length of \verb|nl*nz|. Output.
   The solution vector. In this procedure,  \verb|0| vector is returned.
   
 \item \verb|z|
 
   \verb|DOUBLE PRECISION| (for \verb|CG_R_init|, \verb|CG_C_init|),
-  \verb|DOUBLE COMPLEX| (othewise).
+  \verb|DOUBLE COMPLEX| (for other cases).
 The array with the length of \verb|nz|. Input. Shifted points.
 
 \item \verb|itermax|
@@ -875,92 +875,120 @@ pkomega_BiCG_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status,
   %長さ\verb|3|の配列. 出力. エラーコードを返す.
   \begin{description}
   \item [First component(\texttt{status(1)})]
-   The current total number of iterations is returned.
    If the solution is converged or the calculation is abnormally terminated,
-   the minus sign will be multiplied. In other cases, \verb|0| is returned.
+   the minus sign will be multiplied. In other cases, the current total number of iterations is returned.
+   The calculation is continued if \verb|status(1)| is the positive value.
+   In other cases, the result is meaningless even if the calculation is continued.
    
     %現在の総反復回数が返される.
     %解が収束した場合, もしくは計算が破綻した場合には現在の総反復回数に
     %マイナスが付いた値が返される.
     %それ以外の場合には\verb|0|が返される.
-    \verb|status(1)|が正の値の時のみ反復を続行できる.
-    それ以外の場合は反復を進めても有意な結果は得られない.
+    %\verb|status(1)|が正の値の時のみ反復を続行できる.
+    %それ以外の場合は反復を進めても有意な結果は得られない.
     
   \item [Second component(\texttt{status(2)})]
-    \verb|itermax|を有限にして, かつ\verb|itermax|回の反復で
-    収束に達しなかった場合には\verb|1|が返される.
-    $\alpha$が発散した場合には\verb|2|が返される.
-    $\pi_{\rm seed}$が0にになった場合には\verb|3|が返される.
-    \verb|COCG_restart|もしくは\verb|BiCG_restart|で,
-    残差ベクトルと影の残差ベクトルが直交した場合には\verb|4|が返される.
-    それ以外の場合には\verb|0|が返される.
+   \verb|1| is returned if \verb|itermax| is set as a finite value and 
+   the convergence condition is not satisfied at the \verb|itermax|-th iteration. 
+  \verb|2| is returned if $\alpha$ diverges.
+  \verb|3| is returned if $\pi_{\rm seed}$ becomes 0. 
+   In the case of  \verb|COCG_restart| or \verb|BiCG_restart|, \verb|4| is returned
+   if the residual vector and the shadow residual vector are orthogonal.
+    In other cases,  \verb|0| is returned.
+    
+   %\verb|COCG_restart|もしくは\verb|BiCG_restart|で,
+    %残差ベクトルと影の残差ベクトルが直交した場合には\verb|4|が返される.
+    %\verb|itermax|を有限にして, かつ\verb|itermax|回の反復で
+    %収束に達しなかった場合には\verb|1|が返される.
+    %$\alpha$が発散した場合には\verb|2|が返される.
+    %$\pi_{\rm seed}$が0にになった場合には\verb|3|が返される.
+   % \verb|COCG_restart|もしくは\verb|BiCG_restart|で,
+   % 残差ベクトルと影の残差ベクトルが直交した場合には\verb|4|が返される.
+   % それ以外の場合には\verb|0|が返される.
 
   \item [Third component(\texttt{status(3)})]
-    シード点のindexが返される.
+    The index of the seed point is returned.
   \end{description}
 
 \item \verb|iter_old|
 
-  \verb|INTEGER|. スカラー. 入力. 先行する計算での反復回数.
-
+  \verb|INTEGER|. Scalar. Input. The number of iterations for the previous calculation.
+  %先行する計算での反復回数.
+  
 \item \verb|v2|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|ndim|の配列. 入力.
-  先行する計算での最後の残差ベクトル.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_restart|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of \verb|ndim|. Input.
+  The residual vector at the last step for the previous calculation.
+  %長さ\verb|ndim|の配列. 入力.
+  %先行する計算での最後の残差ベクトル.
 
 \item \verb|v12|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|ndim|の配列. 入力.
-  先行する計算での最後から2番目の残差ベクトル.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_restart|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of \verb|ndim|. Input.
+  The residual vector at the second from the last step for the previous calculation.
+  %長さ\verb|ndim|の配列. 入力.
+  %先行する計算での最後から2番目の残差ベクトル.
 
 \item \verb|alpha_save|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のParameters$\alpha$.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_restart|, \verb|CG_C_restart|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of \verb|iter_old|. Input. 
+  The parameters $\alpha$ obtained by the previous calculation at each steps by (Bi)CG methods.
+  %長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のParameters$\alpha$.
 
 \item \verb|beta_save|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のParameters$\beta$.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_restart|, \verb|CG_C_restart|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of\verb|iter_old|. Input. 
+  The parameters $\beta$ obtained by the previous calculation at each steps by (Bi)CG methods.
+  % 長さ\verb|iter_old|の配列. 入力. 先行する計算での各反復での(Bi)CG法のParameters$\beta$.
 
 \item \verb|z_seed|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|, \verb|CG_C_restart|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  スカラー. 入力. 先行する計算でのシードシフト.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_restart|, \verb|CG_C_restart|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  Scalar. Input. The value of the seed shift for the previous calculation.
+  %スカラー. 入力. 先行する計算でのシードシフト.
 
 \item \verb|r_l_save|
   
-  \verb|DOUBLE PRECISION| (\verb|CG_R_restart|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|nl*iter_old|の配列. 入力.
-  先行する計算での各反復での射影された残差ベクトル.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_restart|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of \verb|nl*iter_old|. Input.
+  The projected residual vector at each iteration for the previous calculation.
+%  長さ\verb|nl*iter_old|の配列. 入力.
+%  先行する計算での各反復での射影された残差ベクトル.
 
 \item \verb|v4|
 
-  \verb|BiCG_restart|の場合のみ使用.
+  Only used for \verb|BiCG_restart|.
   \verb|DOUBLE COMPLEX|.
-  長さ\verb|ndim|の配列. 入力.
-  先行する計算での最後の影の残差ベクトル.
+  The array with the length of \verb|ndim|. Input.
+  The shadow residual vector at the last step for the previous calculation.
+%  長さ\verb|ndim|の配列. 入力.
+  %先行する計算での最後の影の残差ベクトル.
 
 \item \verb|v14|
 
-  \verb|BiCG_restart|の場合のみ使用.
+  Only used for \verb|BiCG_restart|.
   \verb|DOUBLE COMPLEX|.
-  長さ\verb|ndim|の配列. 入力.
-  先行する計算での最後から2番目の影の残差ベクトル.
+  The array with the length of \verb|ndim|. Input.
+  The shadow residual vector at the second from last step for the previous calculation.
+  %長さ\verb|ndim|の配列. 入力.
+  %先行する計算での最後から2番目の影の残差ベクトル.
 
 \end{itemize}
 
 \subsubsection{\texttt{????\_update}, \texttt{p????\_update}}
 
-ループ内で行列ベクトル積と交互に呼ばれて解を更新する.
+It is called alternately with the matrix-vector product in the loop and updates the solution.
+%ループ内で行列ベクトル積と交互に呼ばれて解を更新する.
 
 \noindent Construction
 
@@ -1003,66 +1031,82 @@ pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status);
 
 \item \verb|v12|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_update|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|ndim|の配列. 入出力.
-  入力は残差ベクトル(\verb|v2|)と行列の積.
-  出力は, 更新された残差ベクトルの各要素の絶対値のなかで最大のものが,
-  先頭の要素に格納される(これは収束の具合を表示して調べる時などに用いる).
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_update|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of \verb|ndim|. In/Output.
+  The product of the residual vector (\verb|v2|) and the matrix is input.
+  The maximum absolute value among the values
+  of the elements of the updated residual vector is stored
+  in the first element (this value is used to check the degree of convergence).
+
+%  長さ\verb|ndim|の配列. 入出力.
+%  入力は残差ベクトル(\verb|v2|)と行列の積.
+%  出力は, 更新された残差ベクトルの各要素の絶対値のなかで最大のものが,
+%  先頭の要素に格納される(これは収束の具合を表示して調べる時などに用いる).
 
 \item \verb|v2|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_update|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|ndim|の配列. 入出力.
-  入力は残差ベクトル.
-  出力は更新された残差ベクトル.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_update|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of \verb|ndim|. In/Output.
+   The residual vector is input and the updated residual vector is output.
+%  長さ\verb|ndim|の配列. 入出力.
+%  入力は残差ベクトル.
+%  出力は更新された残差ベクトル.
 
 \item \verb|v14|
   
-  \verb|BiCG_update|の場合のみ使用. \verb|DOUBLE COMPLEX|.
-  長さ\verb|ndim|の配列. 入力.
-  影の残差ベクトル(\verb|v4|)と行列の積.
+  Only used for \verb|BiCG_update|. \verb|DOUBLE COMPLEX|.
+  The array with the length of \verb|ndim|. In/Output.
+  The product of the shadow residual vector (\verb|v4|) and the matrix is input.
+  %長さ\verb|ndim|の配列. 入力.
+  %影の残差ベクトル(\verb|v4|)と行列の積.
   
 \item \verb|v4|
   
-  \verb|BiCG_update|の場合のみ使用. \verb|DOUBLE COMPLEX|.
-  長さ\verb|ndim|の配列. 入出力.
-  入力は影の残差ベクトル.
-  出力は更新された影の残差ベクトル.
+  Only used for \verb|BiCG_update|. \verb|DOUBLE COMPLEX|.
+  The array with the length of \verb|ndim|. In/Output.
+  The shadow residual vector is input and 
+  the updated vector is output.
+  %長さ\verb|ndim|の配列. 入出力.
+  %入力は影の残差ベクトル.
+  %出力は更新された影の残差ベクトル.
 
 \item \verb|status|
 
-  \verb|INTEGER|. 長さ\verb|3|の配列. 出力. エラーコードを返す.
+  \verb|INTEGER|. 
+  The array with the length of \verb|3|. Output. The error code is returned.
   \begin{description}
-  \item [第一成分(\texttt{status(1)})]
-    現在の総反復回数が返される.
-    解が収束した場合, もしくは計算が破綻した場合には現在の総反復回数に
-    マイナスが付いた値が返される.
-    それ以外の場合には\verb|0|が返される.
-    \verb|status(1)|が正の値の時のみ反復を続行できる.
-    それ以外の場合は反復を進めても有意な結果は得られない.
+  \item [First component (\texttt{status(1)})]
+     If the solution is converged or the calculation is abnormally terminated,
+   the minus sign will be multiplied. In other cases, the current total number of iterations is returned.
+   The calculation is continued if \verb|status(1)| is the positive value.
+   In other cases, the result is meaningless even if the calculation is continued.
     
-  \item [第二成分(\texttt{status(2)})]
-    \verb|?_init|ルーチンで, \verb|itermax|を有限にして, かつ\verb|itermax|回の反復で
-    収束に達しなかった場合には\verb|1|が返される.
-    $\alpha$が発散した場合には\verb|2|が返される.
-    $\pi_{\rm seed}$が0にになった場合には\verb|3|が返される.
-    \verb|COCG_update|もしくは\verb|BiCG_update|で,
-    残差ベクトルと影の残差ベクトルが直交した場合には\verb|4|が返される.
-    それ以外の場合には\verb|0|が返される.
+  \item [Second component (\texttt{status(2)})]
+     \verb|1| is returned if \verb|itermax| is set as a finite value in the \verb|?_init| routine and 
+   the convergence condition is not satisfied at the \verb|itermax|-th iteration. 
+  \verb|2| is returned if $\alpha$ diverges.
+  \verb|3| is returned if $\pi_{\rm seed}$ becomes 0. 
+   In the case of  \verb|COCG_restart| or \verb|BiCG_restart|, \verb|4| is returned
+   if the residual vector and the shadow residual vector are orthogonal.
+    In other cases,  \verb|0| is returned.
 
-  \item [第三成分(\texttt{status(3)})]
-    シード点のindexが返される.
+  \item [Third component (\texttt{status(3)})]
+    The index of the seed point is returned.
   \end{description}
 
 \end{itemize}
 
 \subsubsection{\texttt{????\_getcoef}, \texttt{p????\_getcoef}}
 
-後でリスタートを刷るときに必要な係数を取得する.
-このルーチンを呼び出すためには,
-\verb|?_init|ルーチンで\verb|itermax|を\verb|0|以外の値にしておく必要がある.
+Get the coefficients to use the restart calculation.
+To call these routines, 
+\verb|itermax| must be set as the value greater than \verb|0| in \verb|?_init| routine.
+
+%後でリスタートを刷るときに必要な係数を取得する.
+%このルーチンを呼び出すためには,
+%\verb|?_init|ルーチンで\verb|itermax|を\verb|0|以外の値にしておく必要がある.
 
 \noindent Construction
 
@@ -1103,35 +1147,39 @@ pkomega_BiCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
 \begin{itemize}
 \item \verb|alpha_save|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のParameters$\alpha$.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_getoef|, \verb|CG_C_getoef|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of the number of maximum iteration. Output.
+  The parameters $\alpha$ at each iteration by (Bi)CG method.
+  %総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のParameters$\alpha$.
 
 \item \verb|beta_save|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のParameters$\beta$.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_getoef|, \verb|CG_C_getoef|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of the number of maximum iteration. Output.
+ The parameters $\beta$ at each iteration by (Bi)CG method.
+  %総反復回数と同じ長さの配列. 出力. 各反復での(Bi)CG法のParameters$\beta$.
 
 \item \verb|z_seed|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|, \verb|CG_C_getoef|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  スカラー. 出力. シードシフト.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_getoef|, \verb|CG_C_getoef|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  Scalar. Output. Seed shift.
 
 \item \verb|r_l_save|
   
-  \verb|DOUBLE PRECISION| (\verb|CG_R_getoef|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  \verb|nl|$\times$総反復回数の長さ配列. 出力.
-  各反復での射影された残差ベクトル.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_getoef|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of the number of maximum iteration $\times$ \verb|nl|. Output.
+  The residual protected vector at each iteration. 
 \end{itemize}
 
 \subsubsection{\texttt{????\_getvec}, \texttt{p????\_getvec}}
 
-後でリスタートをするときに必要な残差ベクトルを取得する.
-このルーチンを呼び出すためには,
-\verb|?_init|ルーチンで\verb|itermax|を\verb|0|以外の値にしておく必要がある.
+Get the residual vectors to use the restart calculation.
+To call these routines, 
+\verb|itermax| must be set as the value greater than \verb|0| in \verb|?_init| routine.
 
 \noindent Construction
 
@@ -1173,26 +1221,29 @@ pkomega_BiCG_getvec(r_old, r_tilde_old);
   
 \item \verb|r_old|
 
-  \verb|DOUBLE PRECISION| (\verb|CG_R_getvec|の場合),
-  \verb|DOUBLE COMPLEX| (それ以外).
-  長さ\verb|ndim|の配列. 出力.
-  先行する計算での最後から2番目の残差ベクトル.
+  \verb|DOUBLE PRECISION| (for \verb|CG_R_getvec|),
+  \verb|DOUBLE COMPLEX| (for other cases).
+  The array with the length of \verb|ndim|. Output.
+  The residual vector at the second from the last step for the previous calculation.
 
 \item \verb|r_tilde_old|
 
-  \verb|BiCG_getvec|の場合のみ使用.
+  Only used for \verb|BiCG_getvec|.
   \verb|DOUBLE COMPLEX|.
-  長さ\verb|ndim|の配列. 出力.
-  先行する計算での最後から2番目の影の残差ベクトル.
+  The array with the length of \verb|ndim|. Output.
+  The shadow residual vector at the second from the last step for the previous calculation.
 
 \end{itemize}
 
 \subsubsection{\texttt{komega\_????\_getresidual}, \texttt{pkomega\_????\_getresidual}}
 
-各シフト点での残差ベクトルの2-ノルムを取得する.
-このルーチンは\verb|komega_????_init|と\verb|komega_????_finalize|の間の
-任意の場所で呼び出すことが出来る.
-また, いつ何回呼び出しても最終的な計算結果には影響を与えない.
+Get the values of 2-norm of the residual vector at each shift points.
+These routines can be called from anywhere between  \verb|komega_????_init| and \verb|komega_????_finalize|.
+These routines do not affect on the calculation results.
+%各シフト点での残差ベクトルの2-ノルムを取得する.
+%このルーチンは\verb|komega_????_init|と\verb|komega_????_finalize|の間の
+%任意の場所で呼び出すことが出来る.
+%また, いつ何回呼び出しても最終的な計算結果には影響を与えない.
 
 \noindent Construction
 
@@ -1235,14 +1286,15 @@ pkomega_BiCG_getresidual(res);
 \item \verb|res|
 
   \verb|DOUBLE PRECISION|.
-  長さ\verb|nz|の配列. 出力.
-  各シフト点での残差ベクトルの2-ノルム.
+  The array with the length of \verb|nz|. Output.
+  The values of 2-norm of the residual vector at each shift points are returned.
+  %各シフト点での残差ベクトルの2-ノルム.
 
 \end{itemize}
 
 \subsubsection{\texttt{????\_finalize}, \texttt{p????\_finalize}}
 
-ライブラリ内部で割りつけた配列のメモリを解放する.
+Release memories of the arrays stored in the library.
 
 \noindent Construction
 
