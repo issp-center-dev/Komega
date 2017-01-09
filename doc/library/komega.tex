@@ -24,6 +24,8 @@
 %\setminchofont{ipaexm.ttf}
 %\setgothicfont{ipaexg.ttf}
 %\usepackage{fancyhdr}
+\usepackage[dvipdfmx]{hyperref}
+\usepackage{pxjahyper}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
@@ -97,7 +99,7 @@ $K(\omega)$に関するマニュアルである.
 
 \noindent
 {\it \copyright 2016- The University of Tokyo} {\it  All rights reserved.}
-This software is developed under the support of ``{\it Project for advancement of software usability in materials science }" by The Institute for Solid State Physics, The University of Tokyo. 
+This software is developed under the support of ``{\it Project for advancement of software usability in materials science }'' by The Institute for Solid State Physics, The University of Tokyo. 
 %ISSP Math Library - A library for solving linear systems in materials science \\
 %Copyright (C) 2016 Mitsuaki Kawamura \\
  \\
@@ -128,7 +130,7 @@ For more details, See `COPYING.LESSER' in the root directory of this library.
 \item ${\hat H}$が複素数で$z$が実数の場合 : Shifted Conjugate Gradient(CG)法 (複素ベクトル)
 \item ${\hat H}$も$z$も両方実数の場合 : Shifted Conjugate Gradient(CG)法 (実ベクトル)
 \end{itemize}
-いずれの場合も Seed switching を行う.
+いずれの場合も Seed switching\cite{COCG} を行う.
 左ベクトルが$N_L$個, 右ベクトルが$N_R$個(典型的には1個)あるとする.
 以下, 各手法のアルゴリズムを記載する.
 %\newpage
@@ -1260,8 +1262,9 @@ pkomega_BiCG_finalize();
 \begin{lstlisting}
 PROGRAM my_prog
   !
-  USE komega_bicg, ONLY : komega_BiCG_init, komega_BiCG_restart, komega_BiCG_update, &
-  &                       komega_BiCG_getcoef, komega_BiCG_getvec, komega_BiCG_finalize
+  USE komega_bicg, ONLY : komega_BiCG_init, komega_BiCG_restart, &
+  &                       komega_BiCG_update, komega_BiCG_getcoef, &
+  &                       komega_BiCG_getvec, komega_BiCG_finalize
   USE solve_cc_routines, ONLY : input_size, input_restart, &
   &                             projection, &
   &                             hamiltonian_prod, generate_system, &
@@ -1331,7 +1334,8 @@ PROGRAM my_prog
     ! When restarting, counter
     !
     itermin = iter_old + 1
-    CALL komega_BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
+    CALL komega_BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), &
+    &                        threshold, &
     &                 status, iter_old, v2, v12, v4, v14, alpha, &
     &                 beta, z_seed, r_l_save)
     !
@@ -1351,7 +1355,8 @@ PROGRAM my_prog
      v4(1:ndim) = CONJG(v2(1:ndim))
      !v4(1:ndim) = v2(1:ndim)
      !
-     CALL komega_BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     CALL komega_BiCG_init(ndim, nl, nz, x, z, max(0,itermax), &
+     &                     threshold)
      !
   END IF
   !
@@ -1393,7 +1398,8 @@ PROGRAM my_prog
   ELSE IF(status(2) == 3) THEN
      WRITE(*,*) "  Pi_seed becomes zero", ABS(status(1))
   ELSE IF(status(2) == 4) THEN
-     WRITE(*,*) "  Residual & Shadow residual are orthogonal", ABS(status(1))
+  WRITE(*,*) "  Residual & Shadow residual are orthogonal", &
+  &          ABS(status(1))
   END IF
   iter_old = ABS(status(1))
   !

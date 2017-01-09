@@ -411,3 +411,6 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+doc/library/ja/_build/html/
+*.so
+doc/library/ja/_build/
