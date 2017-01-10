@@ -1,0 +1,839 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Usage &mdash; komega 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="komega 0.1 documentation" href="index.html" />
+    <link rel="next" title="Contact" href="komega_contact_en.html" />
+    <link rel="prev" title="Schematic workflow of this library" href="komega_workflow_en.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="komega_contact_en.html" title="Contact"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="komega_workflow_en.html" title="Schematic workflow of this library"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">komega 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<p>The calculation is done to utilize functions by the following
+procedures.</p>
+<ul class="simple">
+<li>Initialization (init function)</li>
+<li>Update (update function)</li>
+<li>Output numerical results (call getcoef, getvec functions and output
+informations)</li>
+<li>Finalization (finalize function)</li>
+</ul>
+<p>The restart calculation can be done by the following procedures.</p>
+<ul class="simple">
+<li>Initialization(restart function)</li>
+<li>Update (update function)</li>
+<li>Output numerical results (call getcoef, getvec functions and output
+informations)</li>
+<li>Finalization (finalize function)</li>
+</ul>
+<p>For FORTRAN, the modules can be called by</p>
+<div class="highlight-fortran"><div class="highlight"><pre>USE komega_????
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">&quot;????&quot;</span></tt> is selected from the following words(methods)
+<tt class="docutils literal"><span class="pre">&quot;CG_R&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;CG_C&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;COCG&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;BiCG&quot;</span></tt>. To utilize routines of
+MPI / Hybrid parallelization version, the modules can be called as folows:</p>
+<div class="highlight-fortran"><div class="highlight"><pre>USE pkomega_????
+</pre></div>
+</div>
+<p>When we call <span class="math">\(K\omega\)</span> from C/C++ codes,
+we should include the header file as</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include komega_????.h</span>
+</pre></div>
+</div>
+<p>Scaler arguments should be passed as pointers.
+For MPI/Hybrid parallelized routine,
+the above line becomes</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include pkomega_????.h</span>
+</pre></div>
+</div>
+<p>Also the communicator argument for the routine should be
+transformed from the C/C++&#8217;s one to the fortran&#8217;s one as follows.</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">comm_f</span> <span class="o">=</span> <span class="n">MPI_Comm_c2f</span><span class="p">(</span><span class="n">comm_c</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="section" id="details-of-each-routines">
+<h2>Details of each routines<a class="headerlink" href="#details-of-each-routines" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="init-p-init">
+<h3><tt class="docutils literal"><span class="pre">????_init</span></tt>, <tt class="docutils literal"><span class="pre">p????_init</span></tt><a class="headerlink" href="#init-p-init" title="Permalink to this headline">¶</a></h3>
+<p>Set and initialize internal variables in libraries. These routines
+should be called first before solving the shifted equation.</p>
+<p>Syntax</p>
+<p>Fortran (Serial/OpenMP)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_CG_C_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_COCG_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_BiCG_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Fortran (MPI/Hybrid parallel)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_CG_C_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_COCG_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_BiCG_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>C/C++ Serial/OpenMP</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
+<span class="n">komega_CG_C_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
+<span class="n">komega_COCG_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
+<span class="n">komega_BiCG_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>C/C++ MPI/Hybrid parallel</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
+<span class="n">pkomega_CG_C_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
+<span class="n">pkomega_COCG_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
+<span class="n">pkomega_BiCG_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">ndim</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. Scalar. Input.
+The dimension of solution vectors for the linearized equation.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">nl</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. Scalar. Input.
+The dimension of projected solution vectors.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">nz</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. Scalar. Input. The number of shifted points.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">x</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_init</span></tt>), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for
+other cases). The array with the length of <tt class="docutils literal"><span class="pre">nl*nz</span></tt>. Output. The
+solution vector. In this procedure, <tt class="docutils literal"><span class="pre">0</span></tt> vector is returned.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">z</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_init</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_init</span></tt>),
+<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases). The array with the length of
+<tt class="docutils literal"><span class="pre">nz</span></tt>. Input. Shifted points.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">itermax</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. Scalar. Input.
+The maximum iteration number for allocating arrays for the restart calculation.
+When <tt class="docutils literal"><span class="pre">itermax=0</span></tt> , these arrays are not allocated,
+and the restart calculation described later becomes unavailable.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">threshold</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt>. Scalar. Input.
+The threshold value for the convergence determination.
+When the 2-norm of the residual vector for the seed equation
+becomes smaller than this value, the calculation is finished.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">comm</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. Scalar. Input. Only for MPI / Hybrid parallelization
+version. Communicators for MPI such as <tt class="docutils literal"><span class="pre">MPI_COMM_WORLD</span></tt>.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="komega-restart-pkomega-restart">
+<h3><tt class="docutils literal"><span class="pre">komega_????_restart</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_restart</span></tt><a class="headerlink" href="#komega-restart-pkomega-restart" title="Permalink to this headline">¶</a></h3>
+<p>For the restart calculation, these routines are used instead of <tt class="docutils literal"><span class="pre">?_init</span></tt>.
+Set and initialize internal variables in libraries.
+These routines should be called first before solving the shifted equation.</p>
+<p>Syntax</p>
+<p>Fortran (Serial/OpenMP)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_CG_C_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_COCG_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_BiCG_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span>                 <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Fortran (MPI/hybrid parallel)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_CG_C_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_COCG_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_BiCG_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="p">&amp;</span>                 <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>C/C++ (Serial/OpenMP)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+ <span class="n">komega_CG_C_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">komega_COCG_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">komega_BiCG_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="n">v14</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>C/C++ (MPI/hybrid parallel)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">pkomega_CG_C_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">pkomega_COCG_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">pkomega_BiCG_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="n">v14</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">ndim,</span> <span class="pre">nl,</span> <span class="pre">nz,</span> <span class="pre">x,</span> <span class="pre">z,</span> <span class="pre">itermax,</span> <span class="pre">threshold,</span> <span class="pre">comm</span></tt></p>
+<p>The definition is same as <tt class="docutils literal"><span class="pre">?_init</span></tt>. See the parameters in <tt class="docutils literal"><span class="pre">?_init</span></tt>.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">status</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. The array with the length of <tt class="docutils literal"><span class="pre">3</span></tt>. Output.
+The error code is returned.</p>
+<dl class="docutils">
+<dt>First component(<tt class="docutils literal"><span class="pre">status(1)</span></tt>)</dt>
+<dd><p class="first last">If the solution is converged or a breakdown occurs,
+the current total number of iteration with the minus sign is returned.
+In other cases, this routine returns the current total number of iteration.
+The calculation is continuable only when <tt class="docutils literal"><span class="pre">status(1)</span></tt> is the positive value;
+otherwise the result is meaningless even if the calculation is continued.</p>
+</dd>
+<dt>Second component(<tt class="docutils literal"><span class="pre">status(2)</span></tt>)</dt>
+<dd><p class="first last"><tt class="docutils literal"><span class="pre">1</span></tt> is returned if <tt class="docutils literal"><span class="pre">itermax</span></tt> is set as a finite value and the
+convergence condition is not satisfied at the <tt class="docutils literal"><span class="pre">itermax</span></tt>-th iteration.
+<tt class="docutils literal"><span class="pre">2</span></tt> is returned if <span class="math">\(\alpha\)</span> diverges.
+<tt class="docutils literal"><span class="pre">3</span></tt> is returned if <span class="math">\(\pi_{\rm seed}\)</span> becomes 0.
+In the case of <tt class="docutils literal"><span class="pre">COCG_restart</span></tt> or <tt class="docutils literal"><span class="pre">BiCG_restart</span></tt>,
+<tt class="docutils literal"><span class="pre">4</span></tt> is returned if the residual vector and the shadow residual vector are orthogonal.
+In other cases, <tt class="docutils literal"><span class="pre">0</span></tt> is returned.</p>
+</dd>
+<dt>Third component(<tt class="docutils literal"><span class="pre">status(3)</span></tt>)</dt>
+<dd><p class="first last">The index of the seed point is returned.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">iter_old</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. Scalar. Input.
+The number of iteration for the previous calculation.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">v2</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_restart</span></tt>),
+<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of <tt class="docutils literal"><span class="pre">ndim</span></tt>. Input.
+The residual vector at the last step for the previous calculation.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">v12</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_restart</span></tt>), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of <tt class="docutils literal"><span class="pre">ndim</span></tt>. Input.
+The residual vector at the second from the last step for the previous calculation.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">alpha_save</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_restart</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_restart</span></tt>),
+<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of <tt class="docutils literal"><span class="pre">iter_old</span></tt>. Input.
+The parameters <span class="math">\(\alpha\)</span> obtained by the
+previous calculation at each steps by (Bi)CG methods.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">beta_save</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_restart</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_restart</span></tt>),
+<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of<tt class="docutils literal"><span class="pre">iter_old</span></tt>. Input.
+The parameters <span class="math">\(\beta\)</span> obtained
+by the previous calculation at each steps by (Bi)CG methods.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">z_seed</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_restart</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_restart</span></tt>),
+<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases). Scalar. Input.
+The value of the seed shift for the previous calculation.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">r_l_save</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_restart</span></tt>), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of <tt class="docutils literal"><span class="pre">nl*iter_old</span></tt>. Input.
+The projected residual vector at each iteration for the previous calculation.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">v4</span></tt></p>
+<p>Only used for <tt class="docutils literal"><span class="pre">BiCG_restart</span></tt>. <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>.
+The array with the length of <tt class="docutils literal"><span class="pre">ndim</span></tt>. Input.
+The shadow residual vector at the last step for the previous calculation.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">v14</span></tt></p>
+<p>Only used for <tt class="docutils literal"><span class="pre">BiCG_restart</span></tt>. <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>.
+The array with the length of <tt class="docutils literal"><span class="pre">ndim</span></tt>. Input.
+The shadow residual vector at the second last step for the previous calculation.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="komega-update-pkomega-update">
+<h3><tt class="docutils literal"><span class="pre">komega_????_update</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_update</span></tt><a class="headerlink" href="#komega-update-pkomega-update" title="Permalink to this headline">¶</a></h3>
+<p>It is called alternately with the matrix-vector product
+in the loop and updates the solution.</p>
+<p>Syntax</p>
+<p>Fortran (Serial/OpenMPI)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_CG_C_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_COCG_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_BiCG_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Fortran (MPI/hybrid parallel)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_CG_C_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_COCG_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_BiCG_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>C/C++ (Serial/OpenMPI)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">komega_CG_C_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">komega_COCG_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">komega_BiCG_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v14</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>C/C++ (MPI/hybrid parallel)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">pkomega_CG_C_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">pkomega_COCG_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">pkomega_BiCG_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v14</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">v12</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_update</span></tt>), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of <tt class="docutils literal"><span class="pre">ndim</span></tt>. In/Output.
+The product of the residual vector (<tt class="docutils literal"><span class="pre">v2</span></tt>) and the matrix.
+This routine returns the 2-norm of the updated residual vector
+as a first element of this array.
+This returned value is used, for examples, for printing the convergence profile.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">v2</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_update</span></tt>), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of <tt class="docutils literal"><span class="pre">ndim</span></tt>. In/Output.
+The residual vector is input and the updated residual vector is output.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">v14</span></tt></p>
+<p>Only used for <tt class="docutils literal"><span class="pre">BiCG_update</span></tt>. <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>.
+The array with the length of <tt class="docutils literal"><span class="pre">ndim</span></tt>. In/Output.
+The product of the shadow residual vector (<tt class="docutils literal"><span class="pre">v4</span></tt>) and the matrix is input.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">v4</span></tt></p>
+<p>Only used for <tt class="docutils literal"><span class="pre">BiCG_update</span></tt>. <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>.
+The array with the length of <tt class="docutils literal"><span class="pre">ndim</span></tt>. In/Output.
+The shadow residual vector is input and the updated vector is output.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">status</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. The array with the length of <tt class="docutils literal"><span class="pre">3</span></tt>. Output.
+The error code is returned.</p>
+<dl class="docutils">
+<dt>First component (<tt class="docutils literal"><span class="pre">status(1)</span></tt>)</dt>
+<dd><p class="first last">If the solution is converged or a breakdown occurs,
+the current total number of iteration with the minus sign is returned.
+In other cases,
+this routine returns the current total number of iteration.
+The calculation is continuable only when <tt class="docutils literal"><span class="pre">status(1)</span></tt> is the positive value;
+otherwise the result is meaningless even if the calculation is continued.</p>
+</dd>
+<dt>Second component (<tt class="docutils literal"><span class="pre">status(2)</span></tt>)</dt>
+<dd><p class="first last"><tt class="docutils literal"><span class="pre">1</span></tt> is returned if <tt class="docutils literal"><span class="pre">itermax</span></tt> is set as a finite value in the
+<tt class="docutils literal"><span class="pre">?_init</span></tt> routine and the convergence condition is not satisfied
+at the <tt class="docutils literal"><span class="pre">itermax</span></tt>-th iteration.
+<tt class="docutils literal"><span class="pre">2</span></tt> is returned if <span class="math">\(\alpha\)</span> diverges.
+<tt class="docutils literal"><span class="pre">3</span></tt> is returned if <span class="math">\(\pi_{\rm seed}\)</span> becomes 0.
+In the case of <tt class="docutils literal"><span class="pre">COCG_restart</span></tt> or <tt class="docutils literal"><span class="pre">BiCG_restart</span></tt>,
+<tt class="docutils literal"><span class="pre">4</span></tt> is returned if the residual vector and
+the shadow residual vector are orthogonal.
+In other cases, <tt class="docutils literal"><span class="pre">0</span></tt> is returned.</p>
+</dd>
+<dt>Third component (<tt class="docutils literal"><span class="pre">status(3)</span></tt>)</dt>
+<dd><p class="first last">The index of the seed point is returned.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="komega-getcoef-pkomega-getcoef">
+<h3><tt class="docutils literal"><span class="pre">komega_????_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getcoef</span></tt><a class="headerlink" href="#komega-getcoef-pkomega-getcoef" title="Permalink to this headline">¶</a></h3>
+<p>Get the coefficients used in the restart calculation.
+To call these routines,
+<tt class="docutils literal"><span class="pre">itermax</span></tt> in <tt class="docutils literal"><span class="pre">?_init</span></tt> routine must not be <tt class="docutils literal"><span class="pre">0</span></tt> .</p>
+<p>Syntax</p>
+<p>Fortran (Serial/OpenMP)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_CG_C_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_COCG_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_BiCG_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Fortran (MPI/hybrid parallel)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_CG_C_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_COCG_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_BiCG_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>C/C++ (Serial/OpenMP)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">komega_CG_C_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">komega_COCG_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">komega_BiCG_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>C/C++ (MPI/hybrid parallel)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">pkomega_CG_C_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">pkomega_COCG_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">pkomega_BiCG_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">alpha_save</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_getoef</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_getoef</span></tt>),
+<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of the number of maximum iteration. Output.
+The parameters <span class="math">\(\alpha\)</span> of the (Bi)CG method at each iteration.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">beta_save</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_getoef</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_getoef</span></tt>),
+<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of the number of maximum iteration. Output.
+The parameters <span class="math">\(\beta\)</span> of the (Bi)CG method at each iteration.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">z_seed</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_getoef</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_getoef</span></tt>),
+<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases). Scalar. Output. Seed shift.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">r_l_save</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_getoef</span></tt>), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of the number of maximum iteration <span class="math">\(\times\)</span> <tt class="docutils literal"><span class="pre">nl</span></tt>.
+Output.
+The projected residual vectors at each iteration.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="komega-getvec-pkomega-getvec">
+<h3><tt class="docutils literal"><span class="pre">komega_????_getvec</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getvec</span></tt><a class="headerlink" href="#komega-getvec-pkomega-getvec" title="Permalink to this headline">¶</a></h3>
+<p>Get the residual vectors to use the restart calculation.
+To call these routines,
+<tt class="docutils literal"><span class="pre">itermax</span></tt> in the <tt class="docutils literal"><span class="pre">?_init</span></tt> routine must not be <tt class="docutils literal"><span class="pre">0</span></tt>.</p>
+<p>Syntax</p>
+<p>Fortran (Serial/OpenMP)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_CG_C_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_COCG_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_BiCG_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">,</span> <span class="nv">r_tilde_old</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Fortran (MPI/hybrid parallel)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_CG_C_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_COCG_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_BiCG_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">,</span> <span class="nv">r_tilde_old</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>C/C++ (Serial/OpenMP)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">komega_CG_C_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">komega_COCG_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">komega_BiCG_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">,</span> <span class="n">r_tilde_old</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>C/C++ (MPI/hybrid parallel)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">pkomega_CG_C_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">pkomega_COCG_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">pkomega_BiCG_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">,</span> <span class="n">r_tilde_old</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">r_old</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (for <tt class="docutils literal"><span class="pre">CG_R_getvec</span></tt>), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (for other cases).
+The array with the length of <tt class="docutils literal"><span class="pre">ndim</span></tt>. Output.
+The residual vector at the second last step in the previous calculation.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">r_tilde_old</span></tt></p>
+<p>Only used for <tt class="docutils literal"><span class="pre">BiCG_getvec</span></tt>. <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>.
+The array with the length of <tt class="docutils literal"><span class="pre">ndim</span></tt>. Output.
+The shadow residual vector at the second last step in the previous calculation.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="komega-getresidual-pkomega-getresidual">
+<h3><tt class="docutils literal"><span class="pre">komega_????_getresidual</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getresidual</span></tt><a class="headerlink" href="#komega-getresidual-pkomega-getresidual" title="Permalink to this headline">¶</a></h3>
+<p>Get the values of 2-norm of the residual vector at each shift points.
+These routines can be called from anywhere between <tt class="docutils literal"><span class="pre">komega_????_init</span></tt>
+and <tt class="docutils literal"><span class="pre">komega_????_finalize</span></tt>.
+These routines do not affect the calculation results.</p>
+<p>Syntax</p>
+<p>Fortran (Serial/OpenMP)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_CG_C_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_COCG_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_BiCG_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Fortran (MPI/hybrid parallel)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_CG_C_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_COCG_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_BiCG_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>C/C++ (Serial/OpenMP)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">komega_CG_C_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">komega_COCG_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">komega_BiCG_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>C/C++ (MPI/hybrid parallel)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">pkomega_CG_C_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">pkomega_COCG_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">pkomega_BiCG_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Parameters</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">res</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt>. The array with the length of <tt class="docutils literal"><span class="pre">nz</span></tt>. Output.
+The values of 2-norm of the residual vector at each shift points are
+returned.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="komega-finalize-pkomega-finalize">
+<h3><tt class="docutils literal"><span class="pre">komega_????_finalize</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_finalize</span></tt><a class="headerlink" href="#komega-finalize-pkomega-finalize" title="Permalink to this headline">¶</a></h3>
+<p>Release memories of the arrays stored in the library.</p>
+<p>Syntax</p>
+<p>Fortran (Serial/OpenMP)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">komega_CG_C_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">komega_COCG_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">komega_BiCG_finalize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Fortran (MPI/hybrid parallel)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">pkomega_CG_C_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">pkomega_COCG_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">pkomega_BiCG_finalize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>C/C++ (Serial/OpenMP)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_finalize</span><span class="p">();</span>
+<span class="n">komega_CG_C_finalize</span><span class="p">();</span>
+<span class="n">komega_COCG_finalize</span><span class="p">();</span>
+<span class="n">komega_BiCG_finalize</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>C/C++ (MPI/hybrid parallel)</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_finalize</span><span class="p">();</span>
+<span class="n">pkomega_CG_C_finalize</span><span class="p">();</span>
+<span class="n">pkomega_COCG_finalize</span><span class="p">();</span>
+<span class="n">pkomega_BiCG_finalize</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="sample-codes-for-using-shifted-bicg-library">
+<h2>Sample codes for using shifted BiCG library<a class="headerlink" href="#sample-codes-for-using-shifted-bicg-library" title="Permalink to this headline">¶</a></h2>
+<p>As a typical example, the usage of shifted BiCG library is shown below.</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">PROGRAM </span><span class="nv">my_prog</span>
+  <span class="c">!</span>
+  <span class="k">USE </span><span class="nv">komega_bicg</span><span class="p">,</span> <span class="nv">ONLY</span> <span class="p">:</span> <span class="nv">komega_BiCG_init</span><span class="p">,</span> <span class="nv">komega_BiCG_restart</span><span class="p">,</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span>                       <span class="nv">komega_BiCG_update</span><span class="p">,</span> <span class="nv">komega_BiCG_getcoef</span><span class="p">,</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span>                       <span class="nv">komega_BiCG_getvec</span><span class="p">,</span> <span class="nv">komega_BiCG_finalize</span>
+  <span class="k">USE </span><span class="nv">solve_cc_routines</span><span class="p">,</span> <span class="nv">ONLY</span> <span class="p">:</span> <span class="nv">input_size</span><span class="p">,</span> <span class="nv">input_restart</span><span class="p">,</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span>                             <span class="nv">projection</span><span class="p">,</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span>                             <span class="nv">hamiltonian_prod</span><span class="p">,</span> <span class="nv">generate_system</span><span class="p">,</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span>                             <span class="nv">output_restart</span><span class="p">,</span> <span class="nv">output_result</span>
+  <span class="c">!</span>
+  <span class="k">IMPLICIT NONE</span>
+  <span class="c">!</span>
+  <span class="kt">INTEGER</span><span class="p">,</span><span class="k">SAVE</span> <span class="kd">::</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">rnd_seed</span><span class="p">,</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">ndim</span><span class="p">,</span>    <span class="p">&amp;</span> <span class="c">! Size of Hilvert space</span>
+  <span class="p">&amp;</span> <span class="nv">nz</span><span class="p">,</span>      <span class="p">&amp;</span> <span class="c">! Number of frequencies</span>
+  <span class="p">&amp;</span> <span class="nv">nl</span><span class="p">,</span>      <span class="p">&amp;</span> <span class="c">! Number of Left vector</span>
+  <span class="p">&amp;</span> <span class="nv">itermax</span><span class="p">,</span> <span class="p">&amp;</span> <span class="c">! Max. number of iteraction</span>
+  <span class="p">&amp;</span> <span class="nv">iter_old</span>   <span class="c">! Number of iteraction of previous run</span>
+  <span class="c">!</span>
+  <span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">SAVE</span> <span class="kd">::</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">threshold</span> <span class="c">! Convergence Threshold</span>
+  <span class="c">!</span>
+  <span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">SAVE</span> <span class="kd">::</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">z_seed</span> <span class="c">! Seed frequency</span>
+  <span class="c">!</span>
+  <span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">ALLOCATABLE</span><span class="p">,</span><span class="k">SAVE</span> <span class="kd">::</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">z</span><span class="p">(:)</span>         <span class="c">! (nz): Frequency</span>
+  <span class="c">!</span>
+  <span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">ALLOCATABLE</span><span class="p">,</span><span class="k">SAVE</span> <span class="kd">::</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">ham</span><span class="p">(:,:),</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">rhs</span><span class="p">(:),</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">v12</span><span class="p">(:),</span> <span class="nv">v2</span><span class="p">(:),</span> <span class="p">&amp;</span> <span class="c">! (ndim): Working vector</span>
+  <span class="p">&amp;</span> <span class="nv">v14</span><span class="p">(:),</span> <span class="nv">v4</span><span class="p">(:),</span> <span class="p">&amp;</span> <span class="c">! (ndim): Working vector</span>
+  <span class="p">&amp;</span> <span class="nv">r_l</span><span class="p">(:),</span> <span class="p">&amp;</span> <span class="c">! (nl) : Projeccted residual vector</span>
+  <span class="p">&amp;</span> <span class="nv">x</span><span class="p">(:,:)</span> <span class="c">! (nl,nz) : Projected result</span>
+  <span class="c">!</span>
+  <span class="c">! Variables for Restart</span>
+  <span class="c">!</span>
+  <span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">ALLOCATABLE</span><span class="p">,</span><span class="k">SAVE</span> <span class="kd">::</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">alpha</span><span class="p">(:),</span> <span class="nv">beta</span><span class="p">(:)</span> <span class="c">! (iter_old)</span>
+  <span class="c">!</span>
+  <span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">ALLOCATABLE</span><span class="p">,</span><span class="k">SAVE</span> <span class="kd">::</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">r_l_save</span><span class="p">(:,:)</span> <span class="c">! (nl,iter_old) Projected residual vectors</span>
+  <span class="c">!</span>
+  <span class="c">! Variables for Restart</span>
+  <span class="c">!</span>
+  <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">itermin</span><span class="p">,</span> <span class="p">&amp;</span> <span class="c">! First iteration in this run</span>
+  <span class="p">&amp;</span> <span class="nv">iter</span><span class="p">,</span>    <span class="p">&amp;</span> <span class="c">! Counter for Iteration</span>
+  <span class="p">&amp;</span> <span class="nv">status</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+  <span class="c">!</span>
+  <span class="c">! Input Size of vectors</span>
+  <span class="c">!</span>
+  <span class="k">CALL </span><span class="nv">input_size</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span><span class="nv">nl</span><span class="p">,</span><span class="nv">nz</span><span class="p">)</span>
+  <span class="c">!</span>
+  <span class="k">ALLOCATE</span><span class="p">(</span><span class="nv">v12</span><span class="p">(</span><span class="nv">ndim</span><span class="p">),</span> <span class="nv">v2</span><span class="p">(</span><span class="nv">ndim</span><span class="p">),</span> <span class="nv">v14</span><span class="p">(</span><span class="nv">ndim</span><span class="p">),</span> <span class="nv">v4</span><span class="p">(</span><span class="nv">ndim</span><span class="p">),</span> <span class="nv">r_l</span><span class="p">(</span><span class="nv">nl</span><span class="p">),</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span>        <span class="nv">x</span><span class="p">(</span><span class="nv">nl</span><span class="p">,</span><span class="nv">nz</span><span class="p">),</span> <span class="nv">z</span><span class="p">(</span><span class="nv">nz</span><span class="p">),</span> <span class="nv">ham</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span><span class="nv">ndim</span><span class="p">),</span> <span class="nv">rhs</span><span class="p">(</span><span class="nv">ndim</span><span class="p">))</span>
+  <span class="c">!</span>
+  <span class="k">CALL </span><span class="nv">generate_system</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">ham</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">,</span> <span class="nv">z</span><span class="p">)</span>
+  <span class="c">!</span>
+  <span class="c">! Check: Whether the restart file is exist.</span>
+  <span class="c">!</span>
+  <span class="k">CALL </span><span class="nv">input_restart</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">,</span> <span class="nv">zseed</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">,</span> <span class="nv">beta</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+  <span class="c">!</span>
+  <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
+  <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;#####  CG Initialization  #####&quot;</span>
+  <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
+  <span class="c">!</span>
+  <span class="k">IF</span><span class="p">(</span><span class="nv">iter_old</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">THEN</span>
+    <span class="c">!</span>
+    <span class="c">! When restarting, counter</span>
+    <span class="c">!</span>
+    <span class="nv">itermin</span> <span class="o">=</span> <span class="nv">iter_old</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">CALL </span><span class="nv">komega_BiCG_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nv">itermax</span><span class="p">),</span> <span class="p">&amp;</span>
+    <span class="p">&amp;</span>                        <span class="nv">threshold</span><span class="p">,</span> <span class="p">&amp;</span>
+    <span class="p">&amp;</span>                 <span class="nv">status</span><span class="p">,</span> <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">,</span> <span class="p">&amp;</span>
+    <span class="p">&amp;</span>                 <span class="nv">beta</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+    <span class="c">!</span>
+    <span class="c">! These vectors were saved in BiCG routine</span>
+    <span class="c">!</span>
+    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="nv">alpha</span><span class="p">,</span> <span class="nv">beta</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+    <span class="c">!</span>
+    <span class="k">IF</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">GOTO </span><span class="mi">10</span>
+    <span class="c">!</span>
+  <span class="k">ELSE</span>
+     <span class="c">!</span>
+     <span class="nv">itermin</span> <span class="o">=</span> <span class="mi">1</span>
+     <span class="c">!</span>
+     <span class="c">! Generate Right Hand Side Vector</span>
+     <span class="c">!</span>
+     <span class="nv">v2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nv">ndim</span><span class="p">)</span> <span class="o">=</span> <span class="nv">rhs</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nv">ndim</span><span class="p">)</span>
+     <span class="nv">v4</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nv">ndim</span><span class="p">)</span> <span class="o">=</span> <span class="nb">CONJG</span><span class="p">(</span><span class="nv">v2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nv">ndim</span><span class="p">))</span>
+     <span class="c">!v4(1:ndim) = v2(1:ndim)</span>
+     <span class="c">!</span>
+     <span class="k">CALL </span><span class="nv">komega_BiCG_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nv">itermax</span><span class="p">),</span> <span class="p">&amp;</span>
+     <span class="p">&amp;</span>                     <span class="nv">threshold</span><span class="p">)</span>
+     <span class="c">!</span>
+  <span class="k">END IF</span>
+  <span class="c">!</span>
+  <span class="c">! BiCG Loop</span>
+  <span class="c">!</span>
+  <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
+  <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;#####  CG Iteration  #####&quot;</span>
+  <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
+  <span class="c">!</span>
+  <span class="k">DO </span><span class="nv">iter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="nv">itermax</span><span class="p">)</span>
+     <span class="c">!</span>
+     <span class="c">! Projection of Residual vector into the space</span>
+     <span class="c">! spaned by left vectors</span>
+     <span class="c">!</span>
+     <span class="nv">r_l</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nv">nl</span><span class="p">)</span> <span class="o">=</span> <span class="nv">projection</span><span class="p">(</span><span class="nv">v2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nv">nl</span><span class="p">))</span>
+     <span class="c">!</span>
+     <span class="c">! Matrix-vector product</span>
+     <span class="c">!</span>
+     <span class="k">CALL </span><span class="nv">hamiltonian_prod</span><span class="p">(</span><span class="nv">Ham</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">)</span>
+     <span class="k">CALL </span><span class="nv">hamiltonian_prod</span><span class="p">(</span><span class="nv">Ham</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">v14</span><span class="p">)</span>
+     <span class="c">!</span>
+     <span class="c">! Update result x with BiCG</span>
+     <span class="c">!</span>
+     <span class="k">CALL </span><span class="nv">komega_BiCG_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+     <span class="c">!</span>
+     <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(a,i,a,3i,a,e15.5)&#39;</span><span class="p">)</span> <span class="s2">&quot;lopp : &quot;</span><span class="p">,</span> <span class="nv">iter</span><span class="p">,</span> <span class="p">&amp;</span>
+     <span class="p">&amp;</span>                             <span class="s2">&quot;, status : &quot;</span><span class="p">,</span> <span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">),</span> <span class="p">&amp;</span>
+     <span class="p">&amp;</span>                             <span class="s2">&quot;, Res. : &quot;</span><span class="p">,</span> <span class="nb">DBLE</span><span class="p">(</span><span class="nv">v12</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+     <span class="k">IF</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">EXIT</span>
+     <span class="c">!</span>
+  <span class="k">END DO</span>
+  <span class="c">!</span>
+  <span class="k">IF</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">THEN</span>
+<span class="k">     WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;  Converged in iteration &quot;</span><span class="p">,</span> <span class="nb">ABS</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+  <span class="k">ELSE IF</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="k">THEN</span>
+<span class="k">     WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;  Not Converged in iteration &quot;</span><span class="p">,</span> <span class="nb">ABS</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+  <span class="k">ELSE IF</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="k">THEN</span>
+<span class="k">     WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;  Alpha becomes infinity&quot;</span><span class="p">,</span> <span class="nb">ABS</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+  <span class="k">ELSE IF</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="k">THEN</span>
+<span class="k">     WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;  Pi_seed becomes zero&quot;</span><span class="p">,</span> <span class="nb">ABS</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+  <span class="k">ELSE IF</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span> <span class="k">THEN</span>
+<span class="k">  WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;  Residual &amp; Shadow residual are orthogonal&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span>          <span class="nb">ABS</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+  <span class="k">END IF</span>
+<span class="k">  </span><span class="nv">iter_old</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+  <span class="c">!</span>
+  <span class="c">! Get these vectors for restart in the Next run</span>
+  <span class="c">!</span>
+  <span class="k">IF</span><span class="p">(</span><span class="nv">itermax</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">THEN</span>
+     <span class="c">!</span>
+     <span class="k">ALLOCATE</span><span class="p">(</span><span class="nv">alpha</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">),</span> <span class="nv">beta</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">),</span> <span class="nv">r_l_save</span><span class="p">(</span><span class="nv">nl</span><span class="p">,</span><span class="nv">iter_old</span><span class="p">))</span>
+     <span class="c">!</span>
+     <span class="k">CALL </span><span class="nv">komega_BiCG_getcoef</span><span class="p">(</span><span class="nv">alpha</span><span class="p">,</span> <span class="nv">beta</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+     <span class="k">CALL </span><span class="nv">komega_BiCG_getvec</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span><span class="nv">v14</span><span class="p">)</span>
+     <span class="c">!</span>
+     <span class="k">CALL </span><span class="nv">output_restart</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">,</span> <span class="nv">beta</span><span class="p">,</span> <span class="p">&amp;</span>
+     <span class="p">&amp;</span>                   <span class="nv">r_l_save</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">v14</span><span class="p">)</span>
+     <span class="c">!</span>
+     <span class="k">DEALLOCATE</span><span class="p">(</span><span class="nv">alpha</span><span class="p">,</span> <span class="nv">beta</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+     <span class="c">!</span>
+  <span class="k">END IF</span>
+  <span class="c">!</span>
+<span class="mi">10</span> <span class="k">CONTINUE</span>
+  <span class="c">!</span>
+  <span class="c">! Deallocate all intrinsic vectors</span>
+  <span class="c">!</span>
+  <span class="k">CALL </span><span class="nv">komega_BiCG_finalize</span><span class="p">()</span>
+  <span class="c">!</span>
+  <span class="c">! Output to a file</span>
+  <span class="c">!</span>
+  <span class="k">CALL </span><span class="nv">output_result</span><span class="p">(</span><span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">)</span>
+  <span class="c">!</span>
+  <span class="k">DEALLOCATE</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">)</span>
+  <span class="c">!</span>
+  <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
+  <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;#####  Done  #####&quot;</span>
+  <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
+  <span class="c">!</span>
+<span class="k">END PROGRAM </span><span class="nv">my_prog</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Usage</a><ul>
+<li><a class="reference internal" href="#details-of-each-routines">Details of each routines</a><ul>
+<li><a class="reference internal" href="#init-p-init"><tt class="docutils literal"><span class="pre">????_init</span></tt>, <tt class="docutils literal"><span class="pre">p????_init</span></tt></a></li>
+<li><a class="reference internal" href="#komega-restart-pkomega-restart"><tt class="docutils literal"><span class="pre">komega_????_restart</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_restart</span></tt></a></li>
+<li><a class="reference internal" href="#komega-update-pkomega-update"><tt class="docutils literal"><span class="pre">komega_????_update</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_update</span></tt></a></li>
+<li><a class="reference internal" href="#komega-getcoef-pkomega-getcoef"><tt class="docutils literal"><span class="pre">komega_????_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getcoef</span></tt></a></li>
+<li><a class="reference internal" href="#komega-getvec-pkomega-getvec"><tt class="docutils literal"><span class="pre">komega_????_getvec</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getvec</span></tt></a></li>
+<li><a class="reference internal" href="#komega-getresidual-pkomega-getresidual"><tt class="docutils literal"><span class="pre">komega_????_getresidual</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getresidual</span></tt></a></li>
+<li><a class="reference internal" href="#komega-finalize-pkomega-finalize"><tt class="docutils literal"><span class="pre">komega_????_finalize</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_finalize</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sample-codes-for-using-shifted-bicg-library">Sample codes for using shifted BiCG library</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="komega_workflow_en.html"
+                        title="previous chapter">Schematic workflow of this library</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="komega_contact_en.html"
+                        title="next chapter">Contact</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/komega_usage_en.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="komega_contact_en.html" title="Contact"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="komega_workflow_en.html" title="Schematic workflow of this library"
+             >previous</a> |</li>
+        <li><a href="index.html">komega 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, kawamura.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

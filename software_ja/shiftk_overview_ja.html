@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>概要 &mdash; shiftk 0.1 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="shiftk 0.1 ドキュメント" href="index.html" />
+    <link rel="next" title="著作権" href="shiftk_copy_ja.html" />
+    <link rel="prev" title="Welcome to \(K\omega\)-sample program’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="shiftk_copy_ja.html" title="著作権"
+             accesskey="N">次へ</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to \(K\omega\)-sample program’s documentation!"
+             accesskey="P">前へ</a> |</li>
+        <li><a href="index.html">shiftk 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>概要<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>本資料はISSP Math
+Libraryの内の, Krylov部分空間法に基づくシフト線形方程式群ライブラリ
+<span class="math">\(K(\omega)\)</span> を用いた Green関数計算用ミニアプリのマニュアルです.
+ライブラリに関する使用方法については, &#8221; <span class="math">\(K(\omega)\)</span> マニュアル&#8221;に記載しました.</p>
+<div class="section" id="id2">
+<h2>ソフトウェア概要<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>本ソフトウェアでは, Green関数</p>
+<div class="math">
+\[\begin{align}
+  G_{i}(z) = \langle i | (z-{\hat H})^{-1}| i \rangle \equiv
+  {\boldsymbol \varphi}_i^{*} \cdot (z-{\hat H})^{-1} {\boldsymbol \varphi}_i
+  \end{align}\]</div>
+<p>の計算を行います.
+ここで <span class="math">\(| i \rangle\)</span> はベクトル, <span class="math">\({\cal H}\)</span> はハミルトニアン,
+<span class="math">\(z\)</span> は複素数シフトを表します.</p>
+<p>なお <span class="math">\({\cal H}\)</span> については,</p>
+<ul class="simple">
+<li><span class="math">\({\cal H}\)</span> をMatrixMarket形式の入力ファイルとして与えるモード</li>
+<li>Heisenberg模型の <span class="math">\({\cal H}\)</span> を内部で与えるモード</li>
+</ul>
+<p>を用意します.
+またグリーン関数の計算では, <span class="math">\({\hat H}\)</span> と <span class="math">\(z\)</span> が複素数もしくは実数かに応じ,</p>
+<ul class="simple">
+<li><span class="math">\({\hat H}\)</span> も <span class="math">\(z\)</span> も両方複素数の場合 : Shifted
+Bi-Conjugate Gradient(BiCG)法</li>
+<li><span class="math">\({\hat H}\)</span> が実数で <span class="math">\(z\)</span> が複素数の場合 : Shifted
+Conjugate Orthogonal Conjugate Gradient(COCG)法</li>
+</ul>
+<p>の手法を用意しています.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">概要</a><ul>
+<li><a class="reference internal" href="#id2">ソフトウェア概要</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>前のトピックへ</h4>
+  <p class="topless"><a href="index.html"
+                        title="前の章へ">Welcome to <span class="math">\(K\omega\)</span>-sample program&#8217;s documentation!</a></p>
+  <h4>次のトピックへ</h4>
+  <p class="topless"><a href="shiftk_copy_ja.html"
+                        title="次の章へ">著作権</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/shiftk_overview_ja.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="shiftk_copy_ja.html" title="著作権"
+             >次へ</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to \(K\omega\)-sample program’s documentation!"
+             >前へ</a> |</li>
+        <li><a href="index.html">shiftk 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, kawamura.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2 で生成しました。
+    </div>
+  </body>
+</html>

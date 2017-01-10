@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to \(K\omega\)‘s documentation! &mdash; komega 0.1 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="komega 0.1 ドキュメント" href="#" />
+    <link rel="next" title="概要" href="komega_overview_ja.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="komega_overview_ja.html" title="概要"
+             accesskey="N">次へ</a> |</li>
+        <li><a href="#">komega 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-s-documentation">
+<h1>Welcome to <span class="math">\(K\omega\)</span>&#8216;s documentation!<a class="headerlink" href="#welcome-to-s-documentation" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="komega_overview_ja.html">概要</a></li>
+<li class="toctree-l1"><a class="reference internal" href="komega_copyright_ja.html">著作権</a></li>
+<li class="toctree-l1"><a class="reference internal" href="komega_algorithm_ja.html">アルゴリズム</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="komega_algorithm_ja.html#seed-switch-shifted-bicg">Seed switch 付き Shifted BiCG法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="komega_algorithm_ja.html#seed-switch-shifted-cocg">Seed switch 付き Shifted COCG法</a></li>
+<li class="toctree-l2"><a class="reference internal" href="komega_algorithm_ja.html#seed-switch-shifted-cg">Seed switch 付き Shifted CG法</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="komega_workflow_ja.html">プログラム内でのライブラリの動作イメージ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="komega_workflow_ja.html#shifted-bicg">Shifted BiCGライブラリの動作イメージ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="komega_workflow_ja.html#shifted-cocg">Shifted COCGライブラリの動作イメージ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="komega_workflow_ja.html#shifted-cg">Shifted CGライブラリの動作イメージ</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="komega_usage_ja.html">使用方法</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="komega_usage_ja.html#id2">各ルーチンの説明</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="komega_usage_ja.html#komega-init-pkomega-init"><tt class="docutils literal"><span class="pre">komega_????_init</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_init</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="komega_usage_ja.html#komega-restart-pkomega-restart"><tt class="docutils literal"><span class="pre">komega_????_restart</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_restart</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="komega_usage_ja.html#komega-update-pkomega-update"><tt class="docutils literal"><span class="pre">komega_????_update</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_update</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="komega_usage_ja.html#komega-getcoef-pkomega-getcoef"><tt class="docutils literal"><span class="pre">komega_????_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getcoef</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="komega_usage_ja.html#komega-getvec-pkomega-getvec"><tt class="docutils literal"><span class="pre">komega_????_getvec</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getvec</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="komega_usage_ja.html#komega-getresidual-pkomega-getresidual"><tt class="docutils literal"><span class="pre">komega_????_getresidual</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getresidual</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="komega_usage_ja.html#komega-finalize-pkomega-finalize"><tt class="docutils literal"><span class="pre">komega_????_finalize</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_finalize</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="komega_usage_ja.html#shifted-bicg">Shifted BiCGライブラリを使用したソースコードの例</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="komega_contact_ja.html">Contact</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>次のトピックへ</h4>
+  <p class="topless"><a href="komega_overview_ja.html"
+                        title="次の章へ">概要</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="komega_overview_ja.html" title="概要"
+             >次へ</a> |</li>
+        <li><a href="#">komega 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, kawamura.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2 で生成しました。
+    </div>
+  </body>
+</html>

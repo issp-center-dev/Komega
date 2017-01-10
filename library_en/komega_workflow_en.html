@@ -1,0 +1,326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Schematic workflow of this library &mdash; komega 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="komega 0.1 documentation" href="index.html" />
+    <link rel="next" title="Usage" href="komega_usage_en.html" />
+    <link rel="prev" title="Algorithm" href="komega_algorithm_en.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="komega_usage_en.html" title="Usage"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="komega_algorithm_en.html" title="Algorithm"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">komega 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="schematic-workflow-of-this-library">
+<h1>Schematic workflow of this library<a class="headerlink" href="#schematic-workflow-of-this-library" title="Permalink to this headline">¶</a></h1>
+<p>In the following description, the loop for <span class="math">\(N_R\)</span> is omitted for
+simplicity and instead of <span class="math">\(G_{i j}(z_k)\)</span>,
+the <span class="math">\(N_L\)</span>-dimensional vector <span class="math">\({\bf x}_{k}\)</span>
+is obtained by using the library.</p>
+<p>The essential procedures to use the library.</p>
+<ul>
+<li><p class="first">Give the vector size <span class="math">\(N_H\)</span> corresponding to the size of the
+Hilbert space and the number of the frequency <span class="math">\(z\)</span>.</p>
+</li>
+<li><p class="first">Allocate the two vectors (in the case of BiCG method, four vectors)
+with the size of <span class="math">\(N_H\)</span>.</p>
+</li>
+<li><p class="first">Give the function for the Hamiltonian-vector production.</p>
+</li>
+<li><p class="first">Allocate the solution vectors. It is noted that the number of the
+solution vectors is not always equal to <span class="math">\(N_H \times N_z\)</span>. In
+fact, the number in the previous section is <span class="math">\(N_L \times N_z\)</span>.
+In this case, the (bi-)conjugate gradient vector <span class="math">\({{\bf p}_k}\)</span>
+is the vector with <span class="math">\(N_L\)</span>-dimension and <span class="math">\(N_z\)</span> array. The
+transformation of the dimension of the residual vector from
+<span class="math">\(N_H\)</span> to <span class="math">\(N_L\)</span> must be done explicitly.</p>
+<div class="math">
+\[\begin{aligned}
+    {\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol r}, \qquad
+    {\hat P} \equiv ({\boldsymbol \varphi}_1, \cdots, {\boldsymbol \varphi}_{N_L})
+  \end{aligned}\]</div>
+</li>
+<li><p class="first">If the result converges, <tt class="docutils literal"><span class="pre">komega_????_update</span></tt> return the first element of <tt class="docutils literal"><span class="pre">status</span></tt>
+as a negative integer.
+Therefore, please exit loop when <tt class="docutils literal"><span class="pre">status(1)</span> <span class="pre">&lt;</span> <span class="pre">0</span></tt> .</p>
+</li>
+<li><p class="first">The 2-norm is used for the convergence check in the routine <tt class="docutils literal"><span class="pre">komega_????_update</span></tt>.
+Therefore, if 2-norms of residual vectors at all shift points becomes smaller than K,
+this routine assumes the result is converged.</p>
+</li>
+<li><p class="first">Conserve <span class="math">\(\alpha, \beta, {\bf r}^{\rm L}\)</span> at each iteration and
+to use the above vectors later, set the maximum number of iteration
+<tt class="docutils literal"><span class="pre">itermax</span></tt>.</p>
+</li>
+</ul>
+<p>The names of the routines is defined as follows.</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_init</span></tt>, <tt class="docutils literal"><span class="pre">COCG_init</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_init</span></tt>, <tt class="docutils literal"><span class="pre">CG_R_init</span></tt></p>
+<p>Set the initial conditions such as the allocation of variables used
+in the library.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_update</span></tt>, <tt class="docutils literal"><span class="pre">COCG_update</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_update</span></tt>, <tt class="docutils literal"><span class="pre">CG_R_update</span></tt></p>
+<p>These routines are called in the iteration to update the solution
+vectors.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_finalize</span></tt>, <tt class="docutils literal"><span class="pre">COCG_finalize</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_finalize</span></tt>,
+<tt class="docutils literal"><span class="pre">CG_R_finalize</span></tt></p>
+<p>Release the allocated vectors in the library.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">COCG_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_getcoef</span></tt>,
+<tt class="docutils literal"><span class="pre">CG_R_getcoef</span></tt></p>
+<p>Get the <span class="math">\(\alpha\)</span>, <span class="math">\(\beta\)</span>, <span class="math">\(z_{\rm seed}\)</span>,
+<span class="math">\({\bf r}^{\rm L}\)</span> conserved at each iteration.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_getvec</span></tt>, <tt class="docutils literal"><span class="pre">COCG_getvec</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_getvec</span></tt>, <tt class="docutils literal"><span class="pre">CG_R_getvec</span></tt></p>
+<p>Get the vectors <span class="math">\({\boldsymbol r}\)</span>,
+<span class="math">\({\boldsymbol r}^{\rm old}\)</span>, <span class="math">\({\tilde {\boldsymbol r}}\)</span>,
+<span class="math">\({\tilde {\boldsymbol r}}^{\rm old}\)</span>.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_restart</span></tt>, <tt class="docutils literal"><span class="pre">COCG_restart</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_restart</span></tt>,
+<tt class="docutils literal"><span class="pre">CG_R_restart</span></tt></p>
+</li>
+</ul>
+<div class="section" id="the-schematic-workflow-of-shifted-bicg-library">
+<h2>The schematic workflow of shifted BiCG library<a class="headerlink" href="#the-schematic-workflow-of-shifted-bicg-library" title="Permalink to this headline">¶</a></h2>
+<p>Allocate <span class="math">\({\boldsymbol v}_{1 2}\)</span>, <span class="math">\({\boldsymbol v}_{1 3}\)</span>,
+<span class="math">\({\boldsymbol v}_2\)</span>, <span class="math">\({\boldsymbol v}_3\)</span>,
+<span class="math">\(\{{\bf x}_k\}, {\bf r}^{\rm L}\)</span>
+<span class="math">\({\boldsymbol v}_2 = {\boldsymbol \varphi_j}\)</span></p>
+<p><tt class="docutils literal"><span class="pre">komega_BiCG_init(N_H,</span> <span class="pre">N_L,</span> <span class="pre">N_z,</span> <span class="pre">x,</span> <span class="pre">z,</span> <span class="pre">itermax,</span> <span class="pre">threshold)</span></tt> start</p>
+<blockquote>
+<div><p>Allocate <span class="math">\({\boldsymbol v}_3\)</span>, <span class="math">\({\boldsymbol v}_5\)</span>,
+<span class="math">\(\{\pi_k\}\)</span> , <span class="math">\(\{\pi_k^{\rm old}\}\)</span>, <span class="math">\(\{{\bf p}_k\}\)</span></p>
+<p>Copy <span class="math">\(\{z_k\}\)</span></p>
+<p>If <tt class="docutils literal"><span class="pre">itermax</span></tt> <span class="math">\(\neq\)</span> <tt class="docutils literal"><span class="pre">0</span></tt> ,
+allocate arrays to store <span class="math">\(\alpha\)</span>, <span class="math">\(\beta\)</span>,
+and:math:<cite>{bf r}^{rm L}</cite> at each iteration.</p>
+<p><span class="math">\({\boldsymbol v}_4 = {\boldsymbol v}_2^*\)</span> (an arbitrary vector),
+<span class="math">\({\boldsymbol v}_3 = {\boldsymbol v}_5 = {\bf 0}\)</span>,</p>
+<p><span class="math">\({\bf p}_{k} = {\bf x}_k = {\bf 0}(k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)\)</span></p>
+<p><span class="math">\(\rho = \infty,\; \alpha = 1,\; z_{\rm seed}=0\)</span></p>
+<p>( <span class="math">\({\boldsymbol v}_2 \equiv {\boldsymbol r}\)</span>,
+<span class="math">\({\boldsymbol v}_3 \equiv {\boldsymbol r}^{\rm old}\)</span>,
+<span class="math">\({\boldsymbol v}_4 \equiv {\tilde {\boldsymbol r}}\)</span>,
+<span class="math">\({\boldsymbol v}_5 \equiv {\tilde {\boldsymbol r}}^{\rm old}\)</span>. )</p>
+</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">komega_BiCG_init</span></tt> finish</p>
+<p>do iteration</p>
+<blockquote>
+<div><p><span class="math">\({\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2\)</span></p>
+<p><span class="math">\({\boldsymbol v}_{1 2} = {\hat H} {\boldsymbol v}_2\)</span>,
+<span class="math">\({\boldsymbol v}_{1 4} = {\hat H} {\boldsymbol v}_4\)</span>
+[Or <span class="math">\(({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H} ({\boldsymbol v}_2, {\boldsymbol v}_4)\)</span> ]</p>
+<p><tt class="docutils literal"><span class="pre">komega_BiCG_update(v_12,</span> <span class="pre">v_2,</span> <span class="pre">v_14,</span> <span class="pre">v_4,</span> <span class="pre">x,</span> <span class="pre">r_small,</span> <span class="pre">status)</span></tt> start</p>
+<blockquote>
+<div><p><span class="math">\(\circ\)</span> Seed equation</p>
+<p><span class="math">\(\rho^{\rm old} = \rho,\; \rho = {\boldsymbol v}_4^* \cdot {\boldsymbol v}_2\)</span></p>
+<p><span class="math">\(\beta = \rho / \rho^{\rm old}\)</span></p>
+<p><span class="math">\({\boldsymbol v}_{1 2} = z_{\rm seed} {\boldsymbol v}_2 - {\boldsymbol v}_{1 2}\)</span>,
+<span class="math">\({\boldsymbol v}_{1 4} = z_{\rm seed}^* {\boldsymbol v}_4 - {\boldsymbol v}_{1 4}\)</span></p>
+<p><span class="math">\(\alpha^{\rm old} = \alpha,\; \alpha = \frac{\rho}{{\boldsymbol v}_3^* \cdot {\boldsymbol v}_{1 2} - \beta \rho / \alpha }\)</span></p>
+<p><span class="math">\(\circ\)</span> Shifted equation</p>
+<p>do <span class="math">\(k = 1 \cdots N_z\)</span></p>
+<blockquote>
+<div><p><span class="math">\(\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)\)</span></p>
+<p><span class="math">\({\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm L} + \frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta {\bf p}_{k}\)</span></p>
+<p><span class="math">\({\bf x}_{k} = {\bf x}_{k} + \frac{\pi_k}{\pi_k^{\rm new}} \alpha {\bf p}_{k}\)</span></p>
+<p><span class="math">\(\pi_k^{\rm old} = \pi_k\)</span>, <span class="math">\(\pi_k = \pi_k^{\rm new}\)</span></p>
+</div></blockquote>
+<p>end do <span class="math">\(k\)</span></p>
+<p><span class="math">\({\boldsymbol v}_{1 2} = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\boldsymbol v}_2 - \alpha {\boldsymbol v}_{1 2} - \frac{\alpha \beta}{\alpha^{\rm old}} {\boldsymbol v}_3\)</span>,
+<span class="math">\({\boldsymbol v}_3 = {\boldsymbol v}_2,\; {\boldsymbol v}_2 = {\boldsymbol v}_{1 2}\)</span></p>
+<p><span class="math">\({\boldsymbol v}_{1 4} = \left( 1 + \frac{\alpha^* \beta^*}{\alpha^{{\rm old}*}} \right) {\boldsymbol v}_4 - \alpha^* {\boldsymbol v}_{1 4} - \frac{\alpha^* \beta^*}{\alpha^{{\rm old} *}} {\boldsymbol v}_5\)</span>,
+<span class="math">\({\boldsymbol v}_5 = {\boldsymbol v}_4,\; {\boldsymbol v}_4 = {\boldsymbol v}_{1 4}\)</span></p>
+<p><span class="math">\(\circ\)</span> Seed switch</p>
+<p>Search <span class="math">\(k\)</span> which gives the smallest <span class="math">\(|\pi_k|\)</span> .
+<span class="math">\(\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old}\)</span></p>
+<p><span class="math">\({\boldsymbol v}_2 = {\boldsymbol v}_2 / \pi_{\rm seed}\)</span>,
+<span class="math">\({\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}^{\rm old}\)</span>,
+<span class="math">\({\boldsymbol v}_4 = {\boldsymbol v}_4 / \pi_{\rm seed}^{*}\)</span>,
+<span class="math">\({\boldsymbol v}_5 = {\boldsymbol v}_5 / \pi_{\rm seed}^{\rm old *}\)</span></p>
+<p><span class="math">\(\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha\)</span>,
+<span class="math">\(\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})\)</span></p>
+<p><span class="math">\(\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}\)</span></p>
+</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">komega_BiCG_update</span></tt> finish</p>
+<p>if(status(1) &lt; 0 (This indicates <span class="math">\(|{\boldsymbol v}_2| &lt;\)</span> Threshold)) exit</p>
+</div></blockquote>
+<p>end do iteration</p>
+<p><tt class="docutils literal"><span class="pre">komega_BiCG_finalize</span></tt> start</p>
+<blockquote>
+<div>Deallocate <span class="math">\({\boldsymbol v}_4\)</span>, <span class="math">\({\boldsymbol v}_5\)</span>,
+<span class="math">\(\{\pi_k\}\)</span>, <span class="math">\(\{\pi_k^{\rm old}\}\)</span>, <span class="math">\(\{{\bf p}_k\}\)</span></div></blockquote>
+<p><tt class="docutils literal"><span class="pre">komega_BiCG_finalize</span></tt> finish</p>
+</div>
+<div class="section" id="the-schematic-workflow-of-shifted-cocg-library">
+<h2>The schematic workflow of shifted COCG library<a class="headerlink" href="#the-schematic-workflow-of-shifted-cocg-library" title="Permalink to this headline">¶</a></h2>
+<p>Allocate <span class="math">\({\boldsymbol v}_1\)</span>, <span class="math">\({\boldsymbol v}_2\)</span>,
+<span class="math">\(\{{\bf x}_k\}, {\bf r}^{\rm L}\)</span>
+<span class="math">\({\boldsymbol v}_2 = {\boldsymbol \varphi_j}\)</span></p>
+<p><tt class="docutils literal"><span class="pre">COCG_init(N_H,</span> <span class="pre">N_L,</span> <span class="pre">N_z,</span> <span class="pre">x,</span> <span class="pre">z,</span> <span class="pre">itermax,</span> <span class="pre">threshold)</span></tt> start</p>
+<blockquote>
+<div><p>Allocate <span class="math">\({\boldsymbol v}_3\)</span>, <span class="math">\(\{\pi_k\}\)</span>,
+<span class="math">\(\{\pi_k^{\rm old}\}\)</span>, <span class="math">\(\{{\bf p}_k\}\)</span></p>
+<p>Copy <span class="math">\(\{z_k\}\)</span></p>
+<p>If <tt class="docutils literal"><span class="pre">itermax</span></tt> <span class="math">\(\neq\)</span> <tt class="docutils literal"><span class="pre">0</span></tt> , allocate arrays
+to store <span class="math">\(\alpha\)</span>, <span class="math">\(\beta\)</span>, and <span class="math">\({\bf r}^{\rm L}\)</span> .</p>
+<p><span class="math">\({\boldsymbol v}_3 = {\bf 0}\)</span>,</p>
+<p><span class="math">\({\bf p}_{k} = {\bf x}_k = {\bf 0}(k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)\)</span></p>
+<p><span class="math">\(\rho = \infty,\; \alpha = 1,\; \beta=0,\; z_{\rm seed}=0\)</span></p>
+<p>( <span class="math">\({\boldsymbol v}_2 \equiv {\boldsymbol r}\)</span>,
+<span class="math">\({\boldsymbol v}_3 \equiv {\boldsymbol r}^{\rm old}\)</span>. )</p>
+</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">COCG_init</span></tt> finish</p>
+<p>do iteration</p>
+<blockquote>
+<div><p><span class="math">\({\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2\)</span></p>
+<p><span class="math">\({\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2\)</span></p>
+<p><tt class="docutils literal"><span class="pre">COCG_update(v_1,</span> <span class="pre">v_2,</span> <span class="pre">x,</span> <span class="pre">r_small,</span> <span class="pre">status)</span></tt> start</p>
+<blockquote>
+<div><p><span class="math">\(\circ\)</span> Seed equationw</p>
+<p><span class="math">\(\rho^{\rm old} = \rho,\; \rho = {\boldsymbol v}_2 \cdot {\boldsymbol v}_2\)</span></p>
+<p><span class="math">\(\beta = \rho / \rho^{\rm old}\)</span></p>
+<p><span class="math">\({\boldsymbol v}_1 = z_{\rm seed} {\boldsymbol v}_2 - {\boldsymbol v}_1\)</span></p>
+<p><span class="math">\(\alpha^{\rm old} = \alpha,\; \alpha = \frac{\rho}{{\boldsymbol v}_2 \cdot {\boldsymbol v}_1 - \beta \rho / \alpha }\)</span></p>
+<p><span class="math">\(\circ\)</span> Shifted equations</p>
+<p>do <span class="math">\(k = 1 \cdots N_z\)</span></p>
+<blockquote>
+<div><p><span class="math">\(\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k - \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)\)</span></p>
+<p><span class="math">\({\bf p}_{k} = \frac{1}{\pi_k} {\bf r}^{\rm L} + \frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta {\bf p}_{k}\)</span></p>
+<p><span class="math">\({\bf x}_{k} = {\bf x}_{k} + \frac{\pi_k}{\pi_k^{\rm new}} \alpha {\bf p}_{k}\)</span></p>
+<p><span class="math">\(\pi_k^{\rm old} = \pi_k,\; \pi_k = \pi_k^{\rm new}\)</span></p>
+</div></blockquote>
+<p>end do <span class="math">\(k\)</span></p>
+<p><span class="math">\({\boldsymbol v}_1 = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\boldsymbol v}_2 - \alpha {\boldsymbol v}_1 - \frac{\alpha \beta}{\alpha^{\rm old}} {\boldsymbol v}_3\)</span></p>
+<p><span class="math">\({\boldsymbol v}_3 = {\boldsymbol v}_2\)</span>,
+<span class="math">\({\boldsymbol v}_2 = {\boldsymbol v}_1\)</span></p>
+<p><span class="math">\(\circ\)</span> Seed switch</p>
+<p>Search <span class="math">\(k\)</span> which gives the smallest <cite>|pi_k|</cite> .
+<span class="math">\(\rightarrow z_{\rm seed},\; \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old}\)</span></p>
+<p><span class="math">\({\boldsymbol v}_2 = {\boldsymbol v}_2 / \pi_{\rm seed}\)</span>,
+<span class="math">\({\boldsymbol v}_3 = {\boldsymbol v}_3 / \pi_{\rm seed}^{\rm old}\)</span></p>
+<p><span class="math">\(\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha\)</span>,
+<span class="math">\(\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})\)</span></p>
+<p><span class="math">\(\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}\)</span></p>
+</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">COCG_update</span></tt> finish</p>
+<p>if(status(1) &lt; 0 (This indicates <span class="math">\(|{\boldsymbol v}_2| &lt;\)</span> Threshold.)) exit</p>
+</div></blockquote>
+<p>end do iteration</p>
+<p><tt class="docutils literal"><span class="pre">COCG_finalize</span></tt> start</p>
+<blockquote>
+<div>Deallocate <span class="math">\({\boldsymbol v}_3\)</span>, <span class="math">\(\{\pi_k\}\)</span>,
+<span class="math">\(\{\pi_k^{\rm old}\}\)</span>, <span class="math">\(\{{\bf p}_k\}\)</span></div></blockquote>
+<p><tt class="docutils literal"><span class="pre">COCG_finalize</span></tt> finish</p>
+</div>
+<div class="section" id="the-schematic-workflow-of-shifted-cg-library">
+<h2>The schematic workflow of shifted CG library<a class="headerlink" href="#the-schematic-workflow-of-shifted-cg-library" title="Permalink to this headline">¶</a></h2>
+<p>The workflow is the same as that of the shifted COCG library.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Schematic workflow of this library</a><ul>
+<li><a class="reference internal" href="#the-schematic-workflow-of-shifted-bicg-library">The schematic workflow of shifted BiCG library</a></li>
+<li><a class="reference internal" href="#the-schematic-workflow-of-shifted-cocg-library">The schematic workflow of shifted COCG library</a></li>
+<li><a class="reference internal" href="#the-schematic-workflow-of-shifted-cg-library">The schematic workflow of shifted CG library</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="komega_algorithm_en.html"
+                        title="previous chapter">Algorithm</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="komega_usage_en.html"
+                        title="next chapter">Usage</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/komega_workflow_en.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="komega_usage_en.html" title="Usage"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="komega_algorithm_en.html" title="Algorithm"
+             >previous</a> |</li>
+        <li><a href="index.html">komega 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, kawamura.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
