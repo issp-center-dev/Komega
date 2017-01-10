@@ -1,76 +1,77 @@
-使用方法
-========
+Usage
+=====
 
-各ライブラリともユーザーはライブラリ名および型を指定し,
+The calculation is done to utilize functions by the following
+procedures.
 
--  初期設定 (init関数)
+-  Initialization (init function)
 
--  アップデート (update関数)
+-  Update (update function)
 
--  計算情報出力 (getcoef, getvec関数などを呼び出力)
+-  Output numerical results (call getcoef, getvec functions and output
+   informations)
 
--  終了関数 (finalize関数)
+-  Finalization (finalize function)
 
-の手順で関数を使用することで, 計算が実施される. なお,
-リスタートを行う場合には
+The restart calculation can be done by the following procedures.
 
--  初期設定関数(restart関数)
+-  Initialization(restart function)
 
--  アップデート (update関数)
+-  Update (update function)
 
--  計算情報出力 (getcoef, getvec関数などを呼び出力)
+-  Output numerical results (call getcoef, getvec functions and output
+   informations)
 
--  終了関数 (finalize関数)
+-  Finalization (finalize function)
 
-の手順で実行する. fortran から呼び出すときには
+For FORTRAN, the modules can be called by
 
 .. code-block:: fortran
 
       USE komega_????
 
-のようにモジュールを呼び出す. ``"????"`` の部分には, ``"CG_R"``,
-``"CG_C"``, ``"COCG"``, ``"BiCG"`` が入る.
-MPI/Hybrid並列版のルーチンを利用するときには,
+``"????"`` is selected from the following words(methods)
+``"CG_R"``, ``"CG_C"``, ``"COCG"``, ``"BiCG"``. To utilize routines of
+MPI / Hybrid parallelization version, the modules can be called as folows:
 
 .. code-block:: fortran
 
       USE pkomega_????
 
-のようにする.
-
-C/C++で書かれたプログラムから呼び出すときには、
+When we call :math:`K\omega` from C/C++ codes,
+we should include the header file as
 
 .. code-block:: c
 
     #include komega_????.h
 
-のようにヘッダーファイルを読み込む。
-また、スカラー引数はすべてポインタとして渡す。
-MPI/Hybrid並列版のルーチンを利用するときには,
+Scaler arguments should be passed as pointers.
+For MPI/Hybrid parallelized routine,
+the above line becomes
 
 .. code-block:: c
 
     #include pkomega_????.h
 
-のようにする。
-またライブラリに渡すコミュニケーター変数を、次のようにC/C++のものからfortranのものに変換する。
+Also the communicator argument for the routine should be
+transformed from the C/C++'s one to the fortran's one as follows.
 
 .. code-block:: c
 
       comm_f = MPI_Comm_c2f(comm_c);
 
-各ルーチンの説明
-----------------
+Details of each routines
+------------------------
 
-``komega_????_init``, ``pkomega_????_init``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``????_init``, ``p????_init``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ライブラリ内部変数の割り付けおよび初期化を行う.
-シフト線形方程式を解く前に, 一番初めに実行する.
+Set and initialize internal variables in libraries. These routines
+should be called first before solving the shifted equation.
 
-構文
+Syntax
 
-Fortran シリアル/OpenMP版
+Fortran (Serial/OpenMP)
 
 .. code-block:: fortran
 
@@ -79,7 +80,7 @@ Fortran シリアル/OpenMP版
     CALL komega_COCG_init(ndim, nl, nz, x, z, itermax, threshold)
     CALL komega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
 
-Fortran MPI/Hybrid並列版
+Fortran (MPI/Hybrid parallel)
 
 .. code-block:: fortran
 
@@ -88,7 +89,7 @@ Fortran MPI/Hybrid並列版
     CALL pkomega_COCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
     CALL pkomega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 
-C/C++ シリアル/OpenMP版
+C/C++ Serial/OpenMP
 
 .. code-block:: c
 
@@ -97,7 +98,7 @@ C/C++ シリアル/OpenMP版
     komega_COCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
     komega_BiCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
 
-C/C++ MPI/Hybrid並列版
+C/C++ MPI/Hybrid parallel
 
 .. code-block:: c
 
@@ -106,57 +107,63 @@ C/C++ MPI/Hybrid並列版
     pkomega_COCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
     pkomega_BiCG_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
 
-パラメーター
+Parameters
 
 -  ``ndim``
 
-   ``INTEGER``. スカラー. 入力. 線形方程式の次元.
+   ``INTEGER``. Scalar. Input.
+   The dimension of solution vectors for the linearized equation.
 
 -  ``nl``
 
-   ``INTEGER``. スカラー. 入力. 射影された解ベクトルの次元.
+   ``INTEGER``. Scalar. Input.
+   The dimension of projected solution vectors.
 
 -  ``nz``
 
-   ``INTEGER``. スカラー. 入力. シフト点の数.
+   ``INTEGER``. Scalar. Input. The number of shifted points.
 
 -  ``x``
 
-   ``DOUBLE PRECISION`` (``CG_R_init`` の場合), ``DOUBLE COMPLEX``
-   (それ以外). 長さ ``nl*nz`` の配列. 出力. 解ベクトル.
-   ``0`` ベクトルが返される.
+   ``DOUBLE PRECISION`` (for ``CG_R_init``), ``DOUBLE COMPLEX`` (for
+   other cases). The array with the length of ``nl*nz``. Output. The
+   solution vector. In this procedure, ``0`` vector is returned.
 
 -  ``z``
 
-   ``DOUBLE PRECISION`` (``CG_R_init``, ``CG_C_init`` の場合),
-   ``DOUBLE COMPLEX`` (それ以外). 長さ ``nz`` の配列. 入力. シフト点.
+   ``DOUBLE PRECISION`` (for ``CG_R_init``, ``CG_C_init``),
+   ``DOUBLE COMPLEX`` (for other cases). The array with the length of
+   ``nz``. Input. Shifted points.
 
 -  ``itermax``
 
-   ``INTEGER``. スカラー. 入力.
-   リスタート用配列の割り付けのための最大反復回数.
-   これを ``0`` にした場合にはリスタート用配列を割りつけない(したがって後述のリスタート用変数の出力を行えない)
+   ``INTEGER``. Scalar. Input.
+   The maximum iteration number for allocating arrays for the restart calculation.
+   When ``itermax=0`` , these arrays are not allocated,
+   and the restart calculation described later becomes unavailable.
 
 -  ``threshold``
 
-   ``DOUBLE PRECISION``. スカラー. 入力. 収束判定用しきい値.
-   シード方程式の残差ベクトルの2-ノルムがこの値を下回った時に収束したと判定する.
+   ``DOUBLE PRECISION``. Scalar. Input.
+   The threshold value for the convergence determination.
+   When the 2-norm of the residual vector for the seed equation
+   becomes smaller than this value, the calculation is finished.
 
 -  ``comm``
 
-   ``INTEGER``. スカラー. 入力. MPI/Hybrid並列版のみ.
-   MPIのコミニュケーター( ``MPI_COMM_WORLD`` など)を入れる.
+   ``INTEGER``. Scalar. Input. Only for MPI / Hybrid parallelization
+   version. Communicators for MPI such as ``MPI_COMM_WORLD``.
 
 ``komega_????_restart``, ``pkomega_????_restart``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-リスタートを行う場合に ``?_init`` の代わりに用いる.
-ライブラリ内部変数の割り付けおよび初期化を行う.
-シフト線形方程式を解く前に, 一番初めに実行する.
+For the restart calculation, these routines are used instead of ``?_init``.
+Set and initialize internal variables in libraries.
+These routines should be called first before solving the shifted equation.
 
-構文
+Syntax
 
-Fortran (シリアル/OpenMP版)
+Fortran (Serial/OpenMP)
 
 .. code-block:: fortran
 
@@ -170,7 +177,7 @@ Fortran (シリアル/OpenMP版)
     &                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
     &                 z_seed, r_l_save)
 
-Fortran (MPI/ハイブリッド並列版)
+Fortran (MPI/hybrid parallel)
 
 .. code-block:: fortran
 
@@ -184,7 +191,7 @@ Fortran (MPI/ハイブリッド並列版)
     &                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
     &                 z_seed, r_l_save)
 
-C/C++ (シリアル/OpenMP版)
+C/C++ (Serial/OpenMP)
 
 .. code-block:: c
 
@@ -198,7 +205,7 @@ C/C++ (シリアル/OpenMP版)
     &                 &iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
     &                 &z_seed, r_l_save);
 
-C/C++ (MPI/ハイブリッド並列版)
+C/C++ (MPI/hybrid parallel)
 
 .. code-block:: c
 
@@ -212,95 +219,103 @@ C/C++ (MPI/ハイブリッド並列版)
     &                 &iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
     &                 &z_seed, r_l_save);
 
-パラメーター
+Parameters
 
 -  ``ndim, nl, nz, x, z, itermax, threshold, comm``
 
-   ``?_init`` と同様.
+   The definition is same as ``?_init``. See the parameters in ``?_init``.
 
 -  ``status``
 
-   ``INTEGER``. 長さ ``3`` の配列. 出力. エラーコードを返す.
+   ``INTEGER``. The array with the length of ``3``. Output.
+   The error code is returned.
 
-   第一成分( ``status(1)``)
-       解が収束した場合,
-       もしくは計算が破綻した場合には現在の総反復回数に
-       マイナスが付いた値が返される.
-       それ以外の場合には現在の総反復回数(マイナスが付かない)が返される.
-       ``status(1)`` が正の値の時のみ反復を続行できる.
-       それ以外の場合は反復を進めても有意な結果は得られない.
+   First component(``status(1)``)
+       If the solution is converged or a breakdown occurs,
+       the current total number of iteration with the minus sign is returned.
+       In other cases, this routine returns the current total number of iteration.
+       The calculation is continuable only when ``status(1)`` is the positive value;
+       otherwise the result is meaningless even if the calculation is continued.
 
-   第二成分( ``status(2)``)
-       ``itermax`` を有限にして, かつ ``itermax`` 回の反復で
-       収束に達しなかった場合には ``1`` が返される.
-       :math:`\alpha` が発散した場合には ``2`` が返される.
-       :math:`\pi_{\rm seed}` が0にになった場合には ``3`` が返される.
-       ``COCG_restart`` もしくは ``BiCG_restart`` で,
-       残差ベクトルと影の残差ベクトルが直交した場合には ``4`` が返される.
-       それ以外の場合には ``0`` が返される.
+   Second component(``status(2)``)
+       ``1`` is returned if ``itermax`` is set as a finite value and the
+       convergence condition is not satisfied at the ``itermax``\ -th iteration.
+       ``2`` is returned if :math:`\alpha` diverges.
+       ``3`` is returned if :math:`\pi_{\rm seed}` becomes 0.
+       In the case of ``COCG_restart`` or ``BiCG_restart``,
+       ``4`` is returned if the residual vector and the shadow residual vector are orthogonal.
+       In other cases, ``0`` is returned.
 
-   第三成分( ``status(3)``)
-       シード点のindexが返される.
+   Third component(``status(3)``)
+       The index of the seed point is returned.
 
 -  ``iter_old``
 
-   ``INTEGER``. スカラー. 入力. 先行する計算での反復回数.
+   ``INTEGER``. Scalar. Input.
+   The number of iteration for the previous calculation.
 
 -  ``v2``
 
-   ``DOUBLE PRECISION`` (``CG_R_restart`` の場合), ``DOUBLE COMPLEX``
-   (それ以外). 長さ ``ndim`` の配列. 入力.
-   先行する計算での最後の残差ベクトル.
+   ``DOUBLE PRECISION`` (for ``CG_R_restart``),
+   ``DOUBLE COMPLEX`` (for other cases).
+   The array with the length of ``ndim``. Input.
+   The residual vector at the last step for the previous calculation.
 
 -  ``v12``
 
-   ``DOUBLE PRECISION`` (``CG_R_restart`` の場合), ``DOUBLE COMPLEX``
-   (それ以外). 長さ ``ndim`` の配列. 入力.
-   先行する計算での最後から2番目の残差ベクトル.
+   ``DOUBLE PRECISION`` (for ``CG_R_restart``), ``DOUBLE COMPLEX`` (for other cases).
+   The array with the length of ``ndim``. Input.
+   The residual vector at the second from the last step for the previous calculation.
 
 -  ``alpha_save``
 
-   ``DOUBLE PRECISION`` (``CG_R_restart``, ``CG_C_restart`` の場合),
-   ``DOUBLE COMPLEX`` (それ以外). 長さ ``iter_old`` の配列. 入力.
-   先行する計算での各反復での(Bi)CG法のパラメーター :math:`\alpha`.
+   ``DOUBLE PRECISION`` (for ``CG_R_restart``, ``CG_C_restart``),
+   ``DOUBLE COMPLEX`` (for other cases).
+   The array with the length of ``iter_old``. Input.
+   The parameters :math:`\alpha` obtained by the
+   previous calculation at each steps by (Bi)CG methods.
 
 -  ``beta_save``
 
-   ``DOUBLE PRECISION`` (``CG_R_restart``, ``CG_C_restart`` の場合),
-   ``DOUBLE COMPLEX`` (それ以外). 長さ ``iter_old`` の配列. 入力.
-   先行する計算での各反復での(Bi)CG法のパラメーター :math:`\beta`.
+   ``DOUBLE PRECISION`` (for ``CG_R_restart``, ``CG_C_restart``),
+   ``DOUBLE COMPLEX`` (for other cases).
+   The array with the length of\ ``iter_old``. Input.
+   The parameters :math:`\beta` obtained
+   by the previous calculation at each steps by (Bi)CG methods.
 
 -  ``z_seed``
 
-   ``DOUBLE PRECISION`` (``CG_R_restart``, ``CG_C_restart`` の場合),
-   ``DOUBLE COMPLEX`` (それ以外). スカラー. 入力.
-   先行する計算でのシードシフト.
+   ``DOUBLE PRECISION`` (for ``CG_R_restart``, ``CG_C_restart``),
+   ``DOUBLE COMPLEX`` (for other cases). Scalar. Input.
+   The value of the seed shift for the previous calculation.
 
 -  ``r_l_save``
 
-   ``DOUBLE PRECISION`` (``CG_R_restart`` の場合), ``DOUBLE COMPLEX``
-   (それ以外). 長さ ``nl*iter_old`` の配列. 入力.
-   先行する計算での各反復での射影された残差ベクトル.
+   ``DOUBLE PRECISION`` (for ``CG_R_restart``), ``DOUBLE COMPLEX`` (for other cases).
+   The array with the length of ``nl*iter_old``. Input.
+   The projected residual vector at each iteration for the previous calculation.
 
 -  ``v4``
 
-   ``BiCG_restart`` の場合のみ使用. ``DOUBLE COMPLEX``.
-   長さ ``ndim`` の配列. 入力. 先行する計算での最後の影の残差ベクトル.
+   Only used for ``BiCG_restart``. ``DOUBLE COMPLEX``.
+   The array with the length of ``ndim``. Input.
+   The shadow residual vector at the last step for the previous calculation.
 
 -  ``v14``
 
-   ``BiCG_restart`` の場合のみ使用. ``DOUBLE COMPLEX``.
-   長さ ``ndim`` の配列. 入力.
-   先行する計算での最後から2番目の影の残差ベクトル.
+   Only used for ``BiCG_restart``. ``DOUBLE COMPLEX``.
+   The array with the length of ``ndim``. Input.
+   The shadow residual vector at the second last step for the previous calculation.
 
 ``komega_????_update``, ``pkomega_????_update``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ループ内で行列ベクトル積と交互に呼ばれて解を更新する.
+It is called alternately with the matrix-vector product
+in the loop and updates the solution.
 
-構文
+Syntax
 
-Fortran (シリアル/OpenMPI版)
+Fortran (Serial/OpenMPI)
 
 .. code-block:: fortran
 
@@ -309,7 +324,7 @@ Fortran (シリアル/OpenMPI版)
     CALL komega_COCG_update(v12, v2, x, r_l, status)
     CALL komega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 
-Fortran (MPI/ハイブリッド並列版)
+Fortran (MPI/hybrid parallel)
 
 .. code-block:: fortran
 
@@ -318,7 +333,7 @@ Fortran (MPI/ハイブリッド並列版)
     CALL pkomega_COCG_update(v12, v2, x, r_l, status)
     CALL pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status)
 
-C/C++ (シリアル/OpenMPI版)
+C/C++ (Serial/OpenMPI)
 
 .. code-block:: c
 
@@ -327,7 +342,7 @@ C/C++ (シリアル/OpenMPI版)
     komega_COCG_update(v12, v2, x, r_l, status);
     komega_BiCG_update(v12, v2, v14, v4, x, r_l, status);
 
-C/C++ (MPI/ハイブリッド並列版)
+C/C++ (MPI/hybrid parallel)
 
 .. code-block:: c
 
@@ -336,68 +351,72 @@ C/C++ (MPI/ハイブリッド並列版)
     pkomega_COCG_update(v12, v2, x, r_l, status);
     pkomega_BiCG_update(v12, v2, v14, v4, x, r_l, status);
 
-パラメーター
+Parameters
 
 -  ``v12``
 
-   ``DOUBLE PRECISION`` (``CG_R_update`` の場合), ``DOUBLE COMPLEX``
-   (それ以外). 長さ ``ndim`` の配列. 入出力.
-   入力は残差ベクトル( ``v2``)と行列の積. 出力は,
-   更新された残差ベクトルの2-ノルムが,
-   先頭の要素に格納される(これは収束の具合を表示して調べる時などに用いる).
+   ``DOUBLE PRECISION`` (for ``CG_R_update``), ``DOUBLE COMPLEX`` (for other cases). 
+   The array with the length of ``ndim``. In/Output. 
+   The product of the residual vector (``v2``) and the matrix.
+   This routine returns the 2-norm of the updated residual vector
+   as a first element of this array.
+   This returned value is used, for examples, for printing the convergence profile.
 
 -  ``v2``
 
-   ``DOUBLE PRECISION`` (``CG_R_update`` の場合), ``DOUBLE COMPLEX``
-   (それ以外). 長さ ``ndim`` の配列. 入出力. 入力は残差ベクトル.
-   出力は更新された残差ベクトル.
+   ``DOUBLE PRECISION`` (for ``CG_R_update``), ``DOUBLE COMPLEX`` (for other cases).
+   The array with the length of ``ndim``. In/Output.
+   The residual vector is input and the updated residual vector is output.
 
 -  ``v14``
 
-   ``BiCG_update`` の場合のみ使用. ``DOUBLE COMPLEX``.
-   長さ ``ndim`` の配列. 入力. 影の残差ベクトル( ``v4``)と行列の積.
+   Only used for ``BiCG_update``. ``DOUBLE COMPLEX``.
+   The array with the length of ``ndim``. In/Output.
+   The product of the shadow residual vector (``v4``) and the matrix is input.
 
 -  ``v4``
 
-   ``BiCG_update`` の場合のみ使用. ``DOUBLE COMPLEX``.
-   長さ ``ndim`` の配列. 入出力. 入力は影の残差ベクトル.
-   出力は更新された影の残差ベクトル.
+   Only used for ``BiCG_update``. ``DOUBLE COMPLEX``.
+   The array with the length of ``ndim``. In/Output.
+   The shadow residual vector is input and the updated vector is output.
 
 -  ``status``
 
-   ``INTEGER``. 長さ ``3`` の配列. 出力. エラーコードを返す.
+   ``INTEGER``. The array with the length of ``3``. Output.
+   The error code is returned.
 
-   第一成分( ``status(1)``)
-       解が収束した場合,
-       もしくは計算が破綻した場合には現在の総反復回数に
-       マイナスが付いた値が返される.
-       それ以外の場合には現在の総反復回数(マイナスが付かない)が返される.
-       ``status(1)`` が正の値の時のみ反復を続行できる.
-       それ以外の場合は反復を進めても有意な結果は得られない.
+   First component (``status(1)``)
+       If the solution is converged or a breakdown occurs,
+       the current total number of iteration with the minus sign is returned.
+       In other cases,
+       this routine returns the current total number of iteration.
+       The calculation is continuable only when ``status(1)`` is the positive value;
+       otherwise the result is meaningless even if the calculation is continued.
 
-   第二成分( ``status(2)``)
-       ``?_init`` ルーチンで, ``itermax`` を有限にして,
-       かつ ``itermax`` 回の反復で
-       収束に達しなかった場合には ``1`` が返される.
-       :math:`\alpha` が発散した場合には ``2`` が返される.
-       :math:`\pi_{\rm seed}` が0にになった場合には ``3`` が返される.
-       ``COCG_update`` もしくは ``BiCG_update`` で,
-       残差ベクトルと影の残差ベクトルが直交した場合には ``4`` が返される.
-       それ以外の場合には ``0`` が返される.
+   Second component (``status(2)``)
+       ``1`` is returned if ``itermax`` is set as a finite value in the
+       ``?_init`` routine and the convergence condition is not satisfied
+       at the ``itermax``\ -th iteration.
+       ``2`` is returned if :math:`\alpha` diverges.
+       ``3`` is returned if :math:`\pi_{\rm seed}` becomes 0.
+       In the case of ``COCG_restart`` or ``BiCG_restart``,
+       ``4`` is returned if the residual vector and
+       the shadow residual vector are orthogonal.
+       In other cases, ``0`` is returned.
 
-   第三成分( ``status(3)``)
-       シード点のindexが返される.
+   Third component (``status(3)``)
+       The index of the seed point is returned.
 
 ``komega_????_getcoef``, ``pkomega_????_getcoef``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-後でリスタートをするときに必要な係数を取得する.
-このルーチンを呼び出すためには,
-``?_init`` ルーチンで ``itermax`` を ``0`` 以外の値にしておく必要がある.
+Get the coefficients used in the restart calculation.
+To call these routines,
+``itermax`` in ``?_init`` routine must not be ``0`` .
 
-構文
+Syntax
 
-Fortran (シリアル/OpenMP版)
+Fortran (Serial/OpenMP)
 
 .. code-block:: fortran
 
@@ -406,7 +425,7 @@ Fortran (シリアル/OpenMP版)
     CALL komega_COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
     CALL komega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 
-Fortran (MPI/ハイブリッド並列版)
+Fortran (MPI/hybrid parallel)
 
 .. code-block:: fortran
 
@@ -415,7 +434,7 @@ Fortran (MPI/ハイブリッド並列版)
     CALL pkomega_COCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
     CALL pkomega_BiCG_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 
-C/C++ (シリアル/OpenMP版)
+C/C++ (Serial/OpenMP)
 
 .. code-block:: c
 
@@ -424,7 +443,7 @@ C/C++ (シリアル/OpenMP版)
     komega_COCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
     komega_BiCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
 
-C/C++ (MPI/ハイブリッド並列版)
+C/C++ (MPI/hybrid parallel)
 
 .. code-block:: c
 
@@ -433,41 +452,44 @@ C/C++ (MPI/ハイブリッド並列版)
     pkomega_COCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
     pkomega_BiCG_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
 
-パラメーター
+Parameters
 
 -  ``alpha_save``
 
-   ``DOUBLE PRECISION`` (``CG_R_getoef``, ``CG_C_getoef`` の場合),
-   ``DOUBLE COMPLEX`` (それ以外). 総反復回数と同じ長さの配列. 出力.
-   各反復での(Bi)CG法のパラメーター :math:`\alpha`.
+   ``DOUBLE PRECISION`` (for ``CG_R_getoef``, ``CG_C_getoef``),
+   ``DOUBLE COMPLEX`` (for other cases).
+   The array with the length of the number of maximum iteration. Output.
+   The parameters :math:`\alpha` of the (Bi)CG method at each iteration.
 
 -  ``beta_save``
 
-   ``DOUBLE PRECISION`` (``CG_R_getoef``, ``CG_C_getoef`` の場合),
-   ``DOUBLE COMPLEX`` (それ以外). 総反復回数と同じ長さの配列. 出力.
-   各反復での(Bi)CG法のパラメーター :math:`\beta`.
+   ``DOUBLE PRECISION`` (for ``CG_R_getoef``, ``CG_C_getoef``),
+   ``DOUBLE COMPLEX`` (for other cases).
+   The array with the length of the number of maximum iteration. Output.
+   The parameters :math:`\beta` of the (Bi)CG method at each iteration.
 
 -  ``z_seed``
 
-   ``DOUBLE PRECISION`` (``CG_R_getoef``, ``CG_C_getoef`` の場合),
-   ``DOUBLE COMPLEX`` (それ以外). スカラー. 出力. シードシフト.
+   ``DOUBLE PRECISION`` (for ``CG_R_getoef``, ``CG_C_getoef``),
+   ``DOUBLE COMPLEX`` (for other cases). Scalar. Output. Seed shift.
 
 -  ``r_l_save``
 
-   ``DOUBLE PRECISION`` (``CG_R_getoef`` の場合), ``DOUBLE COMPLEX``
-   (それ以外). ``nl`` :math:`\times` 総反復回数の長さ配列. 出力.
-   各反復での射影された残差ベクトル.
+   ``DOUBLE PRECISION`` (for ``CG_R_getoef``), ``DOUBLE COMPLEX`` (for other cases).
+   The array with the length of the number of maximum iteration :math:`\times` ``nl``.
+   Output.
+   The projected residual vectors at each iteration.
 
 ``komega_????_getvec``, ``pkomega_????_getvec``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-後でリスタートをするときに必要な残差ベクトルを取得する.
-このルーチンを呼び出すためには,
-``?_init`` ルーチンで ``itermax`` を ``0`` 以外の値にしておく必要がある.
+Get the residual vectors to use the restart calculation.
+To call these routines,
+``itermax`` in the ``?_init`` routine must not be ``0``.
 
-構文
+Syntax
 
-Fortran (シリアル/OpenMP版)
+Fortran (Serial/OpenMP)
 
 .. code-block:: fortran
 
@@ -476,7 +498,7 @@ Fortran (シリアル/OpenMP版)
     CALL komega_COCG_getvec(r_old)
     CALL komega_BiCG_getvec(r_old, r_tilde_old)
 
-Fortran (MPI/ハイブリッド並列版)
+Fortran (MPI/hybrid parallel)
 
 .. code-block:: fortran
 
@@ -485,7 +507,7 @@ Fortran (MPI/ハイブリッド並列版)
     CALL pkomega_COCG_getvec(r_old)
     CALL pkomega_BiCG_getvec(r_old, r_tilde_old)
 
-C/C++ (シリアル/OpenMP版)
+C/C++ (Serial/OpenMP)
 
 .. code-block:: c
 
@@ -494,7 +516,7 @@ C/C++ (シリアル/OpenMP版)
     komega_COCG_getvec(r_old);
     komega_BiCG_getvec(r_old, r_tilde_old);
 
-C/C++ (MPI/ハイブリッド並列版)
+C/C++ (MPI/hybrid parallel)
 
 .. code-block:: c
 
@@ -503,31 +525,31 @@ C/C++ (MPI/ハイブリッド並列版)
     pkomega_COCG_getvec(r_old);
     pkomega_BiCG_getvec(r_old, r_tilde_old);
 
-パラメーター
+Parameters
 
 -  ``r_old``
 
-   ``DOUBLE PRECISION`` (``CG_R_getvec`` の場合), ``DOUBLE COMPLEX``
-   (それ以外). 長さ ``ndim`` の配列. 出力.
-   先行する計算での最後から2番目の残差ベクトル.
+   ``DOUBLE PRECISION`` (for ``CG_R_getvec``), ``DOUBLE COMPLEX`` (for other cases).
+   The array with the length of ``ndim``. Output.
+   The residual vector at the second last step in the previous calculation.
 
 -  ``r_tilde_old``
 
-   ``BiCG_getvec`` の場合のみ使用. ``DOUBLE COMPLEX``.
-   長さ ``ndim`` の配列. 出力.
-   先行する計算での最後から2番目の影の残差ベクトル.
+   Only used for ``BiCG_getvec``. ``DOUBLE COMPLEX``. 
+   The array with the length of ``ndim``. Output.
+   The shadow residual vector at the second last step in the previous calculation.
 
 ``komega_????_getresidual``, ``pkomega_????_getresidual``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-各シフト点での残差ベクトルの2-ノルムを取得する.
-このルーチンは ``komega_????_init`` と ``komega_????_finalize`` の間の
-任意の場所で呼び出すことが出来る. また,
-いつ何回呼び出しても最終的な計算結果には影響を与えない.
+Get the values of 2-norm of the residual vector at each shift points.
+These routines can be called from anywhere between ``komega_????_init``
+and ``komega_????_finalize``.
+These routines do not affect the calculation results.
 
-構文
+Syntax
 
-Fortran (シリアル/OpenMP版)
+Fortran (Serial/OpenMP)
 
 .. code-block:: fortran
 
@@ -536,7 +558,7 @@ Fortran (シリアル/OpenMP版)
     CALL komega_COCG_getresidual(res)
     CALL komega_BiCG_getresidual(res)
 
-Fortran (MPI/ハイブリッド並列版)
+Fortran (MPI/hybrid parallel)
 
 .. code-block:: fortran
 
@@ -545,7 +567,7 @@ Fortran (MPI/ハイブリッド並列版)
     CALL pkomega_COCG_getresidual(res)
     CALL pkomega_BiCG_getresidual(res)
 
-C/C++ (シリアル/OpenMP版)
+C/C++ (Serial/OpenMP)
 
 .. code-block:: c
 
@@ -554,7 +576,7 @@ C/C++ (シリアル/OpenMP版)
     komega_COCG_getresidual(res);
     komega_BiCG_getresidual(res);
 
-C/C++ (MPI/ハイブリッド並列版)
+C/C++ (MPI/hybrid parallel)
 
 .. code-block:: c
 
@@ -563,21 +585,22 @@ C/C++ (MPI/ハイブリッド並列版)
     pkomega_COCG_getresidual(res);
     pkomega_BiCG_getresidual(res);
 
-パラメーター
+Parameters
 
 -  ``res``
 
-   ``DOUBLE PRECISION``. 長さ ``nz`` の配列. 出力.
-   各シフト点での残差ベクトルの2-ノルム.
+   ``DOUBLE PRECISION``. The array with the length of ``nz``. Output.
+   The values of 2-norm of the residual vector at each shift points are
+   returned.
 
 ``komega_????_finalize``, ``pkomega_????_finalize``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ライブラリ内部で割りつけた配列のメモリを解放する.
+Release memories of the arrays stored in the library.
 
-構文
+Syntax
 
-Fortran (シリアル/OpenMP版)
+Fortran (Serial/OpenMP)
 
 .. code-block:: fortran
 
@@ -586,7 +609,7 @@ Fortran (シリアル/OpenMP版)
     CALL komega_COCG_finalize()
     CALL komega_BiCG_finalize()
 
-Fortran (MPI/ハイブリッド並列版)
+Fortran (MPI/hybrid parallel)
 
 .. code-block:: fortran
 
@@ -595,7 +618,7 @@ Fortran (MPI/ハイブリッド並列版)
     CALL pkomega_COCG_finalize()
     CALL pkomega_BiCG_finalize()
 
-C/C++ (シリアル/OpenMP版)
+C/C++ (Serial/OpenMP)
 
 .. code-block:: c
 
@@ -604,7 +627,7 @@ C/C++ (シリアル/OpenMP版)
     komega_COCG_finalize();
     komega_BiCG_finalize();
 
-C/C++ (MPI/ハイブリッド並列版)
+C/C++ (MPI/hybrid parallel)
 
 .. code-block:: c
 
@@ -613,10 +636,10 @@ C/C++ (MPI/ハイブリッド並列版)
     pkomega_COCG_finalize();
     pkomega_BiCG_finalize();
 
-Shifted BiCGライブラリを使用したソースコードの例
-------------------------------------------------
+Sample codes for using shifted BiCG library
+-------------------------------------------
 
-以下, 代表的な例としてShifted BiCGライブラリの場合の使用方法を記載する.
+As a typical example, the usage of shifted BiCG library is shown below.
 
 .. code-block:: fortran
 

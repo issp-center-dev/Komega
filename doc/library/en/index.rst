@@ -11,12 +11,12 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
-   komega_overview_ja
-   komega_copyright_ja
-   komega_algorithm_ja
-   komega_workflow_ja
-   komega_usage_ja
-   komega_contact_ja
+   komega_overview_en
+   komega_copyright_en
+   komega_algorithm_en
+   komega_workflow_en
+   komega_usage_en
+   komega_contact_en
 
 .. Indices and tables
 .. ==================

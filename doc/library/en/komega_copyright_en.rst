@@ -1,5 +1,5 @@
-著作権
-======
+Copyright
+=========
 
 | This software is developed under the support of
 | "*Project for advancement of software usability in materials science*" by The
