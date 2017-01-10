@@ -415,3 +415,4 @@ doc/library/ja/_build/html/
 *.so
 doc/library/ja/_build/
 doc/library/en/_build/
+doc/software/ja/_build

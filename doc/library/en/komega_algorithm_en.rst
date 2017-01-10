@@ -20,10 +20,9 @@ for complex (real) number.
    Shifted Conjugate Gradient(CG) method (using real vector)
 
 For above methods, seed switching [Yamamoto2008]_ is adopted.
-Hereafter, the number of the left (right) side vector, :math:` {\boldsymbol \varphi}_{i}`
-(:math:` {\boldsymbol \varphi}_{j}`), in Eq.(1) is
-indicated by :math:`N_L` (:math:`N_R`). The details of each algorithm
-are written as follows.
+Hereafter, the number of the left (right) side vector is
+written as :math:`N_L` (:math:`N_R`).
+The details of each algorithm are written as follows.
 
 .. [Flommer2003] A. Frommer, Computing **70**, 87 (2003).
 

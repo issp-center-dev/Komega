@@ -6,6 +6,8 @@ solve the shifted linear equation within the Krylov subspace.
 This library provides routines to solve the following shifted linear equation
 (with the projection),
 
+.. _shiftedeq:
+
 .. math::
 
    \begin{align}
