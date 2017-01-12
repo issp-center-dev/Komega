@@ -22,6 +22,11 @@ The restart calculation can be done by the following procedures.
 
 -  Finalization (:ref:`finalize`)
 
+.. warning::
+
+   Since :math:`K\omega` is **not** thread safe,
+   these routine must be called from the outside of the OpenMP-parallel region.
+   
 For FORTRAN, the modules can be called by
 
 .. code-block:: fortran

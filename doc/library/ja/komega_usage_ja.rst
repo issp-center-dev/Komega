@@ -22,7 +22,15 @@
 
 -  終了関数 (:ref:`finalize`)
 
-の手順で実行する. fortran から呼び出すときには
+の手順で実行する.
+
+.. warning::
+
+   :math:`K\omega` はスレッドセーフ **ではない** ので,
+   これらのルーチンは必ずOpenMPのパラレルリージョンの外から
+   呼ばなければならない.
+
+fortran から呼び出すときには
 
 .. code-block:: fortran
 
