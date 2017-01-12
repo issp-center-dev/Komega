@@ -1,5 +1,7 @@
-著作権
-======
+ライセンス
+==========
+
+*© 2016- The University of Tokyo. All rights reserved.*
 
 | This software is developed under the support of
 | "*Project for advancement of software usability in materials science*" by The
