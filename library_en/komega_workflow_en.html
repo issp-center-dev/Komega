@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Schematic workflow of this library &mdash; komega 0.1 documentation</title>
+    <title>Schematic workflow of this library &mdash; komega 0.2 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="komega 0.1 documentation" href="index.html" />
+    <link rel="top" title="komega 0.2 documentation" href="index.html" />
     <link rel="next" title="Usage" href="komega_usage_en.html" />
     <link rel="prev" title="Algorithm" href="komega_algorithm_en.html" /> 
   </head>
@@ -41,7 +41,7 @@
         <li class="right" >
           <a href="komega_algorithm_en.html" title="Algorithm"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">komega 0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">komega 0.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -56,8 +56,40 @@
 simplicity and instead of <span class="math">\(G_{i j}(z_k)\)</span>,
 the <span class="math">\(N_L\)</span>-dimensional vector <span class="math">\({\bf x}_{k}\)</span>
 is obtained by using the library.</p>
-<p>The essential procedures to use the library.</p>
+<p>The names of the routines is defined as follows.</p>
 <ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">komega_bicg_init</span></tt>, <tt class="docutils literal"><span class="pre">komega_cocg_init</span></tt>,
+<tt class="docutils literal"><span class="pre">komega_cg_c_init</span></tt>, <tt class="docutils literal"><span class="pre">komega_cg_r_init</span></tt></p>
+<p>Set the initial conditions such as the allocation of variables used
+in the library.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">komega_bicg_update</span></tt>, <tt class="docutils literal"><span class="pre">komega_cocg_update</span></tt>,
+<tt class="docutils literal"><span class="pre">komega_cg_c_update</span></tt>, <tt class="docutils literal"><span class="pre">komega_cg_r_update</span></tt></p>
+<p>These routines are called in the iteration to update the solution
+vectors.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">komega_bicg_finalize</span></tt>, <tt class="docutils literal"><span class="pre">komega_cocg_finalize</span></tt>,
+<tt class="docutils literal"><span class="pre">komega_cg_c_finalize</span></tt>, <tt class="docutils literal"><span class="pre">komega_cg_r_finalize</span></tt></p>
+<p>Release the allocated vectors in the library.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">komega_bicg_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">komega_cocg_getcoef</span></tt>,
+<tt class="docutils literal"><span class="pre">komega_cg_c_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">komega_cg_r_getcoef</span></tt></p>
+<p>Get the <span class="math">\(\alpha\)</span>, <span class="math">\(\beta\)</span>, <span class="math">\(z_{\rm seed}\)</span>,
+<span class="math">\({\bf r}^{\rm L}\)</span> conserved at each iteration.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">komega_bicg_getvec</span></tt>, <tt class="docutils literal"><span class="pre">komega_cocg_getvec</span></tt>,
+<tt class="docutils literal"><span class="pre">komega_cg_c_getvec</span></tt>, <tt class="docutils literal"><span class="pre">komega_cg_r_getvec</span></tt></p>
+<p>Get the vectors <span class="math">\({\boldsymbol r}\)</span>,
+<span class="math">\({\boldsymbol r}^{\rm old}\)</span>, <span class="math">\({\tilde {\boldsymbol r}}\)</span>,
+<span class="math">\({\tilde {\boldsymbol r}}^{\rm old}\)</span>.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">komega_bicg_restart</span></tt>, <tt class="docutils literal"><span class="pre">komega_cocg_restart</span></tt>,
+<tt class="docutils literal"><span class="pre">komega_cg_c_restart</span></tt>, <tt class="docutils literal"><span class="pre">CG_R_restart</span></tt></p>
+</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last">
 <li><p class="first">Give the vector size <span class="math">\(N_H\)</span> corresponding to the size of the
 Hilbert space and the number of the frequency <span class="math">\(z\)</span>.</p>
 </li>
@@ -66,67 +98,43 @@ with the size of <span class="math">\(N_H\)</span>.</p>
 </li>
 <li><p class="first">Give the function for the Hamiltonian-vector production.</p>
 </li>
-<li><p class="first">Allocate the solution vectors. It is noted that the number of the
-solution vectors is not always equal to <span class="math">\(N_H \times N_z\)</span>. In
-fact, the number in the previous section is <span class="math">\(N_L \times N_z\)</span>.
-In this case, the (bi-)conjugate gradient vector <span class="math">\({{\bf p}_k}\)</span>
-is the vector with <span class="math">\(N_L\)</span>-dimension and <span class="math">\(N_z\)</span> array. The
-transformation of the dimension of the residual vector from
-<span class="math">\(N_H\)</span> to <span class="math">\(N_L\)</span> must be done explicitly.</p>
+<li><p class="first">Allocate the solution vectors. It is noted that the length of each
+solution vector is not always equal to <span class="math">\(N_H\)</span>.
+In fact, the its length in the previous section is <span class="math">\(N_L\)</span>.
+In this case, the length of the (bi-)conjugate gradient vector
+<span class="math">\({\bf p}_k (k=1,\cdots N_z)\)</span> also
+becomes <span class="math">\(N_L\)</span>.
+We have to prepare a code for projecting
+<span class="math">\(N_H\)</span>-dimensional vector onto <span class="math">\(N_L\)</span>dimensional space.</p>
 <div class="math">
 \[\begin{aligned}
-    {\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol r}, \qquad
-    {\hat P} \equiv ({\boldsymbol \varphi}_1, \cdots, {\boldsymbol \varphi}_{N_L})
-  \end{aligned}\]</div>
+{\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol r}, \qquad
+{\hat P} \equiv ({\boldsymbol \varphi}_1, \cdots, {\boldsymbol \varphi}_{N_L})
+\end{aligned}\]</div>
 </li>
-<li><p class="first">If the result converges, <tt class="docutils literal"><span class="pre">komega_????_update</span></tt> return the first element of <tt class="docutils literal"><span class="pre">status</span></tt>
+<li><p class="first">If the result converges (or a breakdown occurs),
+<tt class="docutils literal"><span class="pre">komega_*_update</span></tt> return the first element of <tt class="docutils literal"><span class="pre">status</span></tt>
 as a negative integer.
 Therefore, please exit loop when <tt class="docutils literal"><span class="pre">status(1)</span> <span class="pre">&lt;</span> <span class="pre">0</span></tt> .</p>
 </li>
-<li><p class="first">The 2-norm is used for the convergence check in the routine <tt class="docutils literal"><span class="pre">komega_????_update</span></tt>.
-Therefore, if 2-norms of residual vectors at all shift points becomes smaller than K,
+<li><p class="first">The 2-norm is used for the convergence check in the routine <tt class="docutils literal"><span class="pre">komega_*_update</span></tt>.
+Therefore, if 2-norms of residual vectors at all shift points
+becomes smaller than <tt class="docutils literal"><span class="pre">threshold</span></tt>,
 this routine assumes the result is converged.</p>
 </li>
-<li><p class="first">Conserve <span class="math">\(\alpha, \beta, {\bf r}^{\rm L}\)</span> at each iteration and
-to use the above vectors later, set the maximum number of iteration
-<tt class="docutils literal"><span class="pre">itermax</span></tt>.</p>
+<li><p class="first">We can obtain the history of <span class="math">\(\alpha, \beta, {\bf r}^{\rm L}\)</span>
+for restarting calculation.
+In this case, <tt class="docutils literal"><span class="pre">itermax</span></tt> must not be <tt class="docutils literal"><span class="pre">0</span></tt>.</p>
 </li>
 </ul>
-<p>The names of the routines is defined as follows.</p>
-<ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_init</span></tt>, <tt class="docutils literal"><span class="pre">COCG_init</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_init</span></tt>, <tt class="docutils literal"><span class="pre">CG_R_init</span></tt></p>
-<p>Set the initial conditions such as the allocation of variables used
-in the library.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_update</span></tt>, <tt class="docutils literal"><span class="pre">COCG_update</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_update</span></tt>, <tt class="docutils literal"><span class="pre">CG_R_update</span></tt></p>
-<p>These routines are called in the iteration to update the solution
-vectors.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_finalize</span></tt>, <tt class="docutils literal"><span class="pre">COCG_finalize</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_finalize</span></tt>,
-<tt class="docutils literal"><span class="pre">CG_R_finalize</span></tt></p>
-<p>Release the allocated vectors in the library.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">COCG_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_getcoef</span></tt>,
-<tt class="docutils literal"><span class="pre">CG_R_getcoef</span></tt></p>
-<p>Get the <span class="math">\(\alpha\)</span>, <span class="math">\(\beta\)</span>, <span class="math">\(z_{\rm seed}\)</span>,
-<span class="math">\({\bf r}^{\rm L}\)</span> conserved at each iteration.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_getvec</span></tt>, <tt class="docutils literal"><span class="pre">COCG_getvec</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_getvec</span></tt>, <tt class="docutils literal"><span class="pre">CG_R_getvec</span></tt></p>
-<p>Get the vectors <span class="math">\({\boldsymbol r}\)</span>,
-<span class="math">\({\boldsymbol r}^{\rm old}\)</span>, <span class="math">\({\tilde {\boldsymbol r}}\)</span>,
-<span class="math">\({\tilde {\boldsymbol r}}^{\rm old}\)</span>.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">BiCG_restart</span></tt>, <tt class="docutils literal"><span class="pre">COCG_restart</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_restart</span></tt>,
-<tt class="docutils literal"><span class="pre">CG_R_restart</span></tt></p>
-</li>
-</ul>
+</div>
 <div class="section" id="the-schematic-workflow-of-shifted-bicg-library">
 <h2>The schematic workflow of shifted BiCG library<a class="headerlink" href="#the-schematic-workflow-of-shifted-bicg-library" title="Permalink to this headline">¶</a></h2>
 <p>Allocate <span class="math">\({\boldsymbol v}_{1 2}\)</span>, <span class="math">\({\boldsymbol v}_{1 3}\)</span>,
 <span class="math">\({\boldsymbol v}_2\)</span>, <span class="math">\({\boldsymbol v}_3\)</span>,
 <span class="math">\(\{{\bf x}_k\}, {\bf r}^{\rm L}\)</span>
 <span class="math">\({\boldsymbol v}_2 = {\boldsymbol \varphi_j}\)</span></p>
-<p><tt class="docutils literal"><span class="pre">komega_BiCG_init(N_H,</span> <span class="pre">N_L,</span> <span class="pre">N_z,</span> <span class="pre">x,</span> <span class="pre">z,</span> <span class="pre">itermax,</span> <span class="pre">threshold)</span></tt> start</p>
+<p><tt class="docutils literal"><span class="pre">komega_bicg_init(N_H,</span> <span class="pre">N_L,</span> <span class="pre">N_z,</span> <span class="pre">x,</span> <span class="pre">z,</span> <span class="pre">itermax,</span> <span class="pre">threshold)</span></tt> start</p>
 <blockquote>
 <div><p>Allocate <span class="math">\({\boldsymbol v}_3\)</span>, <span class="math">\({\boldsymbol v}_5\)</span>,
 <span class="math">\(\{\pi_k\}\)</span> , <span class="math">\(\{\pi_k^{\rm old}\}\)</span>, <span class="math">\(\{{\bf p}_k\}\)</span></p>
@@ -143,14 +151,14 @@ and:math:<cite>{bf r}^{rm L}</cite> at each iteration.</p>
 <span class="math">\({\boldsymbol v}_4 \equiv {\tilde {\boldsymbol r}}\)</span>,
 <span class="math">\({\boldsymbol v}_5 \equiv {\tilde {\boldsymbol r}}^{\rm old}\)</span>. )</p>
 </div></blockquote>
-<p><tt class="docutils literal"><span class="pre">komega_BiCG_init</span></tt> finish</p>
+<p><tt class="docutils literal"><span class="pre">komega_bicg_init</span></tt> finish</p>
 <p>do iteration</p>
 <blockquote>
 <div><p><span class="math">\({\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2\)</span></p>
 <p><span class="math">\({\boldsymbol v}_{1 2} = {\hat H} {\boldsymbol v}_2\)</span>,
 <span class="math">\({\boldsymbol v}_{1 4} = {\hat H} {\boldsymbol v}_4\)</span>
 [Or <span class="math">\(({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H} ({\boldsymbol v}_2, {\boldsymbol v}_4)\)</span> ]</p>
-<p><tt class="docutils literal"><span class="pre">komega_BiCG_update(v_12,</span> <span class="pre">v_2,</span> <span class="pre">v_14,</span> <span class="pre">v_4,</span> <span class="pre">x,</span> <span class="pre">r_small,</span> <span class="pre">status)</span></tt> start</p>
+<p><tt class="docutils literal"><span class="pre">komega_bicg_update(v_12,</span> <span class="pre">v_2,</span> <span class="pre">v_14,</span> <span class="pre">v_4,</span> <span class="pre">x,</span> <span class="pre">r_small,</span> <span class="pre">status)</span></tt> start</p>
 <blockquote>
 <div><p><span class="math">\(\circ\)</span> Seed equation</p>
 <p><span class="math">\(\rho^{\rm old} = \rho,\; \rho = {\boldsymbol v}_4^* \cdot {\boldsymbol v}_2\)</span></p>
@@ -182,22 +190,22 @@ and:math:<cite>{bf r}^{rm L}</cite> at each iteration.</p>
 <span class="math">\(\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})\)</span></p>
 <p><span class="math">\(\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}\)</span></p>
 </div></blockquote>
-<p><tt class="docutils literal"><span class="pre">komega_BiCG_update</span></tt> finish</p>
+<p><tt class="docutils literal"><span class="pre">komega_bicg_update</span></tt> finish</p>
 <p>if(status(1) &lt; 0 (This indicates <span class="math">\(|{\boldsymbol v}_2| &lt;\)</span> Threshold)) exit</p>
 </div></blockquote>
 <p>end do iteration</p>
-<p><tt class="docutils literal"><span class="pre">komega_BiCG_finalize</span></tt> start</p>
+<p><tt class="docutils literal"><span class="pre">komega_bicg_finalize</span></tt> start</p>
 <blockquote>
 <div>Deallocate <span class="math">\({\boldsymbol v}_4\)</span>, <span class="math">\({\boldsymbol v}_5\)</span>,
 <span class="math">\(\{\pi_k\}\)</span>, <span class="math">\(\{\pi_k^{\rm old}\}\)</span>, <span class="math">\(\{{\bf p}_k\}\)</span></div></blockquote>
-<p><tt class="docutils literal"><span class="pre">komega_BiCG_finalize</span></tt> finish</p>
+<p><tt class="docutils literal"><span class="pre">komega_bicg_finalize</span></tt> finish</p>
 </div>
 <div class="section" id="the-schematic-workflow-of-shifted-cocg-library">
 <h2>The schematic workflow of shifted COCG library<a class="headerlink" href="#the-schematic-workflow-of-shifted-cocg-library" title="Permalink to this headline">¶</a></h2>
 <p>Allocate <span class="math">\({\boldsymbol v}_1\)</span>, <span class="math">\({\boldsymbol v}_2\)</span>,
 <span class="math">\(\{{\bf x}_k\}, {\bf r}^{\rm L}\)</span>
 <span class="math">\({\boldsymbol v}_2 = {\boldsymbol \varphi_j}\)</span></p>
-<p><tt class="docutils literal"><span class="pre">COCG_init(N_H,</span> <span class="pre">N_L,</span> <span class="pre">N_z,</span> <span class="pre">x,</span> <span class="pre">z,</span> <span class="pre">itermax,</span> <span class="pre">threshold)</span></tt> start</p>
+<p><tt class="docutils literal"><span class="pre">komega_cocg_init(N_H,</span> <span class="pre">N_L,</span> <span class="pre">N_z,</span> <span class="pre">x,</span> <span class="pre">z,</span> <span class="pre">itermax,</span> <span class="pre">threshold)</span></tt> start</p>
 <blockquote>
 <div><p>Allocate <span class="math">\({\boldsymbol v}_3\)</span>, <span class="math">\(\{\pi_k\}\)</span>,
 <span class="math">\(\{\pi_k^{\rm old}\}\)</span>, <span class="math">\(\{{\bf p}_k\}\)</span></p>
@@ -210,12 +218,12 @@ to store <span class="math">\(\alpha\)</span>, <span class="math">\(\beta\)</spa
 <p>( <span class="math">\({\boldsymbol v}_2 \equiv {\boldsymbol r}\)</span>,
 <span class="math">\({\boldsymbol v}_3 \equiv {\boldsymbol r}^{\rm old}\)</span>. )</p>
 </div></blockquote>
-<p><tt class="docutils literal"><span class="pre">COCG_init</span></tt> finish</p>
+<p><tt class="docutils literal"><span class="pre">komega_cocg_init</span></tt> finish</p>
 <p>do iteration</p>
 <blockquote>
 <div><p><span class="math">\({\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol v}_2\)</span></p>
 <p><span class="math">\({\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2\)</span></p>
-<p><tt class="docutils literal"><span class="pre">COCG_update(v_1,</span> <span class="pre">v_2,</span> <span class="pre">x,</span> <span class="pre">r_small,</span> <span class="pre">status)</span></tt> start</p>
+<p><tt class="docutils literal"><span class="pre">komega_cocg_update(v_1,</span> <span class="pre">v_2,</span> <span class="pre">x,</span> <span class="pre">r_small,</span> <span class="pre">status)</span></tt> start</p>
 <blockquote>
 <div><p><span class="math">\(\circ\)</span> Seed equationw</p>
 <p><span class="math">\(\rho^{\rm old} = \rho,\; \rho = {\boldsymbol v}_2 \cdot {\boldsymbol v}_2\)</span></p>
@@ -243,15 +251,15 @@ to store <span class="math">\(\alpha\)</span>, <span class="math">\(\beta\)</spa
 <span class="math">\(\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})\)</span></p>
 <p><span class="math">\(\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}\)</span></p>
 </div></blockquote>
-<p><tt class="docutils literal"><span class="pre">COCG_update</span></tt> finish</p>
+<p><tt class="docutils literal"><span class="pre">komega_cocg_update</span></tt> finish</p>
 <p>if(status(1) &lt; 0 (This indicates <span class="math">\(|{\boldsymbol v}_2| &lt;\)</span> Threshold.)) exit</p>
 </div></blockquote>
 <p>end do iteration</p>
-<p><tt class="docutils literal"><span class="pre">COCG_finalize</span></tt> start</p>
+<p><tt class="docutils literal"><span class="pre">komega_cocg_finalize</span></tt> start</p>
 <blockquote>
 <div>Deallocate <span class="math">\({\boldsymbol v}_3\)</span>, <span class="math">\(\{\pi_k\}\)</span>,
 <span class="math">\(\{\pi_k^{\rm old}\}\)</span>, <span class="math">\(\{{\bf p}_k\}\)</span></div></blockquote>
-<p><tt class="docutils literal"><span class="pre">COCG_finalize</span></tt> finish</p>
+<p><tt class="docutils literal"><span class="pre">komega_cocg_finalize</span></tt> finish</p>
 </div>
 <div class="section" id="the-schematic-workflow-of-shifted-cg-library">
 <h2>The schematic workflow of shifted CG library<a class="headerlink" href="#the-schematic-workflow-of-shifted-cg-library" title="Permalink to this headline">¶</a></h2>
@@ -315,7 +323,7 @@ to store <span class="math">\(\alpha\)</span>, <span class="math">\(\beta\)</spa
         <li class="right" >
           <a href="komega_algorithm_en.html" title="Algorithm"
              >previous</a> |</li>
-        <li><a href="index.html">komega 0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">komega 0.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>使用方法 &mdash; komega 0.1 ドキュメント</title>
+    <title>使用方法 &mdash; komega 0.2 ドキュメント</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1',
+        VERSION:     '0.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="komega 0.1 ドキュメント" href="index.html" />
+    <link rel="top" title="komega 0.2 ドキュメント" href="index.html" />
     <link rel="next" title="Contact" href="komega_contact_ja.html" />
     <link rel="prev" title="プログラム内でのライブラリの動作イメージ" href="komega_workflow_ja.html" /> 
   </head>
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="komega_workflow_ja.html" title="プログラム内でのライブラリの動作イメージ"
              accesskey="P">前へ</a> |</li>
-        <li><a href="index.html">komega 0.1 ドキュメント</a> &raquo;</li> 
+        <li><a href="index.html">komega 0.2 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -55,38 +55,57 @@
 <h1>使用方法<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h1>
 <p>各ライブラリともユーザーはライブラリ名および型を指定し,</p>
 <ul class="simple">
-<li>初期設定 (init関数)</li>
-<li>アップデート (update関数)</li>
-<li>計算情報出力 (getcoef, getvec関数などを呼び出力)</li>
-<li>終了関数 (finalize関数)</li>
+<li>初期設定 (<a class="reference internal" href="#init"><em>*_init</em></a>)</li>
+<li>アップデート (<a class="reference internal" href="#update"><em>*_update</em></a>)</li>
+<li>(オプション) 再計算用の情報を取り出す. (<a class="reference internal" href="#getcoef"><em>*_getcoef</em></a>, <a class="reference internal" href="#getvec"><em>*_getvec</em></a>)</li>
+<li>終了関数 (<a class="reference internal" href="#finalize"><em>*_finalize</em></a>)</li>
 </ul>
 <p>の手順で関数を使用することで, 計算が実施される. なお,
 リスタートを行う場合には</p>
 <ul class="simple">
-<li>初期設定関数(restart関数)</li>
-<li>アップデート (update関数)</li>
-<li>計算情報出力 (getcoef, getvec関数などを呼び出力)</li>
-<li>終了関数 (finalize関数)</li>
+<li>前回の計算で残した再計算用の情報を用いた初期設定(<a class="reference internal" href="#restart"><em>*_restart</em></a>)</li>
+<li>アップデート (<a class="reference internal" href="#update"><em>*_update</em></a>)</li>
+<li>(オプション) 更なる再計算用の情報を取り出す. (<a class="reference internal" href="#getcoef"><em>*_getcoef</em></a>, <a class="reference internal" href="#getvec"><em>*_getvec</em></a>)</li>
+<li>終了関数 (<a class="reference internal" href="#finalize"><em>*_finalize</em></a>)</li>
 </ul>
-<p>の手順で実行する. fortran から呼び出すときには</p>
-<div class="highlight-fortran"><div class="highlight"><pre>USE komega_????
+<p>の手順で実行する.</p>
+<div class="admonition warning">
+<p class="first admonition-title">警告</p>
+<p class="last"><span class="math">\(K\omega\)</span> はスレッドセーフ <strong>ではない</strong> ので,
+これらのルーチンは必ずOpenMPのパラレルリージョンの外から
+呼ばなければならない.</p>
+</div>
+<p>fortran から呼び出すときには</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">USE </span><span class="nv">komega_cg_r</span> <span class="c">! 実ベクトルに対する共役勾配法</span>
+<span class="k">USE </span><span class="nv">komega_cg_c</span> <span class="c">! 複素ベクトルに対する共役勾配法</span>
+<span class="k">USE </span><span class="nv">komega_cocg</span> <span class="c">! 共線直交共役勾配法</span>
+<span class="k">USE </span><span class="nv">komega_bicg</span> <span class="c">! 双共役勾配法</span>
 </pre></div>
 </div>
-<p>のようにモジュールを呼び出す. <tt class="docutils literal"><span class="pre">&quot;????&quot;</span></tt> の部分には, <tt class="docutils literal"><span class="pre">&quot;CG_R&quot;</span></tt>,
-<tt class="docutils literal"><span class="pre">&quot;CG_C&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;COCG&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;BiCG&quot;</span></tt> が入る.
+<p>のようにモジュールを呼び出す(すべてのモジュールを呼び出す必要はなく,
+行う計算の種類に対応するものだけでよい).
 MPI/Hybrid並列版のルーチンを利用するときには,</p>
-<div class="highlight-fortran"><div class="highlight"><pre>USE pkomega_????
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">USE </span><span class="nv">pkomega_cg_r</span>
+<span class="k">USE </span><span class="nv">pkomega_cg_c</span>
+<span class="k">USE </span><span class="nv">pkomega_cocg</span>
+<span class="k">USE </span><span class="nv">pkomega_bicg</span>
 </pre></div>
 </div>
 <p>のようにする.</p>
 <p>C/C++で書かれたプログラムから呼び出すときには、</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include komega_????.h</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include komega_cg_r.h</span>
+<span class="cp">#include komega_cg_c.h</span>
+<span class="cp">#include komega_cocg.h</span>
+<span class="cp">#include komega_bicg.h</span>
 </pre></div>
 </div>
 <p>のようにヘッダーファイルを読み込む。
 また、スカラー引数はすべてポインタとして渡す。
 MPI/Hybrid並列版のルーチンを利用するときには,</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include pkomega_????.h</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include pkomega_cg_r.h</span>
+<span class="cp">#include pkomega_cg_c.h</span>
+<span class="cp">#include pkomega_cocg.h</span>
+<span class="cp">#include pkomega_bicg.h</span>
 </pre></div>
 </div>
 <p>のようにする。
@@ -96,465 +115,543 @@ MPI/Hybrid並列版のルーチンを利用するときには,</p>
 </div>
 <div class="section" id="id2">
 <h2>各ルーチンの説明<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<div class="section" id="komega-init-pkomega-init">
-<h3><tt class="docutils literal"><span class="pre">komega_????_init</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_init</span></tt><a class="headerlink" href="#komega-init-pkomega-init" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="init">
+<span id="id3"></span><h3>*_init<a class="headerlink" href="#init" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>ライブラリ内部変数の割り付けおよび初期化を行う.
 シフト線形方程式を解く前に, 一番初めに実行する.</p>
 <p>構文</p>
-<p>Fortran シリアル/OpenMP版</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_CG_C_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_COCG_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_BiCG_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
+<blockquote>
+<div><p>Fortran シリアル/OpenMP版</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_cg_r_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_cg_c_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_cocg_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_bicg_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Fortran MPI/Hybrid並列版</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_CG_C_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_COCG_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_BiCG_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_cg_r_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_cg_c_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_cocg_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_bicg_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>C/C++ シリアル/OpenMP版</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
-<span class="n">komega_CG_C_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
-<span class="n">komega_COCG_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
-<span class="n">komega_BiCG_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_cg_r_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
+<span class="n">komega_cg_c_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
+<span class="n">komega_cocg_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
+<span class="n">komega_bicg_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>C/C++ MPI/Hybrid並列版</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
-<span class="n">pkomega_CG_C_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
-<span class="n">pkomega_COCG_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
-<span class="n">pkomega_BiCG_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_cg_r_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
+<span class="n">pkomega_cg_c_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
+<span class="n">pkomega_cocg_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
+<span class="n">pkomega_bicg_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">);</span>
 </pre></div>
 </div>
+</div></blockquote>
 <p>パラメーター</p>
-<ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">ndim</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. スカラー. 入力. 線形方程式の次元.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">nl</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. スカラー. 入力. 射影された解ベクトルの次元.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">nz</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. スカラー. 入力. シフト点の数.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">x</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_init</span></tt> の場合), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>
-(それ以外). 長さ <tt class="docutils literal"><span class="pre">nl*nz</span></tt> の配列. 出力. 解ベクトル.
-<tt class="docutils literal"><span class="pre">0</span></tt> ベクトルが返される.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">z</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_init</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_init</span></tt> の場合),
-<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (それ以外). 長さ <tt class="docutils literal"><span class="pre">nz</span></tt> の配列. 入力. シフト点.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">itermax</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. スカラー. 入力.
-リスタート用配列の割り付けのための最大反復回数.
-これを <tt class="docutils literal"><span class="pre">0</span></tt> にした場合にはリスタート用配列を割りつけない(したがって後述のリスタート用変数の出力を行えない)</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">threshold</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt>. スカラー. 入力. 収束判定用しきい値.
-シード方程式の残差ベクトルの2-ノルムがこの値を下回った時に収束したと判定する.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">comm</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. スカラー. 入力. MPI/Hybrid並列版のみ.
-MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">MPI_COMM_WORLD</span></tt> など)を入れる.</p>
-</li>
-</ul>
+<blockquote>
+<div><div class="highlight-fortran"><div class="highlight"><pre><span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">ndim</span>
+</pre></div>
 </div>
-<div class="section" id="komega-restart-pkomega-restart">
-<h3><tt class="docutils literal"><span class="pre">komega_????_restart</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_restart</span></tt><a class="headerlink" href="#komega-restart-pkomega-restart" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>リスタートを行う場合に <tt class="docutils literal"><span class="pre">?_init</span></tt> の代わりに用いる.
+<blockquote>
+<div>線形方程式の次元.
+以降のサブルーチンのパラメーターの次元で現れる <tt class="docutils literal"><span class="pre">ndim</span></tt> は
+これと同じものになる.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">nl</span>
+</pre></div>
+</div>
+<blockquote>
+<div>射影された解ベクトルの次元.
+以降のサブルーチンのパラメーターの次元で現れる <tt class="docutils literal"><span class="pre">nl</span></tt> は
+これと同じものになる.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">nz</span>
+</pre></div>
+</div>
+<blockquote>
+<div>シフト点の数.
+以降のサブルーチンのパラメーターの次元で現れる <tt class="docutils literal"><span class="pre">nz</span></tt> は
+これと同じものになる.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">x</span><span class="p">(</span><span class="nv">nl</span><span class="o">*</span><span class="nv">nz</span><span class="p">)</span> <span class="c">! (&quot;CG_R_init&quot;, &quot;cg_c_init&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">x</span><span class="p">(</span><span class="nv">nl</span><span class="o">*</span><span class="nv">nz</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>解ベクトル. <tt class="docutils literal"><span class="pre">0</span></tt> ベクトルが返される.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">z</span><span class="p">(</span><span class="nv">nz</span><span class="p">)</span> <span class="c">! (&quot;CG_R_init&quot;, &quot;cg_c_init&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">z</span><span class="p">(</span><span class="nv">nz</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>シフト点.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">itermax</span>
+</pre></div>
+</div>
+<blockquote>
+<div>リスタート用配列の割り付けのための最大反復回数.
+これを <tt class="docutils literal"><span class="pre">0</span></tt> にした場合にはリスタート用配列を割りつけない
+(したがって後述のリスタート用変数の出力を行えない)</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">threshold</span>
+</pre></div>
+</div>
+<blockquote>
+<div>収束判定用しきい値.
+シード方程式の残差ベクトルの2-ノルムがこの値を下回った時に収束したと判定する.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">comm</span>
+</pre></div>
+</div>
+<blockquote>
+<div>MPI/Hybrid並列版のみ.
+MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">MPI_COMM_WORLD</span></tt> など)を入れる.</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="restart">
+<span id="id4"></span><h3>*_restart<a class="headerlink" href="#restart" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>リスタートを行う場合に <a class="reference internal" href="#init"><em>*_init</em></a> の代わりに用いる.
 ライブラリ内部変数の割り付けおよび初期化を行う.
 シフト線形方程式を解く前に, 一番初めに実行する.</p>
 <p>構文</p>
-<p>Fortran (シリアル/OpenMP版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<blockquote>
+<div><p>Fortran (シリアル/OpenMP版)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_cg_r_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
 <span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_CG_C_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">CALL </span><span class="nv">komega_cg_c_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
 <span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_COCG_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">CALL </span><span class="nv">komega_cocg_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
 <span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_BiCG_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">CALL </span><span class="nv">komega_bicg_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
 <span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="p">&amp;</span>
 <span class="p">&amp;</span>                 <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Fortran (MPI/ハイブリッド並列版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_cg_r_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
 <span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_CG_C_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">CALL </span><span class="nv">pkomega_cg_c_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
 <span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_COCG_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">CALL </span><span class="nv">pkomega_cocg_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
 <span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_BiCG_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
+<span class="k">CALL </span><span class="nv">pkomega_bicg_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="nv">comm</span><span class="p">,</span> <span class="nv">status</span><span class="p">,</span> <span class="p">&amp;</span>
 <span class="p">&amp;</span>                 <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="p">&amp;</span>
 <span class="p">&amp;</span>                 <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>C/C++ (シリアル/OpenMP版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_cg_r_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
 <span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
- <span class="n">komega_CG_C_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="n">komega_cg_c_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
 <span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">komega_COCG_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="n">komega_cocg_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
 <span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">komega_BiCG_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="n">komega_bicg_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
 <span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="n">v14</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span>
 <span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>C/C++ (MPI/ハイブリッド並列版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_cg_r_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
 <span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">pkomega_CG_C_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="n">pkomega_cg_c_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
 <span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">pkomega_COCG_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="n">pkomega_cocg_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
 <span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">pkomega_BiCG_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
+<span class="n">pkomega_bicg_restart</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ndim</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nl</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">nz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">itermax</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">threshold</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">comm</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="o">&amp;</span>
 <span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">iter_old</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v12</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="n">v14</span><span class="p">,</span> <span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span>
 <span class="o">&amp;</span>                 <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
 </pre></div>
 </div>
+</div></blockquote>
 <p>パラメーター</p>
-<ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">ndim,</span> <span class="pre">nl,</span> <span class="pre">nz,</span> <span class="pre">x,</span> <span class="pre">z,</span> <span class="pre">itermax,</span> <span class="pre">threshold,</span> <span class="pre">comm</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">?_init</span></tt> と同様.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">status</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. 長さ <tt class="docutils literal"><span class="pre">3</span></tt> の配列. 出力. エラーコードを返す.</p>
-<dl class="docutils">
-<dt>第一成分( <tt class="docutils literal"><span class="pre">status(1)</span></tt>)</dt>
-<dd><p class="first last">解が収束した場合,
+<blockquote>
+<div><div class="highlight-fortran"><div class="highlight"><pre><span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">ndim</span>
+<span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">nl</span>
+<span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">nz</span>
+<span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">x</span><span class="p">(</span><span class="nv">nl</span><span class="o">*</span><span class="nv">nz</span><span class="p">)</span>
+<span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">z</span><span class="p">(</span><span class="nv">nz</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot;, &quot;cg_c_restart&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">z</span><span class="p">(</span><span class="nv">nz</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+<span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">itermax</span>
+<span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">threshold</span>
+<span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">comm</span>
+</pre></div>
+</div>
+<blockquote>
+<div><a class="reference internal" href="#init"><em>*_init</em></a> と同様.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">status</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>エラーコードを返す.</p>
+<p>第一成分( <tt class="docutils literal"><span class="pre">status(1)</span></tt>)</p>
+<blockquote>
+<div>解が収束した場合,
 もしくは計算が破綻した場合には現在の総反復回数に
 マイナスが付いた値が返される.
 それ以外の場合には現在の総反復回数(マイナスが付かない)が返される.
 <tt class="docutils literal"><span class="pre">status(1)</span></tt> が正の値の時のみ反復を続行できる.
-それ以外の場合は反復を進めても有意な結果は得られない.</p>
-</dd>
-<dt>第二成分( <tt class="docutils literal"><span class="pre">status(2)</span></tt>)</dt>
-<dd><p class="first last"><tt class="docutils literal"><span class="pre">itermax</span></tt> を有限にして, かつ <tt class="docutils literal"><span class="pre">itermax</span></tt> 回の反復で
+それ以外の場合は反復を進めても有意な結果は得られない.</div></blockquote>
+<p>第二成分( <tt class="docutils literal"><span class="pre">status(2)</span></tt>)</p>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">itermax</span></tt> を有限にして, かつ <tt class="docutils literal"><span class="pre">itermax</span></tt> 回の反復で
 収束に達しなかった場合には <tt class="docutils literal"><span class="pre">1</span></tt> が返される.
 <span class="math">\(\alpha\)</span> が発散した場合には <tt class="docutils literal"><span class="pre">2</span></tt> が返される.
 <span class="math">\(\pi_{\rm seed}\)</span> が0にになった場合には <tt class="docutils literal"><span class="pre">3</span></tt> が返される.
 <tt class="docutils literal"><span class="pre">COCG_restart</span></tt> もしくは <tt class="docutils literal"><span class="pre">BiCG_restart</span></tt> で,
 残差ベクトルと影の残差ベクトルが直交した場合には <tt class="docutils literal"><span class="pre">4</span></tt> が返される.
-それ以外の場合には <tt class="docutils literal"><span class="pre">0</span></tt> が返される.</p>
-</dd>
-<dt>第三成分( <tt class="docutils literal"><span class="pre">status(3)</span></tt>)</dt>
-<dd><p class="first last">シード点のindexが返される.</p>
-</dd>
-</dl>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">iter_old</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. スカラー. 入力. 先行する計算での反復回数.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">v2</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_restart</span></tt> の場合), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>
-(それ以外). 長さ <tt class="docutils literal"><span class="pre">ndim</span></tt> の配列. 入力.
-先行する計算での最後の残差ベクトル.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">v12</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_restart</span></tt> の場合), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>
-(それ以外). 長さ <tt class="docutils literal"><span class="pre">ndim</span></tt> の配列. 入力.
-先行する計算での最後から2番目の残差ベクトル.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">alpha_save</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_restart</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_restart</span></tt> の場合),
-<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (それ以外). 長さ <tt class="docutils literal"><span class="pre">iter_old</span></tt> の配列. 入力.
-先行する計算での各反復での(Bi)CG法のパラメーター <span class="math">\(\alpha\)</span>.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">beta_save</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_restart</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_restart</span></tt> の場合),
-<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (それ以外). 長さ <tt class="docutils literal"><span class="pre">iter_old</span></tt> の配列. 入力.
-先行する計算での各反復での(Bi)CG法のパラメーター <span class="math">\(\beta\)</span>.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">z_seed</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_restart</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_restart</span></tt> の場合),
-<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (それ以外). スカラー. 入力.
-先行する計算でのシードシフト.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">r_l_save</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_restart</span></tt> の場合), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>
-(それ以外). 長さ <tt class="docutils literal"><span class="pre">nl*iter_old</span></tt> の配列. 入力.
-先行する計算での各反復での射影された残差ベクトル.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">v4</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">BiCG_restart</span></tt> の場合のみ使用. <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>.
-長さ <tt class="docutils literal"><span class="pre">ndim</span></tt> の配列. 入力. 先行する計算での最後の影の残差ベクトル.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">v14</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">BiCG_restart</span></tt> の場合のみ使用. <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>.
-長さ <tt class="docutils literal"><span class="pre">ndim</span></tt> の配列. 入力.
-先行する計算での最後から2番目の影の残差ベクトル.</p>
-</li>
-</ul>
+それ以外の場合には <tt class="docutils literal"><span class="pre">0</span></tt> が返される.</div></blockquote>
+<p>第三成分( <tt class="docutils literal"><span class="pre">status(3)</span></tt>)</p>
+<blockquote>
+<div>シード点のindexが返される.</div></blockquote>
+</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">iter_old</span>
+</pre></div>
 </div>
-<div class="section" id="komega-update-pkomega-update">
-<h3><tt class="docutils literal"><span class="pre">komega_????_update</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_update</span></tt><a class="headerlink" href="#komega-update-pkomega-update" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<blockquote>
+<div>先行する計算での反復回数.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v2</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v2</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>先行する計算での最後の残差ベクトル.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v12</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v12</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>先行する計算での最後から2番目の残差ベクトル.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">alpha_save</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot;, &quot;cg_c_restart&quot;の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">alpha_save</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>先行する計算での各反復での(Bi)CG法のパラメーター <span class="math">\(\alpha\)</span>.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">beta_save</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot;, &quot;cg_c_restart&quot;の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">beta_save</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>先行する計算での各反復での(Bi)CG法のパラメーター <span class="math">\(\beta\)</span>.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">z_seed</span> <span class="c">! (&quot;CG_R_restart&quot;, &quot;cg_c_restart&quot;の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">z_seed</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>先行する計算でのシードシフト.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">r_l_save</span><span class="p">(</span><span class="nv">nl</span><span class="p">,</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot;の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">r_l_save</span><span class="p">(</span><span class="nv">nl</span><span class="p">,</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>先行する計算での各反復での射影された残差ベクトル.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v4</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v4</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">BiCG_restart</span></tt> の場合のみ使用.
+先行する計算での最後の影の残差ベクトル.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v14</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v14</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">BiCG_restart</span></tt> の場合のみ使用.
+先行する計算での最後から2番目の影の残差ベクトル.</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="update">
+<span id="id5"></span><h3>*_update<a class="headerlink" href="#update" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>ループ内で行列ベクトル積と交互に呼ばれて解を更新する.</p>
 <p>構文</p>
-<p>Fortran (シリアル/OpenMPI版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_CG_C_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_COCG_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_BiCG_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<blockquote>
+<div><p>Fortran (シリアル/OpenMPI版)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_cg_r_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_cg_c_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_cocg_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_bicg_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Fortran (MPI/ハイブリッド並列版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_CG_C_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_COCG_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_BiCG_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_cg_r_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_cg_c_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_cocg_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_bicg_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>C/C++ (シリアル/OpenMPI版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
-<span class="n">komega_CG_C_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
-<span class="n">komega_COCG_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
-<span class="n">komega_BiCG_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v14</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_cg_r_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">komega_cg_c_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">komega_cocg_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">komega_bicg_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v14</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>C/C++ (MPI/ハイブリッド並列版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
-<span class="n">pkomega_CG_C_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
-<span class="n">pkomega_COCG_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
-<span class="n">pkomega_BiCG_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v14</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_cg_r_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">pkomega_cg_c_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">pkomega_cocg_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+<span class="n">pkomega_bicg_update</span><span class="p">(</span><span class="n">v12</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v14</span><span class="p">,</span> <span class="n">v4</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r_l</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>パラメーター</p>
-<ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">v12</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_update</span></tt> の場合), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>
-(それ以外). 長さ <tt class="docutils literal"><span class="pre">ndim</span></tt> の配列. 入出力.
-入力は残差ベクトル( <tt class="docutils literal"><span class="pre">v2</span></tt>)と行列の積. 出力は,
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v12</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (&quot;CG_R_update&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v12</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>入力は残差ベクトル( <tt class="docutils literal"><span class="pre">v2</span></tt>)と行列の積. 出力は,
 更新された残差ベクトルの2-ノルムが,
-先頭の要素に格納される(これは収束の具合を表示して調べる時などに用いる).</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">v2</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_update</span></tt> の場合), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>
-(それ以外). 長さ <tt class="docutils literal"><span class="pre">ndim</span></tt> の配列. 入出力. 入力は残差ベクトル.
-出力は更新された残差ベクトル.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">v14</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">BiCG_update</span></tt> の場合のみ使用. <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>.
-長さ <tt class="docutils literal"><span class="pre">ndim</span></tt> の配列. 入力. 影の残差ベクトル( <tt class="docutils literal"><span class="pre">v4</span></tt>)と行列の積.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">v4</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">BiCG_update</span></tt> の場合のみ使用. <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>.
-長さ <tt class="docutils literal"><span class="pre">ndim</span></tt> の配列. 入出力. 入力は影の残差ベクトル.
-出力は更新された影の残差ベクトル.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">status</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">INTEGER</span></tt>. 長さ <tt class="docutils literal"><span class="pre">3</span></tt> の配列. 出力. エラーコードを返す.</p>
-<dl class="docutils">
-<dt>第一成分( <tt class="docutils literal"><span class="pre">status(1)</span></tt>)</dt>
-<dd><p class="first last">解が収束した場合,
+先頭の要素に格納される(これは収束の具合を表示して調べる時などに用いる).</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v2</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (&quot;CG_R_update&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v2</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>入力は残差ベクトル.
+出力は更新された残差ベクトル.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v14</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (&quot;CG_R_update&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v14</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>影の残差ベクトル( <tt class="docutils literal"><span class="pre">v4</span></tt>)と行列の積.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v4</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (&quot;CG_R_update&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">v4</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>入力は影の残差ベクトル.
+出力は更新された影の残差ベクトル.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">INTEGER</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">status</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>エラーコードを返す.</p>
+<p>第一成分( <tt class="docutils literal"><span class="pre">status(1)</span></tt>)</p>
+<blockquote>
+<div>解が収束した場合,
 もしくは計算が破綻した場合には現在の総反復回数に
 マイナスが付いた値が返される.
 それ以外の場合には現在の総反復回数(マイナスが付かない)が返される.
 <tt class="docutils literal"><span class="pre">status(1)</span></tt> が正の値の時のみ反復を続行できる.
-それ以外の場合は反復を進めても有意な結果は得られない.</p>
-</dd>
-<dt>第二成分( <tt class="docutils literal"><span class="pre">status(2)</span></tt>)</dt>
-<dd><p class="first last"><tt class="docutils literal"><span class="pre">?_init</span></tt> ルーチンで, <tt class="docutils literal"><span class="pre">itermax</span></tt> を有限にして,
+それ以外の場合は反復を進めても有意な結果は得られない.</div></blockquote>
+<p>第二成分( <tt class="docutils literal"><span class="pre">status(2)</span></tt>)</p>
+<blockquote>
+<div><a class="reference internal" href="#init"><em>*_init</em></a> ルーチンで, <tt class="docutils literal"><span class="pre">itermax</span></tt> を有限にして,
 かつ <tt class="docutils literal"><span class="pre">itermax</span></tt> 回の反復で
 収束に達しなかった場合には <tt class="docutils literal"><span class="pre">1</span></tt> が返される.
 <span class="math">\(\alpha\)</span> が発散した場合には <tt class="docutils literal"><span class="pre">2</span></tt> が返される.
 <span class="math">\(\pi_{\rm seed}\)</span> が0にになった場合には <tt class="docutils literal"><span class="pre">3</span></tt> が返される.
 <tt class="docutils literal"><span class="pre">COCG_update</span></tt> もしくは <tt class="docutils literal"><span class="pre">BiCG_update</span></tt> で,
 残差ベクトルと影の残差ベクトルが直交した場合には <tt class="docutils literal"><span class="pre">4</span></tt> が返される.
-それ以外の場合には <tt class="docutils literal"><span class="pre">0</span></tt> が返される.</p>
-</dd>
-<dt>第三成分( <tt class="docutils literal"><span class="pre">status(3)</span></tt>)</dt>
-<dd><p class="first last">シード点のindexが返される.</p>
-</dd>
-</dl>
-</li>
-</ul>
+それ以外の場合には <tt class="docutils literal"><span class="pre">0</span></tt> が返される.</div></blockquote>
+<p>第三成分( <tt class="docutils literal"><span class="pre">status(3)</span></tt>)</p>
+<blockquote>
+<div>シード点のindexが返される.</div></blockquote>
+</div></blockquote>
+</div></blockquote>
 </div>
-<div class="section" id="komega-getcoef-pkomega-getcoef">
-<h3><tt class="docutils literal"><span class="pre">komega_????_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getcoef</span></tt><a class="headerlink" href="#komega-getcoef-pkomega-getcoef" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="getcoef">
+<span id="id6"></span><h3>*_getcoef<a class="headerlink" href="#getcoef" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>後でリスタートをするときに必要な係数を取得する.
 このルーチンを呼び出すためには,
-<tt class="docutils literal"><span class="pre">?_init</span></tt> ルーチンで <tt class="docutils literal"><span class="pre">itermax</span></tt> を <tt class="docutils literal"><span class="pre">0</span></tt> 以外の値にしておく必要がある.</p>
+<a class="reference internal" href="#init"><em>*_init</em></a> ルーチンで <tt class="docutils literal"><span class="pre">itermax</span></tt> を <tt class="docutils literal"><span class="pre">0</span></tt> 以外の値にしておく必要がある.</p>
+<p>また, このルーチンで使われる総反復回数 (<tt class="docutils literal"><span class="pre">iter_old</span></tt>) は <a class="reference internal" href="#update"><em>*_update</em></a> の出力 <tt class="docutils literal"><span class="pre">status</span></tt>
+を用いて次のように計算される.</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="nv">iter_old</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>構文</p>
-<p>Fortran (シリアル/OpenMP版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_CG_C_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_COCG_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_BiCG_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<blockquote>
+<div><p>Fortran (シリアル/OpenMP版)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_cg_r_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_cg_c_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_cocg_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_bicg_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Fortran (MPI/ハイブリッド並列版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_CG_C_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_COCG_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_BiCG_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_cg_r_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_cg_c_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_cocg_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_bicg_getcoef</span><span class="p">(</span><span class="nv">alpha_save</span><span class="p">,</span> <span class="nv">beta_save</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>C/C++ (シリアル/OpenMP版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">komega_CG_C_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">komega_COCG_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">komega_BiCG_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_cg_r_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">komega_cg_c_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">komega_cocg_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">komega_bicg_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>C/C++ (MPI/ハイブリッド並列版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">pkomega_CG_C_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">pkomega_COCG_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
-<span class="n">pkomega_BiCG_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_cg_r_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">pkomega_cg_c_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">pkomega_cocg_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
+<span class="n">pkomega_bicg_getcoef</span><span class="p">(</span><span class="n">alpha_save</span><span class="p">,</span> <span class="n">beta_save</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">z_seed</span><span class="p">,</span> <span class="n">r_l_save</span><span class="p">);</span>
 </pre></div>
 </div>
+</div></blockquote>
 <p>パラメーター</p>
-<ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">alpha_save</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_getoef</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_getoef</span></tt> の場合),
-<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (それ以外). 総反復回数と同じ長さの配列. 出力.
-各反復での(Bi)CG法のパラメーター <span class="math">\(\alpha\)</span>.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">beta_save</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_getoef</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_getoef</span></tt> の場合),
-<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (それ以外). 総反復回数と同じ長さの配列. 出力.
-各反復での(Bi)CG法のパラメーター <span class="math">\(\beta\)</span>.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">z_seed</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_getoef</span></tt>, <tt class="docutils literal"><span class="pre">CG_C_getoef</span></tt> の場合),
-<tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt> (それ以外). スカラー. 出力. シードシフト.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">r_l_save</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_getoef</span></tt> の場合), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>
-(それ以外). <tt class="docutils literal"><span class="pre">nl</span></tt> <span class="math">\(\times\)</span> 総反復回数の長さ配列. 出力.
-各反復での射影された残差ベクトル.</p>
-</li>
-</ul>
+<blockquote>
+<div><div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">alpha_save</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot;, &quot;cg_c_restart&quot;の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">alpha_save</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
 </div>
-<div class="section" id="komega-getvec-pkomega-getvec">
-<h3><tt class="docutils literal"><span class="pre">komega_????_getvec</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getvec</span></tt><a class="headerlink" href="#komega-getvec-pkomega-getvec" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<blockquote>
+<div>各反復での(Bi)CG法のパラメーター <span class="math">\(\alpha\)</span>.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">beta_save</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot;, &quot;cg_c_restart&quot;の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">beta_save</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>各反復での(Bi)CG法のパラメーター <span class="math">\(\beta\)</span>.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">z_seed</span> <span class="c">! (&quot;CG_R_restart&quot;, &quot;cg_c_restart&quot;の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">z_seed</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>シードシフト.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">r_l_save</span><span class="p">(</span><span class="nv">nl</span><span class="p">,</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (&quot;CG_R_restart&quot;の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">r_l_save</span><span class="p">(</span><span class="nv">nl</span><span class="p">,</span><span class="nv">iter_old</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>各反復での射影された残差ベクトル.</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="getvec">
+<span id="id7"></span><h3>*_getvec<a class="headerlink" href="#getvec" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>後でリスタートをするときに必要な残差ベクトルを取得する.
 このルーチンを呼び出すためには,
-<tt class="docutils literal"><span class="pre">?_init</span></tt> ルーチンで <tt class="docutils literal"><span class="pre">itermax</span></tt> を <tt class="docutils literal"><span class="pre">0</span></tt> 以外の値にしておく必要がある.</p>
+<a class="reference internal" href="#init"><em>*_init</em></a> ルーチンで <tt class="docutils literal"><span class="pre">itermax</span></tt> を <tt class="docutils literal"><span class="pre">0</span></tt> 以外の値にしておく必要がある.</p>
 <p>構文</p>
-<p>Fortran (シリアル/OpenMP版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_CG_C_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_COCG_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_BiCG_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">,</span> <span class="nv">r_tilde_old</span><span class="p">)</span>
+<blockquote>
+<div><p>Fortran (シリアル/OpenMP版)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_cg_r_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_cg_c_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_cocg_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_bicg_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">,</span> <span class="nv">r_tilde_old</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Fortran (MPI/ハイブリッド並列版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_CG_C_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_COCG_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_BiCG_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">,</span> <span class="nv">r_tilde_old</span><span class="p">)</span>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_cg_r_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_cg_c_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_cocg_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_bicg_getvec</span><span class="p">(</span><span class="nv">r_old</span><span class="p">,</span> <span class="nv">r_tilde_old</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>C/C++ (シリアル/OpenMP版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
-<span class="n">komega_CG_C_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
-<span class="n">komega_COCG_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
-<span class="n">komega_BiCG_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">,</span> <span class="n">r_tilde_old</span><span class="p">);</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_cg_r_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">komega_cg_c_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">komega_cocg_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">komega_bicg_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">,</span> <span class="n">r_tilde_old</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>C/C++ (MPI/ハイブリッド並列版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
-<span class="n">pkomega_CG_C_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
-<span class="n">pkomega_COCG_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
-<span class="n">pkomega_BiCG_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">,</span> <span class="n">r_tilde_old</span><span class="p">);</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_cg_r_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">pkomega_cg_c_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">pkomega_cocg_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">);</span>
+<span class="n">pkomega_bicg_getvec</span><span class="p">(</span><span class="n">r_old</span><span class="p">,</span> <span class="n">r_tilde_old</span><span class="p">);</span>
 </pre></div>
 </div>
+</div></blockquote>
 <p>パラメーター</p>
-<ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">r_old</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt> (<tt class="docutils literal"><span class="pre">CG_R_getvec</span></tt> の場合), <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>
-(それ以外). 長さ <tt class="docutils literal"><span class="pre">ndim</span></tt> の配列. 出力.
-先行する計算での最後から2番目の残差ベクトル.</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">r_tilde_old</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">BiCG_getvec</span></tt> の場合のみ使用. <tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">COMPLEX</span></tt>.
-長さ <tt class="docutils literal"><span class="pre">ndim</span></tt> の配列. 出力.
-先行する計算での最後から2番目の影の残差ベクトル.</p>
-</li>
-</ul>
+<blockquote>
+<div><div class="highlight-fortran"><div class="highlight"><pre><span class="kt">REAL</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">r_old</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (&quot;CG_R_getvec&quot; の場合)</span>
+<span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">r_old</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span> <span class="c">! (それ以外)</span>
+</pre></div>
 </div>
-<div class="section" id="komega-getresidual-pkomega-getresidual">
-<h3><tt class="docutils literal"><span class="pre">komega_????_getresidual</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getresidual</span></tt><a class="headerlink" href="#komega-getresidual-pkomega-getresidual" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<blockquote>
+<div>先行する計算での最後から2番目の残差ベクトル.</div></blockquote>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">r_tilde_old</span><span class="p">(</span><span class="nv">ndim</span><span class="p">)</span>
+</pre></div>
+</div>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">BiCG_getvec</span></tt> の場合のみ使用.
+先行する計算での最後から2番目の影の残差ベクトル.</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="getresidual">
+<h3>*_getresidual<a class="headerlink" href="#getresidual" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>各シフト点での残差ベクトルの2-ノルムを取得する.
-このルーチンは <tt class="docutils literal"><span class="pre">komega_????_init</span></tt> と <tt class="docutils literal"><span class="pre">komega_????_finalize</span></tt> の間の
+このルーチンは <a class="reference internal" href="#init"><em>*_init</em></a> と <a class="reference internal" href="#finalize"><em>*_finalize</em></a> の間の
 任意の場所で呼び出すことが出来る. また,
 いつ何回呼び出しても最終的な計算結果には影響を与えない.</p>
 <p>構文</p>
-<p>Fortran (シリアル/OpenMP版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_CG_C_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_COCG_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">komega_BiCG_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<blockquote>
+<div><p>Fortran (シリアル/OpenMP版)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_cg_r_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_cg_c_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_cocg_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">komega_bicg_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Fortran (MPI/ハイブリッド並列版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_CG_C_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_COCG_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
-<span class="k">CALL </span><span class="nv">pkomega_BiCG_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_cg_r_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_cg_c_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_cocg_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
+<span class="k">CALL </span><span class="nv">pkomega_bicg_getresidual</span><span class="p">(</span><span class="nv">res</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>C/C++ (シリアル/OpenMP版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
-<span class="n">komega_CG_C_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
-<span class="n">komega_COCG_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
-<span class="n">komega_BiCG_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_cg_r_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">komega_cg_c_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">komega_cocg_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">komega_bicg_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>C/C++ (MPI/ハイブリッド並列版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
-<span class="n">pkomega_CG_C_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
-<span class="n">pkomega_COCG_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
-<span class="n">pkomega_BiCG_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_cg_r_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">pkomega_cg_c_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">pkomega_cocg_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="n">pkomega_bicg_getresidual</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
 </pre></div>
 </div>
+</div></blockquote>
 <p>パラメーター</p>
-<ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">res</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">DOUBLE</span> <span class="pre">PRECISION</span></tt>. 長さ <tt class="docutils literal"><span class="pre">nz</span></tt> の配列. 出力.
-各シフト点での残差ベクトルの2-ノルム.</p>
-</li>
-</ul>
+<blockquote>
+<div><div class="highlight-fortran"><div class="highlight"><pre><span class="kt">COMPLEX</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="nv">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="nv">res</span><span class="p">(</span><span class="nv">nz</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="section" id="komega-finalize-pkomega-finalize">
-<h3><tt class="docutils literal"><span class="pre">komega_????_finalize</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_finalize</span></tt><a class="headerlink" href="#komega-finalize-pkomega-finalize" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<blockquote>
+<div>各シフト点での残差ベクトルの2-ノルム.</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="finalize">
+<span id="id8"></span><h3>*_finalize<a class="headerlink" href="#finalize" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>ライブラリ内部で割りつけた配列のメモリを解放する.</p>
 <p>構文</p>
-<p>Fortran (シリアル/OpenMP版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_CG_R_finalize</span><span class="p">()</span>
-<span class="k">CALL </span><span class="nv">komega_CG_C_finalize</span><span class="p">()</span>
-<span class="k">CALL </span><span class="nv">komega_COCG_finalize</span><span class="p">()</span>
-<span class="k">CALL </span><span class="nv">komega_BiCG_finalize</span><span class="p">()</span>
+<blockquote>
+<div><p>Fortran (シリアル/OpenMP版)</p>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">komega_cg_r_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">komega_cg_c_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">komega_cocg_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">komega_bicg_finalize</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Fortran (MPI/ハイブリッド並列版)</p>
-<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_CG_R_finalize</span><span class="p">()</span>
-<span class="k">CALL </span><span class="nv">pkomega_CG_C_finalize</span><span class="p">()</span>
-<span class="k">CALL </span><span class="nv">pkomega_COCG_finalize</span><span class="p">()</span>
-<span class="k">CALL </span><span class="nv">pkomega_BiCG_finalize</span><span class="p">()</span>
+<div class="highlight-fortran"><div class="highlight"><pre><span class="k">CALL </span><span class="nv">pkomega_cg_r_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">pkomega_cg_c_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">pkomega_cocg_finalize</span><span class="p">()</span>
+<span class="k">CALL </span><span class="nv">pkomega_bicg_finalize</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>C/C++ (シリアル/OpenMP版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_CG_R_finalize</span><span class="p">();</span>
-<span class="n">komega_CG_C_finalize</span><span class="p">();</span>
-<span class="n">komega_COCG_finalize</span><span class="p">();</span>
-<span class="n">komega_BiCG_finalize</span><span class="p">();</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">komega_cg_r_finalize</span><span class="p">();</span>
+<span class="n">komega_cg_c_finalize</span><span class="p">();</span>
+<span class="n">komega_cocg_finalize</span><span class="p">();</span>
+<span class="n">komega_bicg_finalize</span><span class="p">();</span>
 </pre></div>
 </div>
 <p>C/C++ (MPI/ハイブリッド並列版)</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_CG_R_finalize</span><span class="p">();</span>
-<span class="n">pkomega_CG_C_finalize</span><span class="p">();</span>
-<span class="n">pkomega_COCG_finalize</span><span class="p">();</span>
-<span class="n">pkomega_BiCG_finalize</span><span class="p">();</span>
+<div class="highlight-c"><div class="highlight"><pre><span class="n">pkomega_cg_r_finalize</span><span class="p">();</span>
+<span class="n">pkomega_cg_c_finalize</span><span class="p">();</span>
+<span class="n">pkomega_cocg_finalize</span><span class="p">();</span>
+<span class="n">pkomega_bicg_finalize</span><span class="p">();</span>
 </pre></div>
 </div>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="shifted-bicg">
@@ -562,9 +659,9 @@ MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">M
 <p>以下, 代表的な例としてShifted BiCGライブラリの場合の使用方法を記載する.</p>
 <div class="highlight-fortran"><div class="highlight"><pre><span class="k">PROGRAM </span><span class="nv">my_prog</span>
   <span class="c">!</span>
-  <span class="k">USE </span><span class="nv">komega_bicg</span><span class="p">,</span> <span class="nv">ONLY</span> <span class="p">:</span> <span class="nv">komega_BiCG_init</span><span class="p">,</span> <span class="nv">komega_BiCG_restart</span><span class="p">,</span> <span class="p">&amp;</span>
-  <span class="p">&amp;</span>                       <span class="nv">komega_BiCG_update</span><span class="p">,</span> <span class="nv">komega_BiCG_getcoef</span><span class="p">,</span> <span class="p">&amp;</span>
-  <span class="p">&amp;</span>                       <span class="nv">komega_BiCG_getvec</span><span class="p">,</span> <span class="nv">komega_BiCG_finalize</span>
+  <span class="k">USE </span><span class="nv">komega_bicg</span><span class="p">,</span> <span class="nv">ONLY</span> <span class="p">:</span> <span class="nv">komega_bicg_init</span><span class="p">,</span> <span class="nv">komega_bicg_restart</span><span class="p">,</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span>                       <span class="nv">komega_bicg_update</span><span class="p">,</span> <span class="nv">komega_bicg_getcoef</span><span class="p">,</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span>                       <span class="nv">komega_bicg_getvec</span><span class="p">,</span> <span class="nv">komega_bicg_finalize</span>
   <span class="k">USE </span><span class="nv">solve_cc_routines</span><span class="p">,</span> <span class="nv">ONLY</span> <span class="p">:</span> <span class="nv">input_size</span><span class="p">,</span> <span class="nv">input_restart</span><span class="p">,</span> <span class="p">&amp;</span>
   <span class="p">&amp;</span>                             <span class="nv">projection</span><span class="p">,</span> <span class="p">&amp;</span>
   <span class="p">&amp;</span>                             <span class="nv">hamiltonian_prod</span><span class="p">,</span> <span class="nv">generate_system</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -573,7 +670,6 @@ MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">M
   <span class="k">IMPLICIT NONE</span>
   <span class="c">!</span>
   <span class="kt">INTEGER</span><span class="p">,</span><span class="k">SAVE</span> <span class="kd">::</span> <span class="p">&amp;</span>
-  <span class="p">&amp;</span> <span class="nv">rnd_seed</span><span class="p">,</span> <span class="p">&amp;</span>
   <span class="p">&amp;</span> <span class="nv">ndim</span><span class="p">,</span>    <span class="p">&amp;</span> <span class="c">! Size of Hilvert space</span>
   <span class="p">&amp;</span> <span class="nv">nz</span><span class="p">,</span>      <span class="p">&amp;</span> <span class="c">! Number of frequencies</span>
   <span class="p">&amp;</span> <span class="nv">nl</span><span class="p">,</span>      <span class="p">&amp;</span> <span class="c">! Number of Left vector</span>
@@ -608,36 +704,42 @@ MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">M
   <span class="c">! Variables for Restart</span>
   <span class="c">!</span>
   <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="p">&amp;</span>
-  <span class="p">&amp;</span> <span class="nv">itermin</span><span class="p">,</span> <span class="p">&amp;</span> <span class="c">! First iteration in this run</span>
   <span class="p">&amp;</span> <span class="nv">iter</span><span class="p">,</span>    <span class="p">&amp;</span> <span class="c">! Counter for Iteration</span>
   <span class="p">&amp;</span> <span class="nv">status</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
   <span class="c">!</span>
-  <span class="c">! Input Size of vectors</span>
+  <span class="kt">LOGICAL</span> <span class="kd">::</span> <span class="p">&amp;</span>
+  <span class="p">&amp;</span> <span class="nv">restart_in</span><span class="p">,</span> <span class="p">&amp;</span> <span class="c">! If .TRUE., sestart from the previous result</span>
+  <span class="p">&amp;</span> <span class="nv">restart_out</span>   <span class="c">! If .TRUE., save datas for the next run</span>
+  <span class="c">!</span>
+  <span class="c">! Input Size of vectors, numerical conditions</span>
   <span class="c">!</span>
   <span class="k">CALL </span><span class="nv">input_size</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span><span class="nv">nl</span><span class="p">,</span><span class="nv">nz</span><span class="p">)</span>
+  <span class="k">CALL </span><span class="nv">input_condition</span><span class="p">(</span><span class="nv">itermax</span><span class="p">,</span><span class="nv">threshold</span><span class="p">,</span><span class="nv">restart_in</span><span class="p">,</span><span class="nv">restart_out</span><span class="p">)</span>
   <span class="c">!</span>
   <span class="k">ALLOCATE</span><span class="p">(</span><span class="nv">v12</span><span class="p">(</span><span class="nv">ndim</span><span class="p">),</span> <span class="nv">v2</span><span class="p">(</span><span class="nv">ndim</span><span class="p">),</span> <span class="nv">v14</span><span class="p">(</span><span class="nv">ndim</span><span class="p">),</span> <span class="nv">v4</span><span class="p">(</span><span class="nv">ndim</span><span class="p">),</span> <span class="nv">r_l</span><span class="p">(</span><span class="nv">nl</span><span class="p">),</span> <span class="p">&amp;</span>
   <span class="p">&amp;</span>        <span class="nv">x</span><span class="p">(</span><span class="nv">nl</span><span class="p">,</span><span class="nv">nz</span><span class="p">),</span> <span class="nv">z</span><span class="p">(</span><span class="nv">nz</span><span class="p">),</span> <span class="nv">ham</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span><span class="nv">ndim</span><span class="p">),</span> <span class="nv">rhs</span><span class="p">(</span><span class="nv">ndim</span><span class="p">))</span>
   <span class="c">!</span>
   <span class="k">CALL </span><span class="nv">generate_system</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">ham</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">,</span> <span class="nv">z</span><span class="p">)</span>
   <span class="c">!</span>
-  <span class="c">! Check: Whether the restart file is exist.</span>
-  <span class="c">!</span>
-  <span class="k">CALL </span><span class="nv">input_restart</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">,</span> <span class="nv">zseed</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">,</span> <span class="nv">beta</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-  <span class="c">!</span>
   <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
   <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;#####  CG Initialization  #####&quot;</span>
   <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
   <span class="c">!</span>
-  <span class="k">IF</span><span class="p">(</span><span class="nv">iter_old</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">THEN</span>
+  <span class="k">IF</span><span class="p">(</span><span class="nv">restart_in</span><span class="p">)</span> <span class="k">THEN</span>
     <span class="c">!</span>
-    <span class="c">! When restarting, counter</span>
+    <span class="k">CALL </span><span class="nv">input_restart</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">,</span> <span class="nv">zseed</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">,</span> <span class="nv">beta</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
     <span class="c">!</span>
-    <span class="nv">itermin</span> <span class="o">=</span> <span class="nv">iter_old</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="k">CALL </span><span class="nv">komega_BiCG_restart</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nv">itermax</span><span class="p">),</span> <span class="p">&amp;</span>
-    <span class="p">&amp;</span>                        <span class="nv">threshold</span><span class="p">,</span> <span class="p">&amp;</span>
-    <span class="p">&amp;</span>                 <span class="nv">status</span><span class="p">,</span> <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">,</span> <span class="p">&amp;</span>
-    <span class="p">&amp;</span>                 <span class="nv">beta</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+    <span class="k">IF</span><span class="p">(</span><span class="nv">restart_out</span><span class="p">)</span> <span class="k">THEN</span>
+<span class="k">       CALL </span><span class="nv">komega_bicg_restart</span><span class="p">(</span> <span class="p">&amp;</span>
+       <span class="p">&amp;</span>    <span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">itermax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="p">&amp;</span>
+       <span class="p">&amp;</span>    <span class="nv">status</span><span class="p">,</span> <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">,</span> <span class="p">&amp;</span>
+       <span class="p">&amp;</span>    <span class="nv">beta</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+    <span class="k">ELSE</span>
+<span class="k">       CALL </span><span class="nv">komega_bicg_restart</span><span class="p">(</span> <span class="p">&amp;</span>
+       <span class="p">&amp;</span>    <span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">,</span> <span class="p">&amp;</span>
+       <span class="p">&amp;</span>    <span class="nv">status</span><span class="p">,</span> <span class="nv">iter_old</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">,</span> <span class="p">&amp;</span>
+       <span class="p">&amp;</span>    <span class="nv">beta</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+    <span class="k">END IF</span>
     <span class="c">!</span>
     <span class="c">! These vectors were saved in BiCG routine</span>
     <span class="c">!</span>
@@ -647,16 +749,17 @@ MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">M
     <span class="c">!</span>
   <span class="k">ELSE</span>
      <span class="c">!</span>
-     <span class="nv">itermin</span> <span class="o">=</span> <span class="mi">1</span>
-     <span class="c">!</span>
      <span class="c">! Generate Right Hand Side Vector</span>
      <span class="c">!</span>
      <span class="nv">v2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nv">ndim</span><span class="p">)</span> <span class="o">=</span> <span class="nv">rhs</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nv">ndim</span><span class="p">)</span>
      <span class="nv">v4</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nv">ndim</span><span class="p">)</span> <span class="o">=</span> <span class="nb">CONJG</span><span class="p">(</span><span class="nv">v2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="nv">ndim</span><span class="p">))</span>
      <span class="c">!v4(1:ndim) = v2(1:ndim)</span>
      <span class="c">!</span>
-     <span class="k">CALL </span><span class="nv">komega_BiCG_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nv">itermax</span><span class="p">),</span> <span class="p">&amp;</span>
-     <span class="p">&amp;</span>                     <span class="nv">threshold</span><span class="p">)</span>
+     <span class="k">IF</span><span class="p">(</span><span class="nv">restart_out</span><span class="p">)</span> <span class="k">THEN</span>
+<span class="k">        CALL </span><span class="nv">komega_bicg_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="nv">termax</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
+     <span class="k">ELSE</span>
+<span class="k">        CALL </span><span class="nv">komega_bicg_init</span><span class="p">(</span><span class="nv">ndim</span><span class="p">,</span> <span class="nv">nl</span><span class="p">,</span> <span class="nv">nz</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">z</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">threshold</span><span class="p">)</span>
+     <span class="k">END IF</span>
      <span class="c">!</span>
   <span class="k">END IF</span>
   <span class="c">!</span>
@@ -666,7 +769,7 @@ MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">M
   <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;#####  CG Iteration  #####&quot;</span>
   <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span>
   <span class="c">!</span>
-  <span class="k">DO </span><span class="nv">iter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="nv">itermax</span><span class="p">)</span>
+  <span class="k">DO </span><span class="nv">iter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">itermax</span>
      <span class="c">!</span>
      <span class="c">! Projection of Residual vector into the space</span>
      <span class="c">! spaned by left vectors</span>
@@ -680,7 +783,7 @@ MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">M
      <span class="c">!</span>
      <span class="c">! Update result x with BiCG</span>
      <span class="c">!</span>
-     <span class="k">CALL </span><span class="nv">komega_BiCG_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
+     <span class="k">CALL </span><span class="nv">komega_bicg_update</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span> <span class="nv">v2</span><span class="p">,</span> <span class="nv">v14</span><span class="p">,</span> <span class="nv">v4</span><span class="p">,</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">r_l</span><span class="p">,</span> <span class="nv">status</span><span class="p">)</span>
      <span class="c">!</span>
      <span class="k">WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;(a,i,a,3i,a,e15.5)&#39;</span><span class="p">)</span> <span class="s2">&quot;lopp : &quot;</span><span class="p">,</span> <span class="nv">iter</span><span class="p">,</span> <span class="p">&amp;</span>
      <span class="p">&amp;</span>                             <span class="s2">&quot;, status : &quot;</span><span class="p">,</span> <span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">),</span> <span class="p">&amp;</span>
@@ -701,16 +804,19 @@ MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">M
 <span class="k">  WRITE</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s2">&quot;  Residual &amp; Shadow residual are orthogonal&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
   <span class="p">&amp;</span>          <span class="nb">ABS</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
   <span class="k">END IF</span>
-<span class="k">  </span><span class="nv">iter_old</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+  <span class="c">!</span>
+  <span class="c">! Total number of iteration</span>
+  <span class="c">!</span>
+  <span class="nv">iter_old</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="nv">status</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
   <span class="c">!</span>
   <span class="c">! Get these vectors for restart in the Next run</span>
   <span class="c">!</span>
-  <span class="k">IF</span><span class="p">(</span><span class="nv">itermax</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">THEN</span>
+  <span class="k">IF</span><span class="p">(</span><span class="nv">restart_out</span><span class="p">)</span> <span class="k">THEN</span>
      <span class="c">!</span>
      <span class="k">ALLOCATE</span><span class="p">(</span><span class="nv">alpha</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">),</span> <span class="nv">beta</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">),</span> <span class="nv">r_l_save</span><span class="p">(</span><span class="nv">nl</span><span class="p">,</span><span class="nv">iter_old</span><span class="p">))</span>
      <span class="c">!</span>
-     <span class="k">CALL </span><span class="nv">komega_BiCG_getcoef</span><span class="p">(</span><span class="nv">alpha</span><span class="p">,</span> <span class="nv">beta</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
-     <span class="k">CALL </span><span class="nv">komega_BiCG_getvec</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span><span class="nv">v14</span><span class="p">)</span>
+     <span class="k">CALL </span><span class="nv">komega_bicg_getcoef</span><span class="p">(</span><span class="nv">alpha</span><span class="p">,</span> <span class="nv">beta</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">r_l_save</span><span class="p">)</span>
+     <span class="k">CALL </span><span class="nv">komega_bicg_getvec</span><span class="p">(</span><span class="nv">v12</span><span class="p">,</span><span class="nv">v14</span><span class="p">)</span>
      <span class="c">!</span>
      <span class="k">CALL </span><span class="nv">output_restart</span><span class="p">(</span><span class="nv">iter_old</span><span class="p">,</span> <span class="nv">z_seed</span><span class="p">,</span> <span class="nv">alpha</span><span class="p">,</span> <span class="nv">beta</span><span class="p">,</span> <span class="p">&amp;</span>
      <span class="p">&amp;</span>                   <span class="nv">r_l_save</span><span class="p">,</span> <span class="nv">v12</span><span class="p">,</span> <span class="nv">v14</span><span class="p">)</span>
@@ -723,7 +829,7 @@ MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">M
   <span class="c">!</span>
   <span class="c">! Deallocate all intrinsic vectors</span>
   <span class="c">!</span>
-  <span class="k">CALL </span><span class="nv">komega_BiCG_finalize</span><span class="p">()</span>
+  <span class="k">CALL </span><span class="nv">komega_bicg_finalize</span><span class="p">()</span>
   <span class="c">!</span>
   <span class="c">! Output to a file</span>
   <span class="c">!</span>
@@ -751,13 +857,13 @@ MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">M
   <ul>
 <li><a class="reference internal" href="#">使用方法</a><ul>
 <li><a class="reference internal" href="#id2">各ルーチンの説明</a><ul>
-<li><a class="reference internal" href="#komega-init-pkomega-init"><tt class="docutils literal"><span class="pre">komega_????_init</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_init</span></tt></a></li>
-<li><a class="reference internal" href="#komega-restart-pkomega-restart"><tt class="docutils literal"><span class="pre">komega_????_restart</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_restart</span></tt></a></li>
-<li><a class="reference internal" href="#komega-update-pkomega-update"><tt class="docutils literal"><span class="pre">komega_????_update</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_update</span></tt></a></li>
-<li><a class="reference internal" href="#komega-getcoef-pkomega-getcoef"><tt class="docutils literal"><span class="pre">komega_????_getcoef</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getcoef</span></tt></a></li>
-<li><a class="reference internal" href="#komega-getvec-pkomega-getvec"><tt class="docutils literal"><span class="pre">komega_????_getvec</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getvec</span></tt></a></li>
-<li><a class="reference internal" href="#komega-getresidual-pkomega-getresidual"><tt class="docutils literal"><span class="pre">komega_????_getresidual</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_getresidual</span></tt></a></li>
-<li><a class="reference internal" href="#komega-finalize-pkomega-finalize"><tt class="docutils literal"><span class="pre">komega_????_finalize</span></tt>, <tt class="docutils literal"><span class="pre">pkomega_????_finalize</span></tt></a></li>
+<li><a class="reference internal" href="#init">*_init</a></li>
+<li><a class="reference internal" href="#restart">*_restart</a></li>
+<li><a class="reference internal" href="#update">*_update</a></li>
+<li><a class="reference internal" href="#getcoef">*_getcoef</a></li>
+<li><a class="reference internal" href="#getvec">*_getvec</a></li>
+<li><a class="reference internal" href="#getresidual">*_getresidual</a></li>
+<li><a class="reference internal" href="#finalize">*_finalize</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#shifted-bicg">Shifted BiCGライブラリを使用したソースコードの例</a></li>
@@ -805,7 +911,7 @@ MPIのコミニュケーター( <tt class="docutils literal"><span class="pre">M
         <li class="right" >
           <a href="komega_workflow_ja.html" title="プログラム内でのライブラリの動作イメージ"
              >前へ</a> |</li>
-        <li><a href="index.html">komega 0.1 ドキュメント</a> &raquo;</li> 
+        <li><a href="index.html">komega 0.2 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
