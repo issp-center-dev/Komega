@@ -6,74 +6,80 @@ simplicity and instead of :math:`G_{i j}(z_k)`,
 the :math:`N_L`\ -dimensional vector :math:`{\bf x}_{k}`
 is obtained by using the library.
 
-The essential procedures to use the library.
-
--  Give the vector size :math:`N_H` corresponding to the size of the
-   Hilbert space and the number of the frequency :math:`z`.
-
--  Allocate the two vectors (in the case of BiCG method, four vectors)
-   with the size of :math:`N_H`.
-
--  Give the function for the Hamiltonian-vector production.
-
--  Allocate the solution vectors. It is noted that the number of the
-   solution vectors is not always equal to :math:`N_H \times N_z`. In
-   fact, the number in the previous section is :math:`N_L \times N_z`.
-   In this case, the (bi-)conjugate gradient vector :math:`{{\bf p}_k}`
-   is the vector with :math:`N_L`-dimension and :math:`N_z` array. The
-   transformation of the dimension of the residual vector from
-   :math:`N_H` to :math:`N_L` must be done explicitly.
-
-   .. math::
-
-      \begin{aligned}
-          {\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol r}, \qquad
-          {\hat P} \equiv ({\boldsymbol \varphi}_1, \cdots, {\boldsymbol \varphi}_{N_L})
-        \end{aligned}
-
--  If the result converges, ``komega_????_update`` return the first element of ``status``
-   as a negative integer.
-   Therefore, please exit loop when ``status(1) < 0`` .
-
--  The 2-norm is used for the convergence check in the routine ``komega_????_update``.
-   Therefore, if 2-norms of residual vectors at all shift points becomes smaller than K,
-   this routine assumes the result is converged.
-
--  Conserve :math:`\alpha, \beta, {\bf r}^{\rm L}` at each iteration and
-   to use the above vectors later, set the maximum number of iteration
-   ``itermax``.
-
 The names of the routines is defined as follows.
 
--  ``BiCG_init``, ``COCG_init``, ``CG_C_init``, ``CG_R_init``
+-  ``komega_bicg_init``, ``komega_cocg_init``,
+   ``komega_cg_c_init``, ``komega_cg_r_init``
 
    Set the initial conditions such as the allocation of variables used
    in the library.
 
--  ``BiCG_update``, ``COCG_update``, ``CG_C_update``, ``CG_R_update``
+-  ``komega_bicg_update``, ``komega_cocg_update``,
+   ``komega_cg_c_update``, ``komega_cg_r_update``
 
    These routines are called in the iteration to update the solution
    vectors.
 
--  ``BiCG_finalize``, ``COCG_finalize``, ``CG_C_finalize``,
-   ``CG_R_finalize``
+-  ``komega_bicg_finalize``, ``komega_cocg_finalize``,
+   ``komega_cg_c_finalize``, ``komega_cg_r_finalize``
 
    Release the allocated vectors in the library.
 
--  ``BiCG_getcoef``, ``COCG_getcoef``, ``CG_C_getcoef``,
-   ``CG_R_getcoef``
+-  ``komega_bicg_getcoef``, ``komega_cocg_getcoef``,
+   ``komega_cg_c_getcoef``, ``komega_cg_r_getcoef``
 
    Get the :math:`\alpha`, :math:`\beta`, :math:`z_{\rm seed}`,
    :math:`{\bf r}^{\rm L}` conserved at each iteration.
 
--  ``BiCG_getvec``, ``COCG_getvec``, ``CG_C_getvec``, ``CG_R_getvec``
+-  ``komega_bicg_getvec``, ``komega_cocg_getvec``,
+   ``komega_cg_c_getvec``, ``komega_cg_r_getvec``
 
    Get the vectors :math:`{\boldsymbol r}`,
    :math:`{\boldsymbol r}^{\rm old}`, :math:`{\tilde {\boldsymbol r}}`,
    :math:`{\tilde {\boldsymbol r}}^{\rm old}`.
 
--  ``BiCG_restart``, ``COCG_restart``, ``CG_C_restart``,
-   ``CG_R_restart``
+-  ``komega_bicg_restart``, ``komega_cocg_restart``,
+   ``komega_cg_c_restart``, ``CG_R_restart``
+
+.. note::
+
+   -  Give the vector size :math:`N_H` corresponding to the size of the
+      Hilbert space and the number of the frequency :math:`z`.
+
+   -  Allocate the two vectors (in the case of BiCG method, four vectors)
+      with the size of :math:`N_H`.
+
+   -  Give the function for the Hamiltonian-vector production.
+
+   -  Allocate the solution vectors. It is noted that the length of each
+      solution vector is not always equal to :math:`N_H`.
+      In fact, the its length in the previous section is :math:`N_L`.
+      In this case, the length of the (bi-)conjugate gradient vector
+      :math:`{\bf p}_k (k=1,\cdots N_z)` also
+      becomes :math:`N_L`.
+      We have to prepare a code for projecting
+      :math:`N_H`\ -dimensional vector onto :math:`N_L`\ dimensional space.
+
+      .. math::
+
+         \begin{aligned}
+         {\bf r}^{\rm L} = {\hat P}^\dagger {\boldsymbol r}, \qquad
+         {\hat P} \equiv ({\boldsymbol \varphi}_1, \cdots, {\boldsymbol \varphi}_{N_L})
+         \end{aligned}
+
+   -  If the result converges (or a breakdown occurs),
+      ``komega_*_update`` return the first element of ``status``
+      as a negative integer.
+      Therefore, please exit loop when ``status(1) < 0`` .
+
+   -  The 2-norm is used for the convergence check in the routine ``komega_*_update``.
+      Therefore, if 2-norms of residual vectors at all shift points
+      becomes smaller than ``threshold``,
+      this routine assumes the result is converged.
+
+   -  We can obtain the history of :math:`\alpha, \beta, {\bf r}^{\rm L}`
+      for restarting calculation.
+      In this case, ``itermax`` must not be ``0``.
 
 The schematic workflow of shifted BiCG library
 ----------------------------------------------
@@ -83,7 +89,7 @@ Allocate :math:`{\boldsymbol v}_{1 2}`, :math:`{\boldsymbol v}_{1 3}`,
 :math:`\{{\bf x}_k\}, {\bf r}^{\rm L}`
 :math:`{\boldsymbol v}_2 = {\boldsymbol \varphi_j}`
 
-``komega_BiCG_init(N_H, N_L, N_z, x, z, itermax, threshold)`` start
+``komega_bicg_init(N_H, N_L, N_z, x, z, itermax, threshold)`` start
 
    Allocate :math:`{\boldsymbol v}_3`, :math:`{\boldsymbol v}_5`,
    :math:`\{\pi_k\}` , :math:`\{\pi_k^{\rm old}\}`, :math:`\{{\bf p}_k\}`
@@ -106,7 +112,7 @@ Allocate :math:`{\boldsymbol v}_{1 2}`, :math:`{\boldsymbol v}_{1 3}`,
    :math:`{\boldsymbol v}_4 \equiv {\tilde {\boldsymbol r}}`,
    :math:`{\boldsymbol v}_5 \equiv {\tilde {\boldsymbol r}}^{\rm old}`. )
 
-``komega_BiCG_init`` finish
+``komega_bicg_init`` finish
 
 do iteration
 
@@ -116,7 +122,7 @@ do iteration
    :math:`{\boldsymbol v}_{1 4} = {\hat H} {\boldsymbol v}_4`
    [Or :math:`({\boldsymbol v}_{1 2}, {\boldsymbol v}_{1 4}) = {\hat H} ({\boldsymbol v}_2, {\boldsymbol v}_4)` ]
 
-   ``komega_BiCG_update(v_12, v_2, v_14, v_4, x, r_small, status)`` start
+   ``komega_bicg_update(v_12, v_2, v_14, v_4, x, r_small, status)`` start
 
       :math:`\circ` Seed equation
 
@@ -164,18 +170,18 @@ do iteration
 
       :math:`\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}`
 
-   ``komega_BiCG_update`` finish
+   ``komega_bicg_update`` finish
 
    if(status(1) < 0 (This indicates :math:`|{\boldsymbol v}_2| <` Threshold)) exit
 
 end do iteration
 
-``komega_BiCG_finalize`` start
+``komega_bicg_finalize`` start
 
    Deallocate :math:`{\boldsymbol v}_4`, :math:`{\boldsymbol v}_5`,
    :math:`\{\pi_k\}`, :math:`\{\pi_k^{\rm old}\}`, :math:`\{{\bf p}_k\}`
 
-``komega_BiCG_finalize`` finish
+``komega_bicg_finalize`` finish
 
 The schematic workflow of shifted COCG library
 ----------------------------------------------
@@ -184,7 +190,7 @@ Allocate :math:`{\boldsymbol v}_1`, :math:`{\boldsymbol v}_2`,
 :math:`\{{\bf x}_k\}, {\bf r}^{\rm L}`
 :math:`{\boldsymbol v}_2 = {\boldsymbol \varphi_j}`
 
-``COCG_init(N_H, N_L, N_z, x, z, itermax, threshold)`` start
+``komega_cocg_init(N_H, N_L, N_z, x, z, itermax, threshold)`` start
 
    Allocate :math:`{\boldsymbol v}_3`, :math:`\{\pi_k\}`,
    :math:`\{\pi_k^{\rm old}\}`, :math:`\{{\bf p}_k\}`
@@ -203,7 +209,7 @@ Allocate :math:`{\boldsymbol v}_1`, :math:`{\boldsymbol v}_2`,
    ( :math:`{\boldsymbol v}_2 \equiv {\boldsymbol r}`,
    :math:`{\boldsymbol v}_3 \equiv {\boldsymbol r}^{\rm old}`. )
          
-``COCG_init`` finish
+``komega_cocg_init`` finish
 
 do iteration
 
@@ -211,7 +217,7 @@ do iteration
 
    :math:`{\boldsymbol v}_1 = {\hat H} {\boldsymbol v}_2`
 
-   ``COCG_update(v_1, v_2, x, r_small, status)`` start
+   ``komega_cocg_update(v_1, v_2, x, r_small, status)`` start
 
       :math:`\circ` Seed equationw
 
@@ -255,18 +261,18 @@ do iteration
 
       :math:`\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} = \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}`
 
-   ``COCG_update`` finish
+   ``komega_cocg_update`` finish
 
    if(status(1) < 0 (This indicates :math:`|{\boldsymbol v}_2| <` Threshold.)) exit
 
 end do iteration
 
-``COCG_finalize`` start
+``komega_cocg_finalize`` start
 
    Deallocate :math:`{\boldsymbol v}_3`, :math:`\{\pi_k\}`,
    :math:`\{\pi_k^{\rm old}\}`, :math:`\{{\bf p}_k\}`
 
-``COCG_finalize`` finish
+``komega_cocg_finalize`` finish
 
 The schematic workflow of shifted CG library
 --------------------------------------------
