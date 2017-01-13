@@ -6,8 +6,6 @@
 Welcome to :math:`K\omega`\ 's documentation!
 =============================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 3
 
@@ -17,6 +15,7 @@ Contents:
    komega_workflow_en
    komega_usage_en
    komega_contact_en
+   komega_ref_en
 
 .. Indices and tables
 .. ==================

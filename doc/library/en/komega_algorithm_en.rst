@@ -8,10 +8,10 @@ It is noted that :math:`{\hat H}` must be Hermitian (symmetric)
 for complex (real) number.
 
 -  (:math:`{\hat H}`, :math:`z` ) = (complex, complex):
-   Shifted Bi-Conjugate Gradient(BiCG) method [Flommer2003]_
+   Shifted Bi-Conjugate Gradient(BiCG) method :ref:`[1] <ref>`
 
 -  (:math:`{\hat H}`, :math:`z` ) = (real, complex):
-   Shifted Conjugate Orthogonal Conjugate Gradient(COCG) method [Yamamoto2008]_
+   Shifted Conjugate Orthogonal Conjugate Gradient(COCG) method :ref:`[2] <ref>`
 
 -  (:math:`{\hat H}`, :math:`z` ) = (complex, real):
    Shifted Conjugate Gradient(CG) method (using complex vector)
@@ -19,14 +19,10 @@ for complex (real) number.
 -  (:math:`{\hat H}`, :math:`z` ) = (real, real):
    Shifted Conjugate Gradient(CG) method (using real vector)
 
-For above methods, seed switching [Yamamoto2008]_ is adopted.
+For above methods, seed switching :ref:`[2] <ref>` is adopted.
 Hereafter, the number of the left (right) side vector is
 written as :math:`N_L` (:math:`N_R`).
 The details of each algorithm are written as follows.
-
-.. [Flommer2003] A. Frommer, Computing **70**, 87 (2003).
-
-.. [Yamamoto2008] S. Yamamoto, T. Sogabe, T. Hoshi, S.-L. Zhang, and T. Fujiwara, J. Phys. Soc. Jpn. **77**, 114713 (2008).
 
 Shifted BiCG method with seed switching technique
 -------------------------------------------------

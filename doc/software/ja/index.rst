@@ -6,8 +6,6 @@
 Welcome to :math:`K\omega`\ -sample program's documentation!
 ============================================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 3
 

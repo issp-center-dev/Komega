@@ -7,10 +7,10 @@
 実数の場合は実対称行列).
 
 -  :math:`{\hat H}` も :math:`z` も両方複素数の場合 : Shifted
-   Bi-Conjugate Gradient(BiCG)法 [Flommer2003]_
+   Bi-Conjugate Gradient(BiCG)法 :ref:`[1] <ref>`
 
 -  :math:`{\hat H}` が実数で :math:`z` が複素数の場合 : Shifted
-   Conjugate Orthogonal Conjugate Gradient(COCG)法 [Yamamoto2008]_
+   Conjugate Orthogonal Conjugate Gradient(COCG)法 :ref:`[2] <ref>`
 
 -  :math:`{\hat H}` が複素数で :math:`z` が実数の場合 : Shifted
    Conjugate Gradient(CG)法 (複素ベクトル)
@@ -18,13 +18,9 @@
 -  :math:`{\hat H}` も :math:`z` も両方実数の場合 : Shifted Conjugate
    Gradient(CG)法 (実ベクトル)
 
-いずれの場合も Seed switching [Yamamoto2008]_ を行う. 左ベクトルが :math:`N_L` 個,
+いずれの場合も Seed switching :ref:`[2] <ref>` を行う. 左ベクトルが :math:`N_L` 個,
 右ベクトルが :math:`N_R` 個(典型的には1個)あるとする. 以下,
 各手法のアルゴリズムを記載する.
-
-.. [Flommer2003] A. Frommer, Computing **70**, 87 (2003).
-
-.. [Yamamoto2008] S. Yamamoto, T. Sogabe, T. Hoshi, S.-L. Zhang, and T. Fujiwara, J. Phys. Soc. Jpn. **77**, 114713 (2008).
 
 Seed switch 付き Shifted BiCG法
 -------------------------------

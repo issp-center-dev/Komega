@@ -192,6 +192,7 @@ latex_elements = {
 
 # Additional stuff for the LaTeX preamble.
 #'preamble': '\usepackage{pxjahyper}',
+    'babel': '\\usepackage[english]{babel}',
     'classoptions': ',dvipdfmx,openany'
 }
 
