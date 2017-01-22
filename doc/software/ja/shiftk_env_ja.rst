@@ -2,7 +2,7 @@
 ====
 
 * fortranコンパイラー
-* Shifted Krylov法ライブラリ
+* K :math:`omega` ライブラリ
 * BLAS, LAPACK
 * MPIライブラリ(Oprional)
 

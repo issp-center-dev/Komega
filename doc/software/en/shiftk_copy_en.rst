@@ -1,5 +1,5 @@
-ライセンス
-==========
+License
+=======
 
 *© 2016- The University of Tokyo. All rights reserved.*
 

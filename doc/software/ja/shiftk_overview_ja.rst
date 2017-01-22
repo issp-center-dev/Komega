@@ -14,9 +14,11 @@ Libraryの内の, Krylov部分空間法に基づくシフト線形方程式群�
 .. math::
 
    \begin{align}
-     G_{i}(z) = \langle i | (z-{\hat H})^{-1}| i \rangle \equiv 
-     {\boldsymbol \varphi}_i^{*} \cdot (z-{\hat H})^{-1} {\boldsymbol \varphi}_i
-     \end{align}
+   G_{i}(z) =
+   \langle i | (z-{\hat H})^{-1}| i \rangle
+   \equiv 
+   {\boldsymbol \varphi}_i^{*} \cdot (z-{\hat H})^{-1} {\boldsymbol \varphi}_i
+   \end{align}
 
 の計算を行います. 
 ここで :math:`| i \rangle` はベクトル, :math:`{\cal H}` はハミルトニアン, 
