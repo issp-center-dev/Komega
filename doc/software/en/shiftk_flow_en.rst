@@ -13,7 +13,7 @@ This program performs simulation as follows (See Fig. :num:`calcflow` ):
      
 .. figure:: ../figs/flow.png
 
-            Shematic flow of the calculation of this program.
+            Schematic flow of the calculation of this program.
 
 
 We introduce the detailed procedure as follows.
@@ -55,7 +55,7 @@ A example of this input file is shown as follow.
       outrestart = .TRUE.
     /
 
-where ``InHam`` is the file-name for the Hamiltonian in te MatrixMarket format,
+where ``InHam`` is the file-name for the Hamiltonian in the MatrixMarket format,
 ``InVec`` is the file-name of the right hand side vector,
 ``NOmega`` is the number of frequencies where the dynamical Green's function
 is computed.
@@ -95,7 +95,7 @@ is shown as follows:
 Details of the file format is written in
 :ref:`ham` and :ref:`vec`.
 
-Lounch
+Launch
 ~~~~~~
 
 Execute a program ``ShiftK.out`` with a namelist file ``namelist.def``
@@ -136,7 +136,7 @@ Change ``calctype`` parameter in the file ``namelist.def``
 from ``"normal"`` to ``"recalc"``.
 ``OmegaMin``, ``OmegaMax``, etc. can be modified.
 
-Lounch
+Launch
 ~~~~~~
 
 Execute a program ``ShiftK.out`` with a namelist file ``namelist.def``
@@ -169,7 +169,7 @@ from ``"normal"`` to ``"restart"``.
 Parameters ``InHam`` ,  ``InVec``, and the files of the Hamiltonian
 and RHS vector can not be modified.
 
-Lounch
+Launch
 ~~~~~~
 
 Execute a program ``ShiftK.out`` with a namelist file ``namelist.def``

@@ -1,7 +1,7 @@
 Overview
 ========
 
-This is docment for the sample program which uses
+This is document for the sample program which uses
 K :math:`\omega` library in the ISSP Math Library;
 this program computes the Green's function with :math:`K(\omega)`.
 For the details of K :math:`\omega` library, See
@@ -34,7 +34,7 @@ where :math:`| i \rangle` is a wavefunction,
    Heisenberg model in this program.
 
 In the computation of the Green's function,
-we use either the following two method acording to the type
+we use either the following two method according to the type
 of :math:`{\hat H}` (a real- or a complex- number).
 
 -  :math:`{\hat H}` of real numbers : Shifted Bi-Conjugate Gradient(BiCG) method

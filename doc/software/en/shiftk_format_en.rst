@@ -62,11 +62,11 @@ Hamiltonian and the RHS vector.
    The name of the file for the right hand side vector.
    If this parameter is not specified,
    the RHS vector is generated as follows:
-   First the ground-state vector is commputed.
+   First the ground-state vector is computed.
    Then RHS vector is calculated by operating
    :math:`{\hat S}_{1 z}` (:math:`z` component of the spin at site 1)
    to the ground-state vector.
-   Therefore, we assume the commputed system is
+   Therefore, we assume the computed system is
    the one-dimensional spin chain.
 
 ``"ham"`` namelist is read only when
@@ -133,10 +133,10 @@ Hamiltonian and the RHS vector.
    **Type :** double (default: ``0.0``)
 
    **Description :**
-   The parameter of the Dzyaloshinskii-Moriya interation (:math:`D_z`).
+   The parameter of the Dzyaloshinskii-Moriya interaction (:math:`D_z`).
 
 ``cg`` namelist has parameters
-for specifing the numerical condition for the
+for specifying the numerical condition for the
 (Bi)Conjugate-gradient method.
 
 -  ``MaxLoops``
@@ -160,20 +160,20 @@ for specifing the numerical condition for the
    **Type :** Complex (default: If ``invec`` is not specified,
    the real part of it becomes the smallest eigenvalue,
    and the imaginary part of it becomes :math:`\times0.01` times 
-   the differnce between the lergest- and the smallest- eigenvalue.
-   If ``invec`` is specified, the defaulat value becomes ``(0.0, 0.01)``)
+   the difference between the largest- and the smallest- eigenvalue.
+   If ``invec`` is specified, the default value becomes ``(0.0, 0.01)``)
 
    **Description :** The smallest frequency.
 
 -  ``OmegaMax``
 
    **Type :** Complex (default: If ``invec`` is not specified,
-   the real part of it becomes the lergest eigenvalue,
+   the real part of it becomes the largest eigenvalue,
    and the imaginary part of it becomes :math:`\times0.01` times 
-   the differnce between the lergest- and the smallest- eigenvalue.
-   If ``invec`` is specified, the defaulat value becomes ``(1.0, 0.01)``)
+   the difference between the largest- and the smallest- eigenvalue.
+   If ``invec`` is specified, the default value becomes ``(1.0, 0.01)``)
 
-   **Description :** The lergest frequency.
+   **Description :** The largest frequency.
 
 -  ``NOmega``
 
@@ -191,7 +191,7 @@ for specifing the numerical condition for the
 -  ``calctype``
 
    **Type :**
-   String.  Choosen from ``"normal"``, ``"recalc"``, ``"restart"``. 
+   String.  Choose from ``"normal"``, ``"recalc"``, ``"restart"``. 
    (default: ``"normal"``)
 
    **Description :**
@@ -248,7 +248,7 @@ Second row:
 
 Third row - End:
    The row- and the column- index, and
-   the real- and imaginaly- part of the non-zero element
+   the real- and imaginary- part of the non-zero element
    (in **the lower triangle part**).
 
 .. _vec:
@@ -258,7 +258,7 @@ Third row - End:
 
 Right hand side vector is contained.
 
-Examle of the "InVec" file:
+Example of the "InVec" file:
 
 ::
 
@@ -282,7 +282,7 @@ Examle of the "InVec" file:
 
    **Description :** The element of the RHS vector.
    [ double01 ] is the real part,
-   and [ double02 ] is the imaginaly part.
+   and [ double02 ] is the imaginary part.
 
 .. _recoeff:
    
@@ -323,7 +323,7 @@ The example of this file:
    [ double01 ] is the real part of :math:`z_{\rm seed}`, and
    [ double02 ] is the imaginary par of :math:`z_{\rm seed}`.
 
--  Third row - 2 + [ int01 ]\ th row:
+-  Third row - 2 + [ int01 ]th row:
    [ double03 ] [ double04 ] [ double05 ] [ double06 ]
 
    **Type :** double
@@ -334,8 +334,8 @@ The example of this file:
    [ double05 ] is the real part of :math:`\beta`,
    [ double06 ] is the imaginary part of :math:`\beta`. 
 
--  3 + [ int01 ]\ th row -
-   2 + :math:`2\times[` int01 ]\ th row:
+-  3 + [ int01 ]th row -
+   2 + :math:`2\times[` int01 ]th row:
    [ double07 ] [ double08 ]
 
    **Type :** double
@@ -371,7 +371,7 @@ Example of this file:
 
    **Description :** The dimension of the Hilbert space.
 
--  Second row - 1 + [ int01 ]\ th row:
+-  Second row - 1 + [ int01 ]th row:
    [ double01 ] [ double02 ]
 
    **Type :** double
@@ -380,7 +380,7 @@ Example of this file:
    [ double01 ] is the real part of it, and
    [ double02 ] is the imaginary part of it.
 
--  Third row - 1 + :math:`2\times[` int01 ]\ th row:
+-  Third row - 1 + 2 :math:`\times` [ int01 ]th row:
    [ double03 ] [ double04 ]
 
    **Type :** double

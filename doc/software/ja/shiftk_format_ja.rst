@@ -308,7 +308,7 @@ InVecファイル
    [ double03 ] が :math:`\alpha` の実部, [ double04 ] が :math:`\alpha` の虚部, 
    [ double05 ] が :math:`\beta` の実部, [ double06 ] が :math:`\beta` の虚部を表します. 
 
--  3+ [ int01 ] 行目-2+ :math:`2\times[` int01 ] 行目:
+-  3+ [ int01 ] 行目-2 + 2 :math:`\times` [ int01 ] 行目:
    [ double07 ] [ double08 ]
 
    **形式 :** double型
