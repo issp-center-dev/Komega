@@ -1,0 +1,464 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ファイルフォーマット &mdash; shiftk 0.1 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="shiftk 0.1 ドキュメント" href="index.html" />
+    <link rel="next" title="Contact" href="shiftk_contact_ja.html" />
+    <link rel="prev" title="計算の流れ" href="shiftk_flow_ja.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="shiftk_contact_ja.html" title="Contact"
+             accesskey="N">次へ</a> |</li>
+        <li class="right" >
+          <a href="shiftk_flow_ja.html" title="計算の流れ"
+             accesskey="P">前へ</a> |</li>
+        <li><a href="index.html">shiftk 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="fileformat">
+<span id="id1"></span><h1>ファイルフォーマット<a class="headerlink" href="#fileformat" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<div class="section" id="id2">
+<h2>入力ファイル<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="modpara">
+<span id="id3"></span><h3>ファイル名および計算条件指定ファイル<a class="headerlink" href="#modpara" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>4つの namelist (<tt class="docutils literal"><span class="pre">filename</span></tt>, <tt class="docutils literal"><span class="pre">ham</span></tt>, <tt class="docutils literal"><span class="pre">cg</span></tt>, <tt class="docutils literal"><span class="pre">dyn</span></tt>)に分かれています.
+namelistのしくみについてはfortranについて書かれた書籍やWebページを参照してください.</p>
+<div class="highlight-python"><div class="highlight"><pre>&amp;filename
+  inham = &quot;&quot;
+  invec = &quot;&quot;
+/
+&amp;ham
+nsite = 4
+Jx = 1d0
+Jy = 1d0
+Jz = 1d0
+Dz = 0d0
+/
+&amp;cg
+  maxloops = 100
+  convfactor = 6
+/
+&amp;dyn
+  calctype = &quot;normal&quot;
+  nomega = 100
+  omegamin = (-2d0, 0.1d0)
+  omegamax = ( 1d0, 0.1d0)
+  outrestart = .TRUE.
+/
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">&quot;filename&quot;</span></tt> ネームリストではハミルトニアンと右辺ベクトルを格納しているファイル名を指定します.</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">InHam</span></tt></p>
+<p><strong>形式 :</strong> string型 (default: <tt class="docutils literal"><span class="pre">&quot;&quot;</span></tt>)</p>
+<p><strong>説明 :</strong>
+MatrixMarket形式のハミルトニアンファイル名(フルパスもしくは相対パス)を指定します.
+これが指定されなかった場合には,
+<tt class="docutils literal"><span class="pre">ham</span></tt> ネームリストのパラメーターから1次元スピン系の
+ハミルトニアンが生成されます.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">InVec</span></tt></p>
+<p><strong>形式 :</strong> string型 (default: <tt class="docutils literal"><span class="pre">&quot;&quot;</span></tt>)</p>
+<p><strong>説明 :</strong> 右辺ベクトルを格納したファイル名を指定します.
+これが指定されなかった場合には, まず最低エネルギー固有状態が計算され,
+それに <span class="math">\({\hat S}_{1 z}\)</span> (サイト1のスピン:math:<cite>z</cite> 成分の演算子)がかかったものが右辺ベクトルとなります
+(すなわち1次元スピン系を計算しているものと勝手に解釈されます).</p>
+</li>
+</ul>
+<p><tt class="docutils literal"><span class="pre">&quot;ham&quot;</span></tt>
+ネームリストはハミルトニアンが生成されるモードでのみ読み込まれ,
+次のハミルトニアンで表される1次元スピン系(Fig. <a href="#spin">2</a> )
+を構成するパラメーターを指定することに使われます.</p>
+<div class="figure" id="spin">
+<img alt="_images/spin.png" src="_images/spin.png" />
+<p class="caption">1次元スピン系の模式図.</p>
+</div>
+<div class="math">
+\[\begin{split}\begin{align}
+  {\hat H} = \sum_{i}
+  \left(
+  \begin{matrix}
+    {\hat S}_{i x} &amp; {\hat S}_{i y} &amp; {\hat S}_{i z}
+  \end{matrix}
+  \right)
+  \left(
+  \begin{matrix}
+    J_x &amp; D_z &amp; 0 \\
+    -D_z &amp; J_y &amp; 0 \\
+    0 &amp; 0 &amp; J_z
+  \end{matrix}
+  \right)
+  \left(
+  \begin{matrix}
+    {\hat S}_{i+1 x} \ {\hat S}_{i+1 y} \ {\hat S}_{i+1 z}
+  \end{matrix}
+  \right)\end{align}\end{split}\]</div>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">nsite</span></tt></p>
+<p><strong>形式 :</strong> 整数 (default: <tt class="docutils literal"><span class="pre">4</span></tt>)</p>
+<p><strong>説明 :</strong> 1次元スピン模型のサイト数を指定します.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">Jx</span></tt></p>
+<p><strong>形式 :</strong> 実数 (default: <tt class="docutils literal"><span class="pre">1.0</span></tt>)</p>
+<p><strong>説明 :</strong> Heisenberg模型の <span class="math">\(J_x\)</span> を指定します.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">Jy</span></tt></p>
+<p><strong>形式 :</strong> 実数 (default: <tt class="docutils literal"><span class="pre">1.0</span></tt>)</p>
+<p><strong>説明 :</strong> Heisenberg模型の <span class="math">\(J_y\)</span> を指定します.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">Jz</span></tt></p>
+<p><strong>形式 :</strong> 実数 (default: <tt class="docutils literal"><span class="pre">1.0</span></tt>)</p>
+<p><strong>説明 :</strong> Heisenberg模型の <span class="math">\(J_z\)</span> を指定します.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">Dz</span></tt></p>
+<p><strong>形式 :</strong> 実数 (default: <tt class="docutils literal"><span class="pre">0.0</span></tt>)</p>
+<p><strong>説明 :</strong>
+Dzyaloshinskii-Moriya相互作用のパラメーター <span class="math">\(D_z\)</span> を指定します.</p>
+</li>
+</ul>
+<p><tt class="docutils literal"><span class="pre">cg</span></tt>
+ネームリストでは(双)共役勾配法の反復に関するパラメーターを指定します.</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">MaxLoops</span></tt></p>
+<p><strong>形式 :</strong> 整数 (default: ハミルトニアンの次元)</p>
+<p><strong>説明 :</strong> 最大反復回数を指定します.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">Convfactor</span></tt></p>
+<p><strong>形式 :</strong> 整数 (default: <tt class="docutils literal"><span class="pre">8</span></tt>)</p>
+<p><strong>説明 :</strong> 残差ベクトルの二乗ノルムを次元数で割ったものが,
+<span class="math">\(10^{-{\tt Convfactor}}\)</span> 未満となったら収束したとみなして計算を終了します.</p>
+</li>
+</ul>
+<p><tt class="docutils literal"><span class="pre">dyn</span></tt> ネームリストではスペクトルの計算に関するパラメーターを指定します.</p>
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">OmegaMin</span></tt></p>
+<p><strong>形式 :</strong> 複素数 (default: <tt class="docutils literal"><span class="pre">invec</span></tt> を指定しなかった場合には
+(ハミルトニアンの最小固有値,
+最大 <span class="math">\(\cdot\)</span> 最小固有値の差 <span class="math">\(\times0.01\)</span>),
+それ以外の場合には <tt class="docutils literal"><span class="pre">(0.0,</span> <span class="pre">0.01)</span></tt>)</p>
+<p><strong>説明 :</strong> 振動数の始点を指定します.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">OmegaMax</span></tt></p>
+<p><strong>形式 :</strong> 複素数 (default: <tt class="docutils literal"><span class="pre">invec</span></tt> を指定しなかった場合には
+(ハミルトニアンの最大固有値,
+最大 <span class="math">\(\cdot\)</span> 最小固有値の差 <span class="math">\(\times0.01\)</span>),
+それ以外の場合には <tt class="docutils literal"><span class="pre">(1.0,</span> <span class="pre">0.01)</span></tt>)</p>
+<p><strong>説明 :</strong> 振動数の終点を指定します.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">NOmega</span></tt></p>
+<p><strong>形式 :</strong> 整数 (default: <tt class="docutils literal"><span class="pre">10</span></tt>)</p>
+<p><strong>説明 :</strong> 振動数の点数を指定します.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">outrestart</span></tt></p>
+<p><strong>形式 :</strong> 論理型 (default: <tt class="docutils literal"><span class="pre">.FALSE.</span></tt>)</p>
+<p><strong>説明 :</strong>
+リスタート用ファイルを出力するか( <tt class="docutils literal"><span class="pre">.TRUE.</span></tt>)否か( <tt class="docutils literal"><span class="pre">.FALSE.</span></tt>)を指定します.</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">calctype</span></tt></p>
+<p><strong>形式 :</strong>
+String型.  <tt class="docutils literal"><span class="pre">&quot;normal&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;recalc&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;restart&quot;</span></tt> のいずれか.
+(default: <tt class="docutils literal"><span class="pre">&quot;normal&quot;</span></tt>)</p>
+<p><strong>説明 :</strong>
+<tt class="docutils literal"><span class="pre">&quot;normal&quot;</span></tt> が指定された場合にはKrylov部分空間法をはじめから行います.
+<tt class="docutils literal"><span class="pre">&quot;recalc&quot;</span></tt> の場合には先行する計算で出力されたリスタート用ファイルを読み込み
+先行する計算で行われたのと同じ反復回数まで計算します. 収束は保証されません.
+<tt class="docutils literal"><span class="pre">&quot;restart&quot;</span></tt> では先行する計算で出力されたリスタート用ファイルを読み込み,
+先行する計算で行われたのと同じ反復回数まで計算したのち,
+収束するか最大反復回数( <tt class="docutils literal"><span class="pre">MaxLoops</span></tt>)に達するまで計算を続けます.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="inham">
+<span id="ham"></span><h3>InHamファイル<a class="headerlink" href="#inham" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>MatrixMarket形式に準じ, 以下のフォーマットを採用しています.</p>
+<p>InHamファイルの例</p>
+<div class="highlight-python"><div class="highlight"><pre>%%MatrixMarket matrix coordinate complex hermitian
+16 16 20
+1 1 1.000000 0.000000
+3 2 0.500000 0.000000
+5 3 0.500000 0.000000
+6 4 0.500000 0.000000
+6 6 -1.000000 0.000000
+7 6 0.500000 0.000000
+9 2 0.500000 0.000000
+9 5 0.500000 0.000000
+10 6 0.500000 0.000000
+11 4 0.500000 0.000000
+11 7 0.500000 0.000000
+11 10 0.500000 0.000000
+11 11 -1.000000 0.000000
+12 8 0.500000 0.000000
+13 6 0.500000 0.000000
+13 11 0.500000 0.000000
+14 12 0.500000 0.000000
+15 8 0.500000 0.000000
+15 14 0.500000 0.000000
+16 16 1.000000 0.000000
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>1行目:</dt>
+<dd>任意の文字列(コメントなど)が入ります.</dd>
+<dt>2行目:</dt>
+<dd>行数, 列数, 非ゼロ要素の数が入ります.
+非ゼロ要素数に関しては <strong>行列の下三角部分のみ</strong> の数を記入してください.</dd>
+<dt>3行目以降:</dt>
+<dd>行番号, 列番号, 要素の実部, 要素の虚部が入ります.
+2行目で入れた, 非ゼロ要素数と同じ数(下三角部分のみ)記入してください.</dd>
+</dl>
+</div>
+<div class="section" id="invec">
+<span id="vec"></span><h3>InVecファイル<a class="headerlink" href="#invec" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>励起ベクトルを入力するテキスト形式のファイルです.
+ファイル名は入出力ファイル指定ファイルで指定します.
+以下のようなフォーマットをしています.</p>
+<div class="highlight-python"><div class="highlight"><pre>8192
+0.02 0.01
+0.02 0.001
+(continue...)
+</pre></div>
+</div>
+<ul>
+<li><p class="first">1行目: [ int01 ]</p>
+<p><strong>形式 :</strong> int型</p>
+<p><strong>説明 :</strong> 計算対象のヒルベルト空間数を指定する整数.
+ハミルトニアンの次元と一致している必要があります.</p>
+</li>
+<li><p class="first">2行目-:
+[ double01 ] [ double02 ]</p>
+<p><strong>形式 :</strong> double型</p>
+<p><strong>説明 :</strong> 励起ベクトルの値を表します.
+[ double01 ] が実部, [ double02 ] が虚部を表します.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="recoeff">
+<span id="id4"></span><h3>リスタート用係数<a class="headerlink" href="#recoeff" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>リスタート用の係数を入力するテキスト形式のファイルです.
+ファイル名は <tt class="docutils literal"><span class="pre">TriDiagComp.dat</span></tt> です.
+以下のようなフォーマットをしています.</p>
+<div class="highlight-python"><div class="highlight"><pre>1000
+1.0 0.0
+0.1 0 0.01  0
+0.2 0 0.021 0
+(continue...)
+2.1 -0.5
+3.1 4.0
+(continue...)
+</pre></div>
+</div>
+<ul>
+<li><p class="first">1行目: [ int01 ]</p>
+<p><strong>形式 :</strong> int型</p>
+<p><strong>説明 :</strong>
+<span class="math">\(\alpha, \beta\)</span> の読み込み総数を表します. 前回計算時のイタレーション数に相当します.</p>
+</li>
+<li><p class="first">2行目: [ double01 ] [ double02 ]</p>
+<p><strong>形式 :</strong> double型</p>
+<p><strong>説明 :</strong> シード振動数 <span class="math">\(z_{\rm seed}\)</span> の値を表します.
+[ double01 ] が <span class="math">\(z_{\rm seed}\)</span> の実部,
+[ double02 ] が <span class="math">\(z_{\rm seed}\)</span> の虚部を表します.</p>
+</li>
+<li><p class="first">3行目-2+ [ int01 ] 行目:
+[ double03 ] [ double04 ] [ double05 ] [ double06 ]</p>
+<p><strong>形式 :</strong> double型</p>
+<p><strong>説明 :</strong> <span class="math">\(\alpha, \beta\)</span> の値を表します.
+[ double03 ] が <span class="math">\(\alpha\)</span> の実部, [ double04 ] が <span class="math">\(\alpha\)</span> の虚部,
+[ double05 ] が <span class="math">\(\beta\)</span> の実部, [ double06 ] が <span class="math">\(\beta\)</span> の虚部を表します.</p>
+</li>
+<li><p class="first">3+ [ int01 ] 行目-2 + 2 <span class="math">\(\times\)</span> [ int01 ] 行目:
+[ double07 ] [ double08 ]</p>
+<p><strong>形式 :</strong> double型</p>
+<p><strong>説明 :</strong> 各反復での残差ベクトルと励起ベクトルの内積を表します.
+[ double07 ] が実部, [ double08 ] が虚部を表します.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="revec">
+<span id="id5"></span><h3>リスタート用ベクトル<a class="headerlink" href="#revec" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>リスタート用ベクトルを入力するテキスト形式のファイルです.
+ファイル名は <tt class="docutils literal"><span class="pre">ResVec.dat</span></tt> です.
+以下のようなフォーマットをしています.</p>
+<div class="highlight-python"><div class="highlight"><pre>8192
+0.02 0.01
+0.02 0.001
+(continue...)
+0.02 0.01
+0.02 0.001
+(continue... Only for BiCG)
+</pre></div>
+</div>
+<ul>
+<li><p class="first">1行目: [ int01 ]</p>
+<p><strong>形式 :</strong> int型</p>
+<p><strong>説明 :</strong> 計算対象のヒルベルト空間数を指定する整数.</p>
+</li>
+<li><p class="first">2行目-1+ [ int01 ] 行目:
+[ double01 ] [ double02 ]</p>
+<p><strong>形式 :</strong> double型</p>
+<p><strong>説明 :</strong> 残差ベクトルの値を表します.
+[ double01 ] が実部, [ double02 ] が虚部を表します.</p>
+</li>
+<li><p class="first">3行目-1+ <span class="math">\(2\times[\)</span> int01 ] 行目:
+[ double03 ] [ double04 ]</p>
+<p><strong>形式 :</strong> double型</p>
+<p><strong>説明 :</strong>
+(ハミルトニアンが複素の場合のみ出力)影の残差ベクトルの値を表します.
+[ double03 ] が実部, [ double04 ] が虚部を表します.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>出力ファイル<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id7">
+<h3>リスタート用係数<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>Sec. <a class="reference internal" href="#recoeff"><em>リスタート用係数</em></a> と同じ形式を取ります.</p>
+</div>
+<div class="section" id="id8">
+<h3>リスタート用ベクトル<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>Sec. <a class="reference internal" href="#revec"><em>リスタート用ベクトル</em></a> と同じ形式を取ります.</p>
+</div>
+<div class="section" id="dynamicalg">
+<span id="id9"></span><h3>動的グリーン関数ファイル<a class="headerlink" href="#dynamicalg" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>動的グリーン関数の計算結果を出力するテキスト形式のファイルです.
+以下のようなフォーマットをしています.</p>
+<div class="highlight-python"><div class="highlight"><pre>-10 0.001 0.001 -0.0001
+-9.8 0.001 0.0012 -0.0002
+-9.6 0.001 0.0014 -0.0003
+(continue...)
+</pre></div>
+</div>
+<ul>
+<li><p class="first">1行目-:
+[ double01 ] [ double02 ] [ double03 ] [ double04 ]</p>
+<ul>
+<li><p class="first">[ double01 ], [ double02 ]</p>
+<p><strong>形式 :</strong> double型</p>
+<p><strong>説明 :</strong> 周波数数の実部
+[ double01 ] と虚部 [ double02 ] を表します.</p>
+</li>
+<li><p class="first">[ double03 ], [ double04 ]</p>
+<p><strong>形式 :</strong> double型</p>
+<p><strong>説明 :</strong> 動的グリーン関数の値を表します.
+[ double01 ] が実部, [ double02 ] が虚部を表します.</p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ファイルフォーマット</a><ul>
+<li><a class="reference internal" href="#id2">入力ファイル</a><ul>
+<li><a class="reference internal" href="#modpara">ファイル名および計算条件指定ファイル</a></li>
+<li><a class="reference internal" href="#inham">InHamファイル</a></li>
+<li><a class="reference internal" href="#invec">InVecファイル</a></li>
+<li><a class="reference internal" href="#recoeff">リスタート用係数</a></li>
+<li><a class="reference internal" href="#revec">リスタート用ベクトル</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id6">出力ファイル</a><ul>
+<li><a class="reference internal" href="#id7">リスタート用係数</a></li>
+<li><a class="reference internal" href="#id8">リスタート用ベクトル</a></li>
+<li><a class="reference internal" href="#dynamicalg">動的グリーン関数ファイル</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>前のトピックへ</h4>
+  <p class="topless"><a href="shiftk_flow_ja.html"
+                        title="前の章へ">計算の流れ</a></p>
+  <h4>次のトピックへ</h4>
+  <p class="topless"><a href="shiftk_contact_ja.html"
+                        title="次の章へ">Contact</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/shiftk_format_ja.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="shiftk_contact_ja.html" title="Contact"
+             >次へ</a> |</li>
+        <li class="right" >
+          <a href="shiftk_flow_ja.html" title="計算の流れ"
+             >前へ</a> |</li>
+        <li><a href="index.html">shiftk 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, kawamura.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2 で生成しました。
+    </div>
+  </body>
+</html>

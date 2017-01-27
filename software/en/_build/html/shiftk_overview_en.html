@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview &mdash; shiftk 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="shiftk 0.1 documentation" href="index.html" />
+    <link rel="next" title="License" href="shiftk_copy_en.html" />
+    <link rel="prev" title="Welcome to \(K\omega\)-sample program’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="shiftk_copy_en.html" title="License"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to \(K\omega\)-sample program’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">shiftk 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>This is document for the sample program which uses
+K <span class="math">\(\omega\)</span> library in the ISSP Math Library;
+this program computes the Green&#8217;s function with <span class="math">\(K(\omega)\)</span>.
+For the details of K <span class="math">\(\omega\)</span> library, See
+&#8220;<span class="math">\(K(\omega)\)</span> manual&#8221; in this package.</p>
+<div class="section" id="calculation-in-this-program">
+<h2>Calculation in this program<a class="headerlink" href="#calculation-in-this-program" title="Permalink to this headline">¶</a></h2>
+<p>This program compute the Green&#8217;s function</p>
+<div class="math">
+\[\begin{align}
+G_{i}(z) =
+\langle i | (z-{\hat H})^{-1}| i \rangle
+\equiv
+{\boldsymbol \varphi}_i^{*} \cdot (z-{\hat H})^{-1} {\boldsymbol \varphi}_i,
+\end{align}\]</div>
+<p>where <span class="math">\(| i \rangle\)</span> is a wavefunction,
+<span class="math">\({\cal H}\)</span> is the Hamiltonian, and
+<span class="math">\(z\)</span> is a complex frequency.</p>
+<dl class="docutils">
+<dt><span class="math">\({\cal H}\)</span> in the above equation is obtained by either the</dt>
+<dd>following two ways:</dd>
+</dl>
+<ul class="simple">
+<li>Input <span class="math">\({\cal H}\)</span> as a file with the MatrixMarket format</li>
+<li>Construct <span class="math">\({\cal H}\)</span> as a Hamiltonian of the
+Heisenberg model in this program.</li>
+</ul>
+<p>In the computation of the Green&#8217;s function,
+we use either the following two method according to the type
+of <span class="math">\({\hat H}\)</span> (a real- or a complex- number).</p>
+<ul class="simple">
+<li><span class="math">\({\hat H}\)</span> of real numbers : Shifted Bi-Conjugate Gradient(BiCG) method</li>
+<li><span class="math">\({\hat H}\)</span> of complex numbers : Shifted Conjugate Orthogonal Conjugate Gradient(COCG) method</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#calculation-in-this-program">Calculation in this program</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to <span class="math">\(K\omega\)</span>-sample program&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="shiftk_copy_en.html"
+                        title="next chapter">License</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/shiftk_overview_en.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="shiftk_copy_en.html" title="License"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to \(K\omega\)-sample program’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">shiftk 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, kawamura.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

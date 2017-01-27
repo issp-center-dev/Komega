@@ -1,0 +1,31 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}Overview}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}Calculation in this program}{1}{section.1.1}
+\contentsline {chapter}{\numberline {2}License}{2}{chapter.2}
+\contentsline {chapter}{\numberline {3}Prerequisite}{3}{chapter.3}
+\contentsline {chapter}{\numberline {4}Overall procedure}{4}{chapter.4}
+\contentsline {section}{\numberline {4.1}Calculation from scratch}{4}{section.4.1}
+\contentsline {subsection}{\numberline {4.1.1}Prepare input file}{4}{subsection.4.1.1}
+\contentsline {subsection}{\numberline {4.1.2}(Optional) Prepare input file for the Hamiltonian and RHS vector}{6}{subsection.4.1.2}
+\contentsline {subsection}{\numberline {4.1.3}Launch}{6}{subsection.4.1.3}
+\contentsline {subsection}{\numberline {4.1.4}Output}{6}{subsection.4.1.4}
+\contentsline {section}{\numberline {4.2}Catch up}{6}{section.4.2}
+\contentsline {subsection}{\numberline {4.2.1}Modify the namelist file}{6}{subsection.4.2.1}
+\contentsline {subsection}{\numberline {4.2.2}Launch}{7}{subsection.4.2.2}
+\contentsline {subsection}{\numberline {4.2.3}Output}{7}{subsection.4.2.3}
+\contentsline {section}{\numberline {4.3}Restart}{7}{section.4.3}
+\contentsline {subsection}{\numberline {4.3.1}Modify the namelist file}{7}{subsection.4.3.1}
+\contentsline {subsection}{\numberline {4.3.2}Launch}{7}{subsection.4.3.2}
+\contentsline {subsection}{\numberline {4.3.3}Output}{7}{subsection.4.3.3}
+\contentsline {chapter}{\numberline {5}Format of files}{8}{chapter.5}
+\contentsline {section}{\numberline {5.1}Input files}{8}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}``Namelist'' file}{8}{subsection.5.1.1}
+\contentsline {subsection}{\numberline {5.1.2}``InHam'' file}{11}{subsection.5.1.2}
+\contentsline {subsection}{\numberline {5.1.3}``InVec'' file}{11}{subsection.5.1.3}
+\contentsline {subsection}{\numberline {5.1.4}Coefficients for restart}{12}{subsection.5.1.4}
+\contentsline {subsection}{\numberline {5.1.5}Residual vector}{12}{subsection.5.1.5}
+\contentsline {section}{\numberline {5.2}Output file}{13}{section.5.2}
+\contentsline {subsection}{\numberline {5.2.1}Coefficient for restart}{13}{subsection.5.2.1}
+\contentsline {subsection}{\numberline {5.2.2}Residual vector}{13}{subsection.5.2.2}
+\contentsline {subsection}{\numberline {5.2.3}Dynamical Green's function}{13}{subsection.5.2.3}
+\contentsline {chapter}{\numberline {6}Contact}{14}{chapter.6}
