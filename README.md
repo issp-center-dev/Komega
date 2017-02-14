@@ -7,8 +7,18 @@
 
 This package provides the solver library based on Shifted-Krylov subspace method and the software to calculate dynamical Green function by inputting the Hamiltonian and the vector of the excited state.
 
-# [Download](https://github.com/issp-center-dev/Komega/releases)
+# Download
 
+ * Latest release
+
+   https://github.com/issp-center-dev/Komega/releases/download/v1.0.0/komega-1.0.0.tar.gz
+ * Release note
+
+   https://github.com/issp-center-dev/Komega/releases/tag/v1.0.0
+ * Other version
+ 
+   https://github.com/issp-center-dev/Komega/releases
+   
 # Prerequisite
 
  * fortran compiler
