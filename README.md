@@ -1,6 +1,8 @@
 <a name= "english">
 [日本語]( README_ja.md#japanese ) / English 
-  
+
+<img src="doc/figs/komega.png" width="300">
+
 # What ? 
 
 This package provides the solver library based on Shifted-Krylov subspace method and the software to calculate dynamical Green function by inputting the Hamiltonian and the vector of the excited state.
@@ -78,21 +80,21 @@ See the manual (the explanation will be added in ver.0.1)
 ## How to link the libraries
 
 - Static link
-```
-$ gfortran myprog.f90 -L Path/src -lshiftk -I Path/src
-$ gcc myprog.c -L Path/src -lshiftk -I Path/src
-```
-etc.
+  ```
+  $ gfortran myprog.f90 -L Path/src -lshiftk -I Path/src
+  $ gcc myprog.c -L Path/src -lshiftk -I Path/src
+  ```
+  etc.
 
 - Dynamical link
-```
-$ gfortran myprog.f90 -L Path/src/shared -lshiftk -I Path/src/shared
-$ gcc myprog.c -L Path/src/shared -lshiftk -I Path/src/shared
-```
-etc.
+  ```
+  $ gfortran myprog.f90 -L Path/src/shared -lshiftk -I Path/src/shared
+  $ gcc myprog.c -L Path/src/shared -lshiftk -I Path/src/shared
+  ```
+  etc.
 
-Add the `src/shared` directry to the environment
-variable `LD_LIBRARY_PATH` to execute the file with dyncamic link.
+  Add the `src/shared` directry to the environment
+  variable `LD_LIBRARY_PATH` to execute the file with dyncamic link.
 
 # Test for libraries(Optional)
 
