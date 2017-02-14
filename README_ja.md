@@ -1,18 +1,25 @@
 <a name= "japanese">
 日本語 / [English](README.md#english)
 
+<img src="doc/figs/komega.png" width="300">
+
 # What ? 
 
 Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 それを用いてHamiltonianと励起状態ベクトルから動的Green関数を計算するミニアプリである.
 
-# [Download](https://github.com/issp-center-dev/Komega/releases)
+# Download
 
-最新版のパッケージはこちらから.
+ * 最新版のパッケージはこちらから.
+ 
+   https://github.com/issp-center-dev/Komega/releases/download/v1.0.0/komega-1.0.0.tar.gz
 
-
-リリースノート
-
+ * リリースノート
+ 
+   https://github.com/issp-center-dev/Komega/releases/tag/v1.0.0
+ * 過去のリリース
+ 
+   https://github.com/issp-center-dev/Komega/releases
 
 # Prerequisite
 
@@ -84,24 +91,22 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
 ## ライブラリのリンク方法
 
-静的リンク
-``` bash
-$ gfortran myprog.f90 -L パス/src -lshiftk -I パス/src
-$ gcc myprog.f90 -L パス/src -lshiftk -I パス/src
-```
-など.
+ * 静的リンク
+   ``` bash
+   $ gfortran myprog.f90 -L パス/src -lshiftk -I パス/src
+   $ gcc myprog.c -L パス/src -lshiftk -I パス/src
+   ```
+   など.
 
-動的リンク
-``` bash
-$ gfortran myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
-$ gcc myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
-```
-など.
+ * 動的リンク
+   ``` bash
+   $ gfortran myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
+   $ gcc myprog.c -L パス/src/shared -lshiftk -I パス/src/shared
+   ```
+   など.
 
-動的リンクを行ったファイルを実行するときには,
-環境変数`LD_LIBRARY_PATH`に`src/shared`ディレクトリを追加しておく必要がある.
-
-### C/C++の場合
+   動的リンクを行ったファイルを実行するときには,
+   環境変数`LD_LIBRARY_PATH`に`src/shared`ディレクトリを追加しておく必要がある.
 
 # ライブラリのテスト(Optional)
 
