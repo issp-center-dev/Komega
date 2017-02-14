@@ -5,10 +5,21 @@
 Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 それを用いてHamiltonianと励起状態ベクトルから動的Green関数を計算するミニアプリである.
 
+# [Download](https://github.com/issp-center-dev/Komega/releases)
+
 # Prerequisite
 
  * fortran コンパイラ
  * BLASライブラリ
+ 
+# Documents
+
+ * Manual for the Library
+   * Japanese ([HTML](https://issp-center-dev.github.io/Komega/library/ja/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/library/ja/_build/latex/komega.pdf))
+   * English ([HTML](https://issp-center-dev.github.io/Komega/library/en/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/library/en/_build/latex/komega.pdf))
+ * Manual for the sample program
+   * Japanese ([HTML](https://issp-center-dev.github.io/Komega/software/ja/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/software/ja/_build/latex/shiftk.pdf))
+   * English ([HTML](https://issp-center-dev.github.io/Komega/software/en/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/software/en/_build/latex/shiftk.pdf))
 
 # Files in this package
 
@@ -128,12 +139,21 @@ $ ifort myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
 
 This package provides the solver library based on Shifted-Krylov subspace method and the software to calculate dynamical Green function by inputting the Hamiltonian and the vector of the excited state.
 
+# [Download](https://github.com/issp-center-dev/Komega/releases)
 
 # Prerequisite
 
  * fortran compiler
  * BLAS library  
 
+# Docments
+
+ * Manual for the Library
+   * Japanese ([HTML](https://issp-center-dev.github.io/Komega/library/ja/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/library/ja/_build/latex/komega.pdf))
+   * English ([HTML](https://issp-center-dev.github.io/Komega/library/en/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/library/en/_build/latex/komega.pdf))
+ * Manual for the sample program
+   * Japanese ([HTML](https://issp-center-dev.github.io/Komega/software/ja/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/software/ja/_build/latex/shiftk.pdf))
+   * English ([HTML](https://issp-center-dev.github.io/Komega/software/en/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/software/en/_build/latex/shiftk.pdf))
 
 # Files in this package
 
