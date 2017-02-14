@@ -41,6 +41,11 @@ MODULE komega_parameter
   LOGICAL,ALLOCATABLE,SAVE :: &
   & lz_conv(:)
   !
+#if defined(_KOMEGA_THREAD)
+  !$OMP THREADPRIVATE(comm, iz_seed, ndim, nl, nz, itermax, &
+  !$OMP &             iter, threshold, resnorm, lz_conv)
+#endif
+  !
 END MODULE komega_parameter
 !
 !
@@ -64,6 +69,11 @@ MODULE komega_vals_r
   & alpha_save(:), &
   & beta_save(:)
   !
+#if defined(_KOMEGA_THREAD)
+  !$OMP THREADPRIVATE(z_seed, rho, alpha, alpha_old, beta, z, pi, &
+  !$OMP &             pi_old, pi_save, alpha_save, beta_save)
+#endif
+  !
 END MODULE komega_vals_r
 !
 !
@@ -76,6 +86,10 @@ MODULE komega_vecs_r
   & v3(:), &
   & p(:,:), &
   & r_l_save(:,:)
+  !
+#if defined(_KOMEGA_THREAD)
+  !$OMP THREADPRIVATE(v3, p, r_l_save)
+#endif
   !
 END MODULE komega_vecs_r
 !
@@ -100,6 +114,11 @@ MODULE komega_vals_c
   & alpha_save(:), &
   & beta_save(:)
   !
+#if defined(_KOMEGA_THREAD)
+  !$OMP THREADPRIVATE(z_seed, rho, alpha, alpha_old, beta, z, pi, pi_old, &
+  !$OMP &             pi_save, alpha_save, beta_save)
+#endif
+  !
 END MODULE komega_vals_c
 !
 !
@@ -113,5 +132,9 @@ MODULE komega_vecs_c
   & v5(:), &
   & p(:,:), &
   & r_l_save(:,:)
+  !
+#if defined(_KOMEGA_THREAD)
+  !$OMP THREADPRIVATE(v3, v5, p, r_l_save)
+#endif
   !
 END MODULE komega_vecs_c
