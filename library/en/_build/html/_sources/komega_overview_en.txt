@@ -1,7 +1,7 @@
 Overview
 ========
 
-This document is a manual for :math:`K(\omega)` which is the library to
+This document is a manual for :math:`K\omega` which is the library to
 solve the shifted linear equation within the Krylov subspace.
 This library provides routines to solve the following shifted linear equation
 (with the projection),
@@ -15,6 +15,6 @@ This library provides routines to solve the following shifted linear equation
      {\boldsymbol \varphi}_i^{*} \cdot (z{\hat I}-{\hat H})^{-1} {\boldsymbol \varphi}_j.
      \end{align}
 
-The source codes of :math:`K(\omega)` is written in FORTRAN
+The source codes of :math:`K\omega` is written in FORTRAN
 and requires the BLAS Level 1 routines.
 

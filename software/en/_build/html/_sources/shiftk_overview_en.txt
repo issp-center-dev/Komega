@@ -3,9 +3,9 @@ Overview
 
 This is document for the sample program which uses
 K :math:`\omega` library in the ISSP Math Library;
-this program computes the Green's function with :math:`K(\omega)`.
+this program computes the Green's function with :math:`K\omega`.
 For the details of K :math:`\omega` library, See
-":math:`K(\omega)` manual" in this package.
+":math:`K\omega` manual" in this package.
 
 Calculation in this program
 ---------------------------

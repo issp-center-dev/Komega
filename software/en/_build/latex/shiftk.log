@@ -1,4 +1,4 @@
-This is e-pTeX, Version 3.1415926-p3.4-110825-2.6 (utf8.euc) (TeX Live 2013/Debian) (format=platex 2017.1.18)  27 JAN 2017 09:36
+This is e-pTeX, Version 3.1415926-p3.4-110825-2.6 (utf8.euc) (TeX Live 2013/Debian) (format=platex 2017.1.18)  15 FEB 2017 01:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -877,11 +877,14 @@ LaTeX Info: Redefining \nameref on input line 117.
 \@outlinefile=\write6
 \openout6 = `shiftk.out'.
 
- (I search kanjifont definition file: . . )
-(I search font definition file: . . . . . . . )
+File: komega.png Graphic file (type bmp)
+ <komega.png>
+File: komega.png Graphic file (type bmp)
+ <komega.png>
+(I search kanjifont definition file: . . ) (I search font definition file: . .
+. . . . . )
 LaTeX Font Info:    Try loading font information for T1+phv on input line 120.
-
-(/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1phv.fd
+ (/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1phv.fd
 File: t1phv.fd 2001/06/04 scalable font definitions for T1/phv.
 )
 LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <24.88> not available
@@ -1021,12 +1024,12 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 913.
  ) 
 Here is how much of TeX's memory you used:
- 8582 strings out of 495129
- 120065 string characters out of 6182595
- 214547 words of memory out of 5000000
- 11716 multiletter control sequences out of 15000+600000
+ 8584 strings out of 495129
+ 120085 string characters out of 6182595
+ 214564 words of memory out of 5000000
+ 11717 multiletter control sequences out of 15000+600000
  57849 words of font info for 96 fonts, out of 8000000 for 9000
  81 hyphenation exceptions out of 8191
  36i,30n,45p,296b,456s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on shiftk.dvi (18 pages, 46396 bytes).
+Output written on shiftk.dvi (18 pages, 46456 bytes).
