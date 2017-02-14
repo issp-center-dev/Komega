@@ -1,0 +1,23 @@
+##########################################################
+#
+# Environment for Make
+#
+##########################################################
+#
+# #####  Fortran Compiler without MPI  #####
+#
+F90=ifort # for intel
+#F90=gfortran # gfortran
+#
+# #####  Fortran Compiler with MPI (optional)  #####
+#
+MPIF90 = mpif90
+#
+# #####  Compilation flag
+#
+FFLAGS=-fopenmp -fpp -g -traceback -mkl -xHost -O3 # for intel
+#FFLAGS=-fopenmp -cpp -g -framework Accelerate -lblas -llapack -lm -D NO_ZDOT # for Mac
+#FFLAGS=-fopenmp -cpp -g -lblas -llapack # for gfortran
+#
+#FFLAGS=-cpp -g -lblas -llapack -Wall -D DEBUG -D NO_PROJ
+#FFLAGS=-fopenmp -fpp -g -traceback -mkl -check all -warn all -D DEBUG -D NO_PROJ
