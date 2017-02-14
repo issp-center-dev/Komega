@@ -11,6 +11,8 @@ This package provides the solver library based on Shifted-Krylov subspace method
 
  * fortran compiler
  * BLAS library  
+ * LAPCK library  
+ * MPI library (Optional)
 
 # Docments
 
@@ -21,51 +23,25 @@ This package provides the solver library based on Shifted-Krylov subspace method
    * Japanese ([HTML](https://issp-center-dev.github.io/Komega/software/ja/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/software/ja/_build/latex/shiftk.pdf))
    * English ([HTML](https://issp-center-dev.github.io/Komega/software/en/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/software/en/_build/latex/shiftk.pdf))
 
-# Files in this package
+# Directory Tree
 
  * `app/`: The directory for the software
    * `src/`: The source directory for the software
-     * `dyn_mod.f90`: The subroutines to calculate the dynamical Green's functions
-     * `ham_prod.f90`: Subroutines to mltply the Hamiltonian by the vector
-     * `lobpcg_mod.f90` : Routines for the LOBPCG method
-     * `makefile`: Makefile to bulid the software
-     * `shiftk.f90`: Main program
-     * `shiftk_io.f90`: Subroutines for the input/output data
-     * `shiftk_vals.f90`: Modules for the internal common variables
    * `sample/`: The sample directory
      * `Shiftk.nb`: The mathmatica note book to test the software (for developers)
      * `denovo/`: Sample files not to input either Hamiltonian and the right-hand side initial vector
-       * `namelist.def`: The input parameter file to test the software
      * `from_file/`: Sample files to input both Hamiltonian and the right-hand side initial vector
-       * `namelist.def`: The input parameter file to test the software
-       * `zvo_Excited.dat`: The input file of the initial excited vector to test the software
-       * `zvo_Ham.dat`: The input file of the Hamiltonian to test the software
  * `doc/`: The documents directory (only japanese, english version will be provided from ver.1.0)
-   * `ShiftKSoft.pdf` : The manual for the software 
-   * `komega.pdf` : The manual for the libraries
-   * `library`: The documents directory for the libraries
-     * `komega.tex`: The source file of the manual for the libraries 
-   * `software`: the documents directory for the software
-     * `KrylovSoft_ver.0.1.eps`: Flow diagram
-     * `ShiftKSoft.tex`: The source file of the manual for the software
+   * `index.html` : Top page for documents
+   * `library/`: Directory for the document of the librariy
+   * `software/`: Directory for the document of the sample program
  * `make.sys`: Configuration file to build
  * `makefile`: Makefile
  * `src/`: The source directory for the libraries
-   * `makefile`: Makefile to build the libraries
-   * `komega_bicg.f90`: Subroutines of the libraries for Shifted BiCG method
-   * `komega_cg_c.f90`: Subroutines of the libraries for Shifted CG method (complex Hamiltonian)
-   * `komega_cg_r.f90`: Subroutines of the libraries for Shifted CG method (real Hamiltonian)
-   * `komega_cocg.f90`: Subroutines of the libraries for Shifted COCG method
-   * `komega_math.f90`: Interface modules of BLAS
-   * `komega_vals.f90`: Modules for the internal common variables
+   * `mpi/`: Directory for the library with MPI
+   * `shared/`: Directory for the dynamic library
+   * `shared_mpi/`: Directory for the dynamic library with MPI
  * `test/`: The test directory for the libraries
-   * `krylov.in`: The initial parameter files to test the libraries
-   * `make_ham.f90`: Subroutines to generate the sample Hamiltonian by using the random number
-   * `makefile`: Makefile to test the libraries
-   * `solve_cc.f90`: The test file in the case of the complex Hamiltonian and the complex frequencies (BiCG method)
-   * `solve_cr.f90`: The test file in the case of the complex Hamiltonian and the real frequencies (CG-C method)
-   * `solve_rc.f90`: The test file in the case of the real Hamiltonian and the complex frequencies (COCG method)
-   * `solve_rr.f90`: The test file in the case of the real Hamiltonian and the real frequencies (CG-R method)
 
 # Build
 
@@ -101,21 +77,22 @@ See the manual (the explanation will be added in ver.0.1)
 
 ## How to link the libraries
 
-### For fortran
-
 - Static link
 ```
-$ ifort myprog.f90 -L Path/src -lshiftk -I Path/src
+$ gfortran myprog.f90 -L Path/src -lshiftk -I Path/src
+$ gcc myprog.c -L Path/src -lshiftk -I Path/src
 ```
+etc.
 
 - Dynamical link
 ```
-$ ifort myprog.f90 -L Path/src/shared -lshiftk -I Path/src/shared
-```  
-Add the `src/shared` directry to the environment variable `LD_LIBRARY_PATH` to execute the file with dyncamic link.
+$ gfortran myprog.f90 -L Path/src/shared -lshiftk -I Path/src/shared
+$ gcc myprog.c -L Path/src/shared -lshiftk -I Path/src/shared
+```
+etc.
 
-
-### For C/C++
+Add the `src/shared` directry to the environment
+variable `LD_LIBRARY_PATH` to execute the file with dyncamic link.
 
 # Test for libraries(Optional)
 

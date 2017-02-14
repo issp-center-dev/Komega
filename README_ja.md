@@ -8,10 +8,18 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
 # [Download](https://github.com/issp-center-dev/Komega/releases)
 
+最新版のパッケージはこちらから.
+
+
+リリースノート
+
+
 # Prerequisite
 
- * fortran コンパイラ
+ * fortranコンパイラ
  * BLASライブラリ
+ * LAPACKライブラリ
+ * MPIライブラリ(Optional)
  
 # Documents
 
@@ -22,51 +30,25 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
    * Japanese ([HTML](https://issp-center-dev.github.io/Komega/software/ja/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/software/ja/_build/latex/shiftk.pdf))
    * English ([HTML](https://issp-center-dev.github.io/Komega/software/en/_build/html/index.html)/[PDF](https://issp-center-dev.github.io/Komega/software/en/_build/latex/shiftk.pdf))
 
-# Files in this package
+# Directory Tree
 
  * `app/`: ミニアプリ関連のディレクトリ
    * `src/`: ミニアプリソースコードのディレクトリ
-     * `dyn_mod.f90`: 動的Green関数計算用のサブルーチン群
-     * `ham_prod.f90`: Hamiltonian-vector積のサブルーチン群
-     * `lobpcg_mod.f90` : LOBPCG法のルーチン
-     * `makefile`: ミニアプリのビルド用Makeファイル
-     * `shiftk.f90`: メインプログラム
-     * `shiftk_io.f90`: 入出力関連のサブルーチン群
-     * `shiftk_vals.f90`: ミニアプリ内部共通変数モジュール
    * `sample/`: ミニアプリサンプル用ディレクトリ
      * `Shiftk.nb`: テスト用Mathematicaノートブック(開発者向け)
      * `denovo/`: ハミルトニアンや右辺ベクトルの入力ファイルを用いない場合の例
-       * `namelist.def`: ミニアプリテスト用入力パラメーターファイル
      * `from_file/`: ハミルトニアンや右辺ベクトルの入力ファイルを用いる場合の例
-       * `namelist.def`: ミニアプリテスト用入力パラメーターファイル
-       * `zvo_Excited.dat`: テスト用励起ベクトルファイル(入力)
-       * `zvo_Ham.dat`: テスト用Hamiltonianファイル(入力)
  * `doc/`: ドキュメント用ディレクトリ
-   * `ShiftKSoft.pdf` : ミニアプリのマニュアル
-   * `komega.pdf` : ライブラリのマニュアル
-   * `library`: ライブラリのドキュメントのディレクトリ
-     * `komega.tex`: ライブラリのマニュアルのソース
-   * `software`: ミニアプリのドキュメントのディレクトリ
-     * `KrylovSoft_ver.0.1.eps`: フロー図
-     * `ShiftKSoft.tex`: ミニアプリのマニュアルのソース
+   * `index.html` : ドキュメントのトップページ
+   * `library/`: ライブラリのドキュメントのディレクトリ
+   * `software/`: ミニアプリのドキュメントのディレクトリ
  * `make.sys`: ビルド環境指定ファイル
  * `makefile`: Makeファイル
- * `src/`: ライブラリのソースコードのディレクトリ
-   * `makefile`: ライブラリのビルド用Makeファイル
-   * `komega_bicg.f90`: Shifted BiCG法ライブラリ用サブルーチン群
-   * `komega_cg_c.f90`: Shifted CG法(複素Hamiltonian)ライブラリ用サブルーチン群
-   * `komega_cg_r.f90`: Shifted CG法(実Hamiltonian)ライブラリ用サブルーチン群
-   * `komega_cocg.f90`: Shifted COCG法ライブラリ用サブルーチン群
-   * `komega_math.f90`: BLASインターフェイスモジュール
-   * `komega_vals.f90`: ライブラリ内部共通変数モジュール
+ * `src/`: ライブラリ本体のディレクトリ
+   * `mpi/`: MPI版ライブラリのディレクトリ
+   * `shared/`: 動的ライブラリのディレクトリ
+   * `shared_mpi/`: MPI版動的ライブラリのディレクトリ
  * `test/`: ライブラリのテスト用ディレクトリ
-   * `krylov.in`: テスト用入力パラメーターファイル
-   * `make_ham.f90`: 擬似Hamiltonianを乱数で生成するサブルーチン群
-   * `makefile`: テスト用Makeファイル
-   * `solve_cc.f90`: 複素Hamiltonian-複素振動数(BiCG)テスト
-   * `solve_cr.f90`: 複素Hamiltonian-実振動数(CG-C)テスト
-   * `solve_rc.f90`: 実Hamiltonian-複素振動数(COCG)テスト
-   * `solve_rr.f90`: 実Hamiltonian-実振動数(CG-R)テスト
 
 # Build
 
@@ -102,16 +84,20 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
 ## ライブラリのリンク方法
 
-### fortranの場合
-
 静的リンク
+``` bash
+$ gfortran myprog.f90 -L パス/src -lshiftk -I パス/src
+$ gcc myprog.f90 -L パス/src -lshiftk -I パス/src
 ```
-$ ifort myprog.f90 -L パス/src -lshiftk -I パス/src
-```
+など.
+
 動的リンク
+``` bash
+$ gfortran myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
+$ gcc myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
 ```
-$ ifort myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
-```
+など.
+
 動的リンクを行ったファイルを実行するときには,
 環境変数`LD_LIBRARY_PATH`に`src/shared`ディレクトリを追加しておく必要がある.
 
