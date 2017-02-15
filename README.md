@@ -120,5 +120,3 @@ See the manual.
    * `threshold`: The threshold to judge the convergence.
    * `rnd_seed`: The seed of random number to generate pseudo Hamiltonian.
    * Write the value of each frequencies line by line after this namelist.
-  
-
