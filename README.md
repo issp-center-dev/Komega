@@ -23,7 +23,7 @@ This package provides the solver library based on Shifted-Krylov subspace method
 
  * fortran compiler
  * BLAS library  
- * LAPCK library  
+ * LAPACK library (Used in the sample program)
  * MPI library (Optional)
 
 # Docments
@@ -91,15 +91,15 @@ See the manual (the explanation will be added in ver.0.1)
 
 - Static link
   ```
-  $ gfortran myprog.f90 -L Path/src -lshiftk -I Path/src
-  $ gcc myprog.c -L Path/src -lshiftk -I Path/src
+  $ gfortran myprog.f90 -L Path/src -lshiftk -lblas -I Path/src
+  $ gcc myprog.c -L Path/src -lshiftk -lblas -I Path/src
   ```
   etc.
 
 - Dynamical link
   ```
-  $ gfortran myprog.f90 -L Path/src/shared -lshiftk -I Path/src/shared
-  $ gcc myprog.c -L Path/src/shared -lshiftk -I Path/src/shared
+  $ gfortran myprog.f90 -L Path/src/shared -lshiftk -lblas -I Path/src/shared
+  $ gcc myprog.c -L Path/src/shared -lshiftk -lblas -I Path/src/shared
   ```
   etc.
 

@@ -383,6 +383,7 @@ a.out
 *.a
 doc/software/ShiftKSoft.pdf
 doc/library/ShiftK.pdf
+make.sys
 
 ### macOS ###
 *.DS_Store
@@ -417,4 +418,3 @@ doc/library/ja/_build/
 doc/library/en/_build/
 doc/software/ja/_build
 doc/software/en/_build/
-./make.sys

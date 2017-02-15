@@ -25,7 +25,7 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
  * fortranコンパイラ
  * BLASライブラリ
- * LAPACKライブラリ
+ * LAPACKライブラリ(ミニアプリのみ使用)
  * MPIライブラリ(Optional)
  
 # Documents
@@ -93,15 +93,15 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
  * 静的リンク
    ``` bash
-   $ gfortran myprog.f90 -L パス/src -lshiftk -I パス/src
-   $ gcc myprog.c -L パス/src -lshiftk -I パス/src
+   $ gfortran myprog.f90 -L パス/src -lshiftk -lblas -I パス/src
+   $ gcc myprog.c -L パス/src -lshiftk -lblas -I パス/sr\c
    ```
    など.
 
  * 動的リンク
    ``` bash
-   $ gfortran myprog.f90 -L パス/src/shared -lshiftk -I パス/src/shared
-   $ gcc myprog.c -L パス/src/shared -lshiftk -I パス/src/shared
+   $ gfortran myprog.f90 -L パス/src/shared -lshiftk -lblas -I パス/src/shared
+   $ gcc myprog.c -L パス/src/shared -lshiftk -lblas -I パス/src/shared
    ```
    など.
 
