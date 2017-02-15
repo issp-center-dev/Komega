@@ -85,7 +85,7 @@ The following objects are generated.
 
 ### For fortran/C/C++
 
-See the manual (the explanation will be added in ver.0.1)
+See the manual.
 
 ## How to link the libraries
 

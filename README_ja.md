@@ -62,7 +62,7 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
  * 必要に応じて`make.sys`を編集する.
    * `F90`:fortranコンパイルコマンド
    * `FFLAGS`: オプション.BLASのリンク(`-lblas`や`-mkl`)など.
-   * `MPIF90`:MPI版fortranコンパイルコマンド. MPI版が必要ない場合には指定しなくて良い.
+   * `MPIF90`:MPI版fortranコンパイルコマンド. MPI版が必要ない場合には指定しない.
  * `$ make`
 
 以下のものが作られる.
@@ -72,7 +72,7 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
  * `src/mpi/libpkomega.a` : MPI版静的ライブラリ(Optional)
  * `src/shared_mpi/libpkomega.so` : MPI版動的ライブラリ(Optional)
  * `app/src/Shiftk.out` : ミニアプリ
- * `app/src/mpi/Shiftk.out` : MPI版ミニアプリ (Oprional)
+ * `app/src/mpi/Shiftk.out` : MPI版ミニアプリ (Optional)
 
 # ミニアプリのテスト
 
@@ -87,7 +87,7 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
 ### fortran/C/C++の場合
 
-マニュアル参照(作成中)
+マニュアル参照
 
 ## ライブラリのリンク方法
 
