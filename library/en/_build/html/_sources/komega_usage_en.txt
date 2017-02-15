@@ -26,6 +26,10 @@ The restart calculation can be done by the following procedures.
 
    Since :math:`K\omega` is **not** thread safe,
    these routine must be called from the outside of the OpenMP-parallel region.
+   If you want to call :math:`K\omega` routine in the parallel region
+   (i.e. plan to solve different equations among threads),
+   please add ``-D _KOMEGA_THREAD`` to  ``FFLAGS`` in ``make.sys``
+   (**Experimental**).
    
 For FORTRAN, the modules can be called by
 

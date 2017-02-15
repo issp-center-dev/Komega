@@ -770,6 +770,10 @@ Finalization ({\hyperref[komega_usage_en:finalize]{\emph{*\_finalize}}})
 \begin{notice}{warning}{Warning:}
 Since \(K\omega\) is \textbf{not} thread safe,
 these routine must be called from the outside of the OpenMP-parallel region.
+If you want to call \(K\omega\) routine in the parallel region
+(i.e. plan to solve different equations among threads),
+please add \code{-D \_KOMEGA\_THREAD} to  \code{FFLAGS} in \code{make.sys}
+(\textbf{Experimental}).
 \end{notice}
 
 For FORTRAN, the modules can be called by

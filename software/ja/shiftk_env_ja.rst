@@ -2,7 +2,7 @@
 ====
 
 * fortranコンパイラー
-* K :math:`omega` ライブラリ
+* K :math:`\omega` ライブラリ
 * BLAS, LAPACK
-* MPIライブラリ(Oprional)
+* MPIライブラリ(Optional)
 

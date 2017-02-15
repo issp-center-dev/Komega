@@ -73,7 +73,11 @@
 <p class="first admonition-title">警告</p>
 <p class="last"><span class="math">\(K\omega\)</span> はスレッドセーフ <strong>ではない</strong> ので,
 これらのルーチンは必ずOpenMPのパラレルリージョンの外から
-呼ばなければならない.</p>
+呼ばなければならない.
+もしもパラレルリージョンの内側で <span class="math">\(K\omega\)</span> を呼び出したい
+(それぞれのスレッドで異なる問題を解きたい)場合には,
+<tt class="docutils literal"><span class="pre">make.sys</span></tt> の <tt class="docutils literal"><span class="pre">FFLAGS</span></tt> に <tt class="docutils literal"><span class="pre">-D</span> <span class="pre">_KOMEGA_THREAD</span></tt> を追加してコンパイルする.
+ただしこのモードは試験的なものである.</p>
 </div>
 <p>fortran から呼び出すときには</p>
 <div class="highlight-fortran"><div class="highlight"><pre><span class="k">USE </span><span class="nv">komega_cg_r</span> <span class="c">! 実ベクトルに対する共役勾配法</span>
