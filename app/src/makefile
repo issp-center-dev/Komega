@@ -1,7 +1,7 @@
 include ../../make.sys
 
 .SUFFIXES :
-.SUFFIXES : .o .f90
+.SUFFIXES : .o .F90
 
 LIB = -L ../../src/ -lkomega
 MPILIB = -L ../../../src/mpi/ -lpkomega
@@ -26,11 +26,11 @@ ShiftK.out:$(OBJS) ../../src/libkomega.a
 endif
 
 ifdef MPIF90
-.f90.o:
+.F90.o:
 	$(F90) -c $< $(FFLAGS) $(INCLUDE)
 	cd mpi; $(MPIF90) -c ../$< $(FFLAGS) $(MPIINCLUDE) -D MPI
 else
-.f90.o:
+.F90.o:
 	$(F90) -c $< $(FFLAGS) $(INCLUDE)
 endif
 

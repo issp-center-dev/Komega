@@ -37,10 +37,10 @@ SUBROUTINE dyn()
   &                       outrestart, v12, v2, v14, v4, rhs, r_l, r_l_save, stdout, threshold, x_l, z, z_seed
   !
 #if defined(MPI)
-  USE pkomega_cocg, ONLY : pkomega_COCG_init, pkomega_COCG_restart, pkomega_COCG_update, pkomega_COCG_getcoef, &
-  &                        pkomega_COCG_getresidual, pkomega_COCG_getvec, pkomega_COCG_finalize
-  USE pkomega_bicg, ONLY : pkomega_BiCG_init, pkomega_BiCG_restart, pkomega_BiCG_update, pkomega_BiCG_getcoef, &
-  &                        pkomega_BiCG_getresidual, pkomega_BiCG_getvec, pkomega_BiCG_finalize
+  USE komega_cocg, ONLY : pkomega_COCG_init, pkomega_COCG_restart, pkomega_COCG_update, pkomega_COCG_getcoef, &
+  &                       pkomega_COCG_getresidual, pkomega_COCG_getvec, pkomega_COCG_finalize
+  USE komega_bicg, ONLY : pkomega_BiCG_init, pkomega_BiCG_restart, pkomega_BiCG_update, pkomega_BiCG_getcoef, &
+  &                       pkomega_BiCG_getresidual, pkomega_BiCG_getvec, pkomega_BiCG_finalize
 #else
   USE komega_cocg, ONLY : komega_COCG_init, komega_COCG_restart, komega_COCG_update, komega_COCG_getcoef, &
   &                       komega_COCG_getresidual, komega_COCG_getvec, komega_COCG_finalize

@@ -18,6 +18,19 @@
 ! 
 ! For more details, See `COPYING.LESSER' in the root directory of this library.
 !
+!>
+!! \mainpage komega
+!!
+!! \section sec_def Definisions
+!!
+!! - \f${\bf r}\f$: Residual vector
+!!
+!! \section Important routine
+!!
+!
+!>
+!! Main routine of Sample program
+!!
 PROGRAM shiftk
   !
   USE shiftk_io, ONLY : shiftk_init, input_filename, input_hamiltonian, input_rhs_vector, &

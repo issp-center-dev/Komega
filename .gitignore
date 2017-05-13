@@ -418,3 +418,5 @@ doc/library/ja/_build/
 doc/library/en/_build/
 doc/software/ja/_build
 doc/software/en/_build/
+doc/html/
+doc/latex/

@@ -18,30 +18,77 @@
 ! 
 ! For more details, See `COPYING.LESSER' in the root directory of this library.
 !
-!
-! Routines for real-valiable CG
-!
-#if defined(MPI)
-MODULE pkomega_cocg
-#else
-MODULE komega_cocg
-#endif
+!> Routines for BiCG
+!!
+!!- \f$G_{i j}(z_k) = 0 (i=1 \cdots N_L,\; j = 1 \cdots N_R,\; k=1 \cdots N_z)\f$
+!!- do \f$j = 1 \cdots N_R\f$
+!!
+!!   - \f${\boldsymbol r} = {\boldsymbol \varphi_j}\f$,
+!!   - \f${\tilde {\boldsymbol r}} =\f$ an arbitrary vector,
+!!     \f${\boldsymbol r}^{\rm old} = {\tilde {\boldsymbol r}}^{\rm old} = {\bf 0}\f$
+!!   - \f$p_{i k} = 0(i=1 \cdots N_L,\; k=1 \cdots N_z),\; \pi_k=\pi_k^{\rm old} = 1(k=1 \cdots N_z)\f$
+!!   - \f$\rho = \infty,\; \alpha = 1,\; z_{\rm seed}=0\f$
+!!   - do iteration
+!!      - \f$\circ\f$ Seed equation
+!!      - \f$\rho^{\rm old} = \rho,\; \rho = {\tilde {\boldsymbol r}}^* \cdot {\boldsymbol r}\f$
+!!      - \f$\beta = \rho / \rho^{\rm old}\f$
+!!      - \f${\boldsymbol q} = (z_{\rm seed} {\hat I} - {\hat H}){\boldsymbol r}\f$
+!!      - \f$\alpha^{\rm old} = \alpha,\;
+!!           \alpha = \frac{\rho}{{\tilde {\boldsymbol r}}^*\cdot{\boldsymbol q} - \beta \rho / \alpha }\f$
+!!      - \f$\circ\f$ Shifted equation
+!!      - do \f$k = 1 \cdots N_z\f$
+!!         - \f$\pi_k^{\rm new} = [1+\alpha(z_k-z_{\rm seed})]\pi_k -
+!!              \frac{\alpha \beta}{\alpha^{\rm old}}(\pi_k^{\rm old} - \pi_k)\f$
+!!         - do \f$i = 1 \cdots N_L\f$
+!!            - \f$p_{i k} = \frac{1}{\pi_k} {\boldsymbol \varphi}_i^* \cdot {\boldsymbol r} +
+!!                 \frac{\pi^{\rm old}_k \pi^{\rm old}_k}{\pi_k \pi_k} \beta p_{i k}\f$
+!!            - \f$G_{i j}(z_k) = G_{i j}(z_k) + \frac{\pi_k}{\pi_k^{\rm new}} \alpha p_{i k}\f$
+!!            - \f$\pi_k^{\rm old} = \pi_k\f$, \f$\pi_k = \pi_k^{\rm new}\f$
+!!         - end do \f$i\f$
+!!      - end do \f$k\f$
+!!      - \f${\boldsymbol q} = \left( 1 + \frac{\alpha \beta}{\alpha^{\rm old}} \right) {\boldsymbol r} -
+!!           \alpha {\boldsymbol q} - \frac{\alpha \beta}{\alpha^{\rm old}} {\boldsymbol r}^{\rm old},\;
+!!           {\boldsymbol r}^{\rm old} = {\boldsymbol r},\; {\boldsymbol r} = {\boldsymbol q}\f$
+!!      - \f${\boldsymbol q} = (z_{\rm seed}^* {\hat I} - {\hat H}) {\tilde {\boldsymbol r}},\;
+!!           {\boldsymbol q} = \left( 1 + \frac{\alpha^* \beta^*}{\alpha^{{\rm old}*}} \right)
+!!           {\tilde {\boldsymbol r}} - \alpha^* {\boldsymbol q} -
+!!           \frac{\alpha^* \beta^*}{\alpha^{{\rm old} *}} {\tilde {\boldsymbol r}}^{\rm old},\;
+!!           {\tilde {\boldsymbol r}}^{\rm old} = {\tilde {\boldsymbol r}},\;
+!!           {\tilde {\boldsymbol r}} = {\boldsymbol q}\f$
+!!      - \f$\circ\f$ Seed switch
+!!      - Search \f$k\f$ which gives the smallest \f$|\pi_k|\f$ .
+!!               \f$\rightarrow z_{\rm seed},\;
+!!               \pi_{\rm seed},\; \pi_{\rm seed}^{\rm old}\f$
+!!      - \f${\boldsymbol r} = {\boldsymbol r} / \pi_{\rm seed},\;
+!!           {\boldsymbol r}^{\rm old} = {\boldsymbol r}^{\rm old} / \pi_{\rm seed}^{\rm old},\;
+!!           {\tilde {\boldsymbol r}} = {\tilde {\boldsymbol r}} / \pi_{\rm seed}^*,\;
+!!           {\tilde {\boldsymbol r}}^{\rm old} =
+!!           {\tilde {\boldsymbol r}}^{\rm old} / \pi_{\rm seed}^{{\rm old}*}\f$
+!!      - \f$\alpha = (\pi_{\rm seed}^{\rm old} / \pi_{\rm seed}) \alpha\f$,
+!!        \f$\rho = \rho / (\pi_{\rm seed}^{\rm old} \pi_{\rm seed}^{\rm old})\f$
+!!      - \f$\{\pi_k = \pi_k / \pi_{\rm seed},\; \pi_k^{\rm old} =
+!!        \pi_k^{\rm old} / \pi_{\rm seed}^{\rm old}\}\f$
+!!      - if( \f$|{\boldsymbol r}| <\f$ Threshold) exit
+!!   - end do iteration
+!!- end do \f$j\f$
+!!
+MODULE komega_bicg
   !
   PRIVATE
   !
 #if defined(MPI)
-  PUBLIC pkomega_COCG_init, pkomega_COCG_restart, pkomega_COCG_update, pkomega_COCG_getcoef, &
-  &      pkomega_COCG_getvec, pkomega_COCG_finalize, pkomega_COCG_getresidual
+  PUBLIC pkomega_BICG_init, pkomega_BICG_restart, pkomega_BICG_update, pkomega_BICG_getcoef, &
+  &      pkomega_BICG_getvec, pkomega_BICG_finalize, pkomega_BICG_getresidual
 #else
-  PUBLIC komega_COCG_init, komega_COCG_restart, komega_COCG_update, komega_COCG_getcoef, &
-  &      komega_COCG_getvec, komega_COCG_finalize, komega_COCG_getresidual
+  PUBLIC komega_BICG_init, komega_BICG_restart, komega_BICG_update, komega_BICG_getcoef, &
+  &      komega_BICG_getvec, komega_BICG_finalize, komega_BICG_getresidual
 #endif
   !
 CONTAINS
-!
-! Shifted Part
-!
-SUBROUTINE komega_COCG_shiftedeqn(r_l, x)
+!>
+!! Shifted Part
+!!
+SUBROUTINE komega_BICG_shiftedeqn(r_l, x)
   !
   USE komega_parameter, ONLY : iter, itermax, nl, nz, lz_conv
   USE komega_vals_c, ONLY : alpha, alpha_old, beta, pi, pi_old, pi_save, z, z_seed
@@ -72,21 +119,21 @@ SUBROUTINE komega_COCG_shiftedeqn(r_l, x)
      !
   END DO
   !
-END SUBROUTINE komega_COCG_shiftedeqn
-!
-! Seed Switching
-!
-SUBROUTINE komega_COCG_seed_switch(v2,status)
+END SUBROUTINE komega_BICG_shiftedeqn
+!>
+!! Seed Switching
+!!
+SUBROUTINE komega_BICG_seed_switch(v2, v4, status)
   !
   USE komega_parameter, ONLY : iter, itermax, ndim, nz, nl, iz_seed, almost0, lz_conv
   USE komega_vals_c, ONLY : alpha, alpha_save, beta_save, pi, pi_old, &
   &                               pi_save, rho, z, z_seed
-  USE komega_vecs_c, ONLY : v3, r_l_save
+  USE komega_vecs_c, ONLY : v3, v5, r_l_save
   USE komega_math, ONLY : dscal, zscal
   !
   IMPLICIT NONE
   !
-  COMPLEX(8),INTENT(INOUT) :: v2(ndim)
+  COMPLEX(8),INTENT(INOUT) :: v2(ndim), v4(ndim)
   INTEGER,INTENT(INOUT) :: status(3)
   !
   INTEGER :: jter
@@ -108,9 +155,18 @@ SUBROUTINE komega_COCG_seed_switch(v2,status)
      !
      scale = 1d0 / pi(iz_seed)
      CALL zscal(ndim, scale, v2, 1)
+     scale = 1d0 / CONJG(pi(iz_seed))
+     CALL zscal(ndim, scale, v4, 1)
+     !
+     scale = 1d0 / pi(iz_seed)
      CALL zscal(nz,scale,pi,1)
+     !
      scale = 1d0 / pi_old(iz_seed)
      CALL zscal(ndim, scale, v3, 1)
+     scale = 1d0 / CONJG(pi_old(iz_seed))
+     CALL zscal(ndim, scale, v5, 1)
+     !
+     scale = 1d0 / pi_old(iz_seed)
      CALL zscal(nz,scale,pi_old,1)
      !
      ! For restarting
@@ -138,14 +194,14 @@ SUBROUTINE komega_COCG_seed_switch(v2,status)
      !
   END IF
   !
-END SUBROUTINE komega_COCG_seed_switch
-!
-! Allocate & initialize variables
-!
+END SUBROUTINE komega_BICG_seed_switch
+!>
+!! Allocate & initialize variables
+!!
 #if defined(MPI)
-SUBROUTINE pkomega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0) BIND(C)
+SUBROUTINE pkomega_BICG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0) BIND(C)
 #else
-SUBROUTINE komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0) BIND(C)
+SUBROUTINE komega_BICG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0) BIND(C)
 #endif
   !
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, &
@@ -155,8 +211,8 @@ SUBROUTINE komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0) BIND(C
 #endif
   USE komega_vals_c, ONLY : alpha, alpha_save, beta, beta_save, pi, &
   &                               pi_old, pi_save, rho, z, z_seed 
-  USE komega_vecs_c, ONLY : p, r_l_save, v3
-  USE komega_math, ONLY : dcopy
+  USE komega_vecs_c, ONLY : p, r_l_save, v3, v5
+  USE komega_math, ONLY : zcopy
   !
   IMPLICIT NONE
   !
@@ -177,9 +233,10 @@ SUBROUTINE komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0) BIND(C
   comm = comm0
 #endif
   !
-  ALLOCATE(z(nz), v3(ndim), pi(nz), pi_old(nz), p(nl,nz), lz_conv(nz))
+  ALLOCATE(z(nz), v3(ndim), v5(ndim), pi(nz), pi_old(nz), p(nl,nz), lz_conv(nz))
   CALL zcopy(nz,z0,1,z,1)
   v3(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
+  v5(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
   p(1:nl,1:nz) = CMPLX(0d0, 0d0, KIND(0d0))
   x(1:nl,1:nz) = CMPLX(0d0, 0d0, KIND(0d0))
   pi(1:nz) = CMPLX(1d0, 0d0, KIND(0d0))
@@ -199,27 +256,27 @@ SUBROUTINE komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0) BIND(C
   END IF
   !
 #if defined(MPI)
-END SUBROUTINE pkomega_COCG_init
+END SUBROUTINE pkomega_BICG_init
 #else
-END SUBROUTINE komega_COCG_init
+END SUBROUTINE komega_BICG_init
 #endif
 !
 ! Restart by input
 !
 #if defined(MPI)
-SUBROUTINE pkomega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
-&                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0) &
-& BIND(C)
+SUBROUTINE pkomega_BICG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
+&                       iter_old, v2, v12, v4, v14, alpha_save0, beta_save0, z_seed0, r_l_save0) &
+&  BIND(C)
 #else
-SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
-&                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0) &
-& BIND(C)
+SUBROUTINE komega_BICG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
+&                       iter_old, v2, v12, v4, v14, alpha_save0, beta_save0, z_seed0, r_l_save0) &
+&  BIND(C)
 #endif
   !
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed, lz_conv, nz, resnorm
   USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed, pi
-  USE komega_vecs_c, ONLY : r_l_save, v3
-  USE komega_math, ONLY : zcopy, zdotuMPI, zdotcMPI
+  USE komega_vecs_c, ONLY : r_l_save, v3, v5
+  USE komega_math, ONLY : zcopy, zdotcMPI
   !
   IMPLICIT NONE
   !
@@ -239,13 +296,14 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   & alpha_save0(iter_old), beta_save0(iter_old), z_seed0
   COMPLEX(8),INTENT(IN) :: r_l_save0(nl0,iter_old)
   COMPLEX(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
+  COMPLEX(8),INTENT(INOUT) :: v4(ndim), v14(ndim)
   !
   INTEGER :: iz
   !
 #if defined(MPI)
-  CALL pkomega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+  CALL pkomega_BICG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
 #else
-  CALL komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+  CALL komega_BICG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
 #endif
   z_seed = z_seed0
   iz_seed = 0
@@ -268,7 +326,7 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
      !
      ! Shifted equation
      !
-     CALL komega_COCG_shiftedeqn(r_l_save0(1:nl,iter), x)
+     CALL komega_BICG_shiftedeqn(r_l_save0(1:nl,iter), x)
      !
   END DO
   !
@@ -277,11 +335,12 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   iter = iter_old 
   !
   CALL zcopy(ndim,v12,1,v3,1)
-  rho = zdotuMPI(ndim,v3,v3)
+  CALL zcopy(ndim,v14,1,v5,1)
+  rho = zdotcMPI(ndim,v5,v3)
   !
   ! Seed Switching
   !
-  CALL komega_COCG_seed_switch(v2,status)
+  CALL komega_BICG_seed_switch(v2,v4,status)
   !
   ! Convergence check
   !
@@ -318,29 +377,29 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   END IF
   !
 #if defined(MPI)
-END SUBROUTINE pkomega_COCG_restart
+END SUBROUTINE pkomega_BICG_restart
 #else
-END SUBROUTINE komega_COCG_restart
+END SUBROUTINE komega_BICG_restart
 #endif
-!
-! Update x, p, r
-!
+!>
+!! Update x, p, r
+!!
 #if defined(MPI)
-SUBROUTINE pkomega_COCG_update(v12, v2, x, r_l, status) BIND(C)
+SUBROUTINE pkomega_BICG_update(v12, v2, v14, v4, x, r_l, status) BIND(C)
 #else
-SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status) BIND(C)
+SUBROUTINE komega_BICG_update(v12, v2, v14, v4, x, r_l, status) BIND(C)
 #endif
   !
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, &
   &                            threshold, almost0, lz_conv, resnorm
   USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, &
   &                         beta, beta_save, rho, z_seed, pi
-  USE komega_vecs_c, ONLY : r_l_save, v3
-  USE komega_math, ONLY : zdotuMPI, zcopy, zdotcMPI
+  USE komega_vecs_c, ONLY : r_l_save, v3, v5
+  USE komega_math, ONLY : zdotcMPI, zcopy
   !
   IMPLICIT NONE
   !
-  COMPLEX(8),INTENT(INOUT) :: v12(ndim), v2(ndim), x(nl,nz)
+  COMPLEX(8),INTENT(INOUT) :: v12(ndim), v2(ndim), v14(ndim), v4(ndim), x(nl,nz)
   COMPLEX(8),INTENT(IN) :: r_l(nl)
   INTEGER,INTENT(INOUT) :: status(3)
   !
@@ -351,15 +410,16 @@ SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status) BIND(C)
   status(1:3) = 0
   !
   rho_old = rho
-  rho = zdotuMPI(ndim,v2,v2)
+  rho = zdotcMPI(ndim,v4,v2)
   IF(iter == 1) THEN
      beta = CMPLX(0d0, 0d0, KIND(0d0))
   ELSE
      beta = rho / rho_old
   END IF
   v12(1:ndim) = z_seed * v2(1:ndim) - v12(1:ndim)
+  v14(1:ndim) = CONJG(z_seed) * v4(1:ndim) - v14(1:ndim)
   alpha_old = alpha
-  alpha_denom = zdotuMPI(ndim,v2,v12) - beta * rho / alpha
+  alpha_denom = zdotcMPI(ndim,v4,v12) - beta * rho / alpha
   !
   IF(ABS(alpha_denom) < almost0) THEN
      status(2) = 2
@@ -378,7 +438,7 @@ SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status) BIND(C)
   !
   ! Shifted equation
   !
-  CALL komega_COCG_shiftedeqn(r_l, x)
+  CALL komega_BICG_shiftedeqn(r_l, x)
   !
   ! Update residual
   !
@@ -387,10 +447,15 @@ SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status) BIND(C)
   &           - alpha * beta / alpha_old * v3(1:ndim)
   CALL zcopy(ndim,v2,1,v3,1)
   CALL zcopy(ndim,v12,1,v2,1)
+  v14(1:ndim) = (1d0 + CONJG(alpha * beta / alpha_old)) * v4(1:ndim) &
+  &           - CONJG(alpha) * v14(1:ndim) &
+  &           - CONJG(alpha * beta / alpha_old) * v5(1:ndim)
+  CALL zcopy(ndim,v4,1,v5,1)
+  CALL zcopy(ndim,v14,1,v4,1)
   !
   ! Seed Switching
   !
-  CALL komega_COCG_seed_switch(v2,status)
+  CALL komega_BICG_seed_switch(v2,v4,status)
   !
   ! Convergence check
   !
@@ -437,17 +502,17 @@ SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status) BIND(C)
   END IF
   !
 #if defined(MPI)
-END SUBROUTINE pkomega_COCG_update
+END SUBROUTINE pkomega_BICG_update
 #else
-END SUBROUTINE komega_COCG_update
+END SUBROUTINE komega_BICG_update
 #endif
-!
-! Return saved alpha, beta, r_l
-!
+!>
+!! Return saved alpha, beta, r_l
+!!
 #if defined(MPI)
-SUBROUTINE pkomega_COCG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND(C)
+SUBROUTINE pkomega_BICG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND(C)
 #else
-SUBROUTINE komega_COCG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND(C)
+SUBROUTINE komega_BICG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND(C)
 #endif
   !
   USE komega_parameter, ONLY : iter, nl
@@ -466,41 +531,42 @@ SUBROUTINE komega_COCG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND
   CALL zcopy(nl*iter,r_l_save,1,r_l_save0,1)
   !
 #if defined(MPI)
-END SUBROUTINE pkomega_COCG_getcoef
+END SUBROUTINE pkomega_BICG_getcoef
 #else
-END SUBROUTINE komega_COCG_getcoef
+END SUBROUTINE komega_BICG_getcoef
 #endif
-!
-! Return r_old
-!
+!>
+!! Return r_old
+!!
 #if defined(MPI)
-SUBROUTINE pkomega_COCG_getvec(r_old) BIND(C)
+SUBROUTINE pkomega_BICG_getvec(r_old, r_tilde_old) BIND(C)
 #else
-SUBROUTINE komega_COCG_getvec(r_old) BIND(C)
+SUBROUTINE komega_BICG_getvec(r_old, r_tilde_old) BIND(C)
 #endif
   !
   USE komega_parameter, ONLY : ndim
-  USE komega_vecs_c, ONLY : v3
+  USE komega_vecs_c, ONLY : v3, v5
   USE komega_math, ONLY : zcopy
   !
   IMPLICIT NONE
   !
-  COMPLEX(8),INTENT(OUT) :: r_old(ndim)
+  COMPLEX(8),INTENT(OUT) :: r_old(ndim), r_tilde_old(ndim)
   !
   CALL zcopy(ndim,v3,1,r_old,1)
+  CALL zcopy(ndim,v5,1,r_tilde_old,1)
   !
 #if defined(MPI)
-END SUBROUTINE pkomega_COCG_getvec
+END SUBROUTINE pkomega_BICG_getvec
 #else
-END SUBROUTINE komega_COCG_getvec
+END SUBROUTINE komega_BICG_getvec
 #endif
-!
-! Return Residual Norm
-!
+!>
+!! Return Residual Norm
+!!
 #if defined(MPI)
-SUBROUTINE pkomega_COCG_getresidual(res) BIND(C)
+SUBROUTINE pkomega_BICG_getresidual(res) BIND(C)
 #else
-SUBROUTINE komega_COCG_getresidual(res) BIND(C)
+SUBROUTINE komega_BICG_getresidual(res) BIND(C)
 #endif
   !
   USE komega_parameter, ONLY : nz, resnorm
@@ -513,40 +579,36 @@ SUBROUTINE komega_COCG_getresidual(res) BIND(C)
   res(1:nz) = resnorm / ABS(pi(1:nz))
   !
 #if defined(MPI)
-END SUBROUTINE pkomega_COCG_getresidual
+END SUBROUTINE pkomega_BICG_getresidual
 #else
-END SUBROUTINE komega_COCG_getresidual
+END SUBROUTINE komega_BICG_getresidual
 #endif
-!
-! Deallocate private arrays
-!
+!>
+!! Deallocate private arrays
+!!
 #if defined(MPI)
-SUBROUTINE pkomega_COCG_finalize() BIND(C)
+SUBROUTINE pkomega_BICG_finalize() BIND(C)
 #else
-SUBROUTINE komega_COCG_finalize() BIND(C)
+SUBROUTINE komega_BICG_finalize() BIND(C)
 #endif
   !
   USE komega_parameter, ONLY : itermax, lz_conv
   USE komega_vals_c, ONLY : alpha_save, beta_save, &
   &                                 pi, pi_old, pi_save, z
-  USE komega_vecs_c, ONLY : p, r_l_save, v3
+  USE komega_vecs_c, ONLY : p, r_l_save, v3, v5
   !
   IMPLICIT NONE
   !
-  DEALLOCATE(z, v3, pi, pi_old, p)
+  DEALLOCATE(z, v3, v5, pi, pi_old, p, lz_conv)
   !
   IF(itermax > 0) THEN
-     DEALLOCATE(alpha_save, beta_save, r_l_save, pi_save, lz_conv)
+     DEALLOCATE(alpha_save, beta_save, r_l_save, pi_save)
   END IF
   !
 #if defined(MPI)
-END SUBROUTINE pkomega_COCG_finalize
+END SUBROUTINE pkomega_BICG_finalize
 #else
-END SUBROUTINE komega_COCG_finalize
+END SUBROUTINE komega_BICG_finalize
 #endif
 !
-#if defined(MPI)
-END MODULE pkomega_cocg
-#else
-END MODULE komega_cocg
-#endif
+END MODULE komega_bicg

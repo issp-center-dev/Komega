@@ -1,7 +1,7 @@
 include ../make.sys
 
 .SUFFIXES :
-.SUFFIXES : .o .f90
+.SUFFIXES : .o .F90
 
 LIB = -L ../src -lkomega mathlib.o
 INCLUDE = -I ../src
@@ -20,7 +20,7 @@ solve_rc.x:solve_rc.o ../src/libkomega.a
 solve_cc.x:solve_cc.o ../src/libkomega.a
 	$(F90) $< -o $@ $(FFLAGS) $(LIB)
 
-.f90.o:
+.F90.o:
 	$(F90) -c $< $(FFLAGS) $(INCLUDE)
 
 clean:
