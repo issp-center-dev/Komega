@@ -164,7 +164,7 @@ SUBROUTINE komega_CG_C_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
   IF(PRESENT(comm0)) lmpi = .TRUE.
 #endif
   !
-  ALLOCATE(z(nz), v3(ndim), pi(nz), pi_old(nz), p(nl,nz))
+  ALLOCATE(z(nz), v3(ndim), pi(nz), pi_old(nz), p(nl,nz), lz_conv(nz))
   CALL dcopy(nz,z0,1,z,1)
   v3(1:ndim) = CMPLX(0d0, 0d0, KIND(0d0))
   p(1:nl,1:nz) = CMPLX(0d0, 0d0, KIND(0d0))

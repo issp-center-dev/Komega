@@ -36,6 +36,9 @@ MODULE solve_cr_vals
   COMPLEX(8),SAVE :: &
   & z_seed ! Seed frequency
   !
+  LOGICAL,SAVE :: &
+  & restart !< It is restart run or not
+  !
   COMPLEX(8),ALLOCATABLE,SAVE :: &
   & z(:)         ! (nz): Frequency
   !
@@ -66,11 +69,11 @@ CONTAINS
   !
 SUBROUTINE input_size()
   !
-  USE solve_cr_vals, ONLY : ndim, nl, nz, itermax, threshold, rnd_seed
+  USE solve_cr_vals, ONLY : ndim, nl, nz, itermax, threshold, rnd_seed, restart
   !
   IMPLICIT NONE
   !
-  NAMELIST /input/ ndim, nz, itermax, threshold, rnd_seed, nl
+  NAMELIST /input/ ndim, nz, itermax, threshold, rnd_seed, nl, restart
   !
   ndim = 5
   nl = 5
@@ -78,6 +81,7 @@ SUBROUTINE input_size()
   itermax = 0
   threshold = 1d-8
   rnd_seed = 1
+  restart = .FALSE.
   !
   READ(*,input,err=100)
   !
@@ -90,6 +94,7 @@ SUBROUTINE input_size()
   WRITE(*,*) "       Max. iteractions : ", itermax
   WRITE(*,*) "              Threshold : ", threshold
   WRITE(*,*) "        Seed for Random : ", threshold
+  WRITE(*,*) "                Restart : ", restart
   !
   return
   !
@@ -135,7 +140,7 @@ SUBROUTINE input_restart()
   ELSE
      !
      WRITE(*,*) "  Restart file is NOT found."
-     iter_old = 0
+     STOP
      !
   END IF
   !
@@ -282,10 +287,10 @@ END MODULE solve_cr_routines
 PROGRAM solve_cr
   !
   USE komega_COCG, ONLY : komega_COCG_init, komega_COCG_restart, komega_COCG_update, &
-  &                        komega_COCG_getcoef, komega_COCG_getvec, komega_COCG_finalize
+  &                       komega_COCG_getcoef, komega_COCG_getvec, komega_COCG_finalize
   USE solve_cr_routines, ONLY : input_size, input_restart, generate_system, &
-  &                              output_restart, output_result
-  USE solve_cr_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, &
+  &                             output_restart, output_result
+  USE solve_cr_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, restart, &
   &                         rhs, v12, v2, r_l, r_l_save, threshold, x, z, z_seed
   USE mathlib, ONLY : zgemv
   !
@@ -294,7 +299,6 @@ PROGRAM solve_cr
   ! Variables for Restart
   !
   INTEGER :: &
-  & itermin, & ! First iteration in this run
   & iter, jter, & ! Counter for Iteration
   & status(3)
   !
@@ -311,18 +315,17 @@ PROGRAM solve_cr
   !
   ! Check: Whether the restart file is exist.
   !
-  CALL input_restart()
+  IF (restart) CALL input_restart()
   !
   WRITE(*,*)
   WRITE(*,*) "#####  CG Initialization  #####"
   WRITE(*,*)
   !
-  IF(iter_old > 0) THEN
+  IF(restart) THEN
     !
     ! When restarting, counter
     !
-    itermin = iter_old + 1
-    CALL komega_COCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
+    CALL komega_COCG_restart(ndim, nl, nz, x, z, iter_old + itermax, threshold, &
     &                 status, iter_old, v2, v12, alpha, beta, z_seed, r_l_save)
     !
     ! These vectors were saved in COCG routine
@@ -333,13 +336,11 @@ PROGRAM solve_cr
     !
   ELSE
      !
-     itermin = 1
-     !
      ! Generate Right Hand Side Vector
      !
      v2(1:ndim) = rhs(1:ndim)
      !
-     CALL komega_COCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     CALL komega_COCG_init(ndim, nl, nz, x, z, itermax, threshold)
      !
   END IF
   !
@@ -349,7 +350,7 @@ PROGRAM solve_cr
   WRITE(*,*) "#####  CG Iteration  #####"
   WRITE(*,*)
   !
-  DO iter = 1, abs(itermax)
+  DO iter = 1, itermax
      !
      ! Projection of Residual vector into the space
      ! spaned by left vectors
@@ -393,19 +394,15 @@ test_r(1:ndim,iter) = v2(1:ndim)
   !
   ! Get these vectors for restart in the Next run
   !
-  IF(itermax > 0) THEN
-     !
-     ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
-     !
-     CALL komega_COCG_getcoef(alpha, beta, z_seed, r_l_save)
-     CALL komega_COCG_getvec(v12)
-     !
-     CALL output_restart()
-     !
-     DEALLOCATE(alpha, beta, r_l_save)
-     !     
-  END IF
+  ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
   !
+  CALL komega_COCG_getcoef(alpha, beta, z_seed, r_l_save)
+  CALL komega_COCG_getvec(v12)
+  !
+  CALL output_restart()
+  !
+  DEALLOCATE(alpha, beta, r_l_save)
+  !     
 10 CONTINUE
   !
   ! Deallocate all intrinsic vectors

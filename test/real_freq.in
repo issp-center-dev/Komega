@@ -1,0 +1,13 @@
+&input
+      ndim = 5
+        nl = 5
+        nz = 5
+   itermax = 5
+ threshold = 1d-3
+  rnd_seed = 100
+/
+-2d0
+-1d0
+0d0
+1d0
+2d0

@@ -24,17 +24,20 @@ MODULE solve_cc_vals
   !
   INTEGER,SAVE :: &
   & rnd_seed, &
-  & ndim,    & ! Size of Hilvert space
-  & nz,      & ! Number of frequencies
-  & nl,      & ! Number of Left vector
-  & itermax, & ! Max. number of iteraction
-  & iter_old   ! Number of iteraction of previous run
+  & ndim,    & !< Size of Hilvert space
+  & nz,      & !< Number of frequencies
+  & nl,      & !< Number of Left vector
+  & itermax, & !< Max. number of iteraction
+  & iter_old   !< Number of iteraction of previous run
   !
   REAL(8),SAVE :: &
-  & threshold ! Convergence Threshold
+  & threshold !< Convergence Threshold
   !
   COMPLEX(8),SAVE :: &
-  & z_seed ! Seed frequency
+  & z_seed !< Seed frequency
+  !
+  LOGICAL,SAVE :: &
+  & restart !< It is restart run or not
   !
   COMPLEX(8),ALLOCATABLE,SAVE :: &
   & z(:)         ! (nz): Frequency
@@ -67,11 +70,11 @@ CONTAINS
   !
 SUBROUTINE input_size()
   !
-  USE solve_cc_vals, ONLY : ndim, nl, nz, itermax, threshold, rnd_seed
+  USE solve_cc_vals, ONLY : ndim, nl, nz, itermax, threshold, rnd_seed, restart
   !
   IMPLICIT NONE
   !
-  NAMELIST /input/ ndim, nz, itermax, threshold, rnd_seed, nl
+  NAMELIST /input/ ndim, nz, itermax, threshold, rnd_seed, nl, restart
   !
   ndim = 5
   nl = 5
@@ -79,6 +82,7 @@ SUBROUTINE input_size()
   itermax = 0
   threshold = 1d-8
   rnd_seed = 1
+  restart = .FALSE.
   !
   READ(*,input,err=100)
   !
@@ -91,6 +95,7 @@ SUBROUTINE input_size()
   WRITE(*,*) "       Max. iteractions : ", itermax
   WRITE(*,*) "              Threshold : ", threshold
   WRITE(*,*) "        Seed for Random : ", threshold
+  WRITE(*,*) "                Restart : ", restart
   !
   return
   !
@@ -138,7 +143,7 @@ SUBROUTINE input_restart()
   ELSE
      !
      WRITE(*,*) "  Restart file is NOT found."
-     iter_old = 0
+     STOP
      !
   END IF
   !
@@ -290,10 +295,10 @@ END MODULE solve_cc_routines
 PROGRAM solve_cc
   !
   USE komega_BiCG, ONLY : komega_BiCG_init, komega_BiCG_restart, komega_BiCG_update, &
-  &                        komega_BiCG_getcoef, komega_BiCG_getvec, komega_BiCG_finalize
+  &                       komega_BiCG_getcoef, komega_BiCG_getvec, komega_BiCG_finalize
   USE solve_cc_routines, ONLY : input_size, input_restart, generate_system, &
-  &                              output_restart, output_result
-  USE solve_cc_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, &
+  &                             output_restart, output_result
+  USE solve_cc_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, restart, &
   &                         rhs, v12, v2, v14, v4, r_l, r_l_save, threshold, x, z, z_seed
   USE mathlib, ONLY : zgemv
   !
@@ -302,7 +307,6 @@ PROGRAM solve_cc
   ! Variables for Restart
   !
   INTEGER :: &
-  & itermin, & ! First iteration in this run
   & iter, jter,   & ! Counter for Iteration
   & status(3)
   !
@@ -319,18 +323,17 @@ PROGRAM solve_cc
   !
   ! Check: Whether the restart file is exist.
   !
-  CALL input_restart()
+  IF (restart) CALL input_restart()
   !
   WRITE(*,*)
   WRITE(*,*) "#####  CG Initialization  #####"
   WRITE(*,*)
   !
-  IF(iter_old > 0) THEN
+  IF(restart) THEN
     !
     ! When restarting, counter
     !
-    itermin = iter_old + 1
-    CALL komega_BiCG_restart(ndim, nl, nz, x, z, max(0,itermax), threshold, &
+    CALL komega_BiCG_restart(ndim, nl, nz, x, z, iter_old + itermax, threshold, &
     &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
     !
     ! These vectors were saved in BiCG routine
@@ -341,15 +344,13 @@ PROGRAM solve_cc
     !
   ELSE
      !
-     itermin = 1
-     !
      ! Generate Right Hand Side Vector
      !
      v2(1:ndim) = rhs(1:ndim)
      v4(1:ndim) = CONJG(v2(1:ndim))
      !v4(1:ndim) = v2(1:ndim)
      !
-     CALL komega_BiCG_init(ndim, nl, nz, x, z, max(0,itermax), threshold)
+     CALL komega_BiCG_init(ndim, nl, nz, x, z, itermax, threshold)
      !
   END IF
   !
@@ -359,7 +360,7 @@ PROGRAM solve_cc
   WRITE(*,*) "#####  CG Iteration  #####"
   WRITE(*,*)
   !
-  DO iter = 1, abs(itermax)
+  DO iter = 1, itermax
      !
      ! Projection of Residual vector into the space
      ! spaned by left vectors
@@ -405,19 +406,15 @@ test_r(1:ndim,iter,2) = v4(1:ndim)
   !
   ! Get these vectors for restart in the Next run
   !
-  IF(itermax > 0) THEN
-     !
-     ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
-     !
-     CALL komega_BiCG_getcoef(alpha, beta, z_seed, r_l_save)
-     CALL komega_BiCG_getvec(v12,v14)
-     !
-     CALL output_restart()
-     !
-     DEALLOCATE(alpha, beta, r_l_save)
-     !     
-  END IF
+  ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl,iter_old))
   !
+  CALL komega_BiCG_getcoef(alpha, beta, z_seed, r_l_save)
+  CALL komega_BiCG_getvec(v12,v14)
+  !
+  CALL output_restart()
+  !
+  DEALLOCATE(alpha, beta, r_l_save)
+  !     
 10 CONTINUE
   !
   ! Deallocate all intrinsic vectors
