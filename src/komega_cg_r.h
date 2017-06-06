@@ -22,13 +22,13 @@ For more details, See ‘COPYING.LESSER’ in the root directory of this library
 #pragma once
 
 void komega_cg_r_init(int *ndim, int *nl, int *nz, double *x,
-                      double *z, int *itermax, double *threshold);
+                      double *z, int *itermax, double *threshold, int *comm);
 void komega_cg_r_restart(int *ndim, int *nl, int *nz, double *x,
                          double *z, int *itermax, double *threshold,
                          int *status, int *iter_old, double *v2,
                          double *v12, 
                          double *alpha_save, double *beta_save,
-                         double *z_seed, double *r_l_save);
+                         double *z_seed, double *r_l_save, int *comm);
 void komega_cg_r_update(double *v12, double *v2,
                         double *x, double *r_l, int *status);
 void komega_cg_r_getcoef(double *alpha_save, double *beta_save,

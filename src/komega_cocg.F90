@@ -25,13 +25,8 @@ MODULE komega_cocg
   !
   PRIVATE
   !
-#if defined(MPI)
-  PUBLIC pkomega_COCG_init, pkomega_COCG_restart, pkomega_COCG_update, pkomega_COCG_getcoef, &
-  &      pkomega_COCG_getvec, pkomega_COCG_finalize, pkomega_COCG_getresidual
-#else
   PUBLIC komega_COCG_init, komega_COCG_restart, komega_COCG_update, komega_COCG_getcoef, &
   &      komega_COCG_getvec, komega_COCG_finalize, komega_COCG_getresidual
-#endif
   !
 CONTAINS
 !
@@ -138,17 +133,11 @@ END SUBROUTINE komega_COCG_seed_switch
 !
 ! Allocate & initialize variables
 !
-#if defined(MPI)
-SUBROUTINE pkomega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0) BIND(C)
-#else
-SUBROUTINE komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0) BIND(C)
-#endif
+SUBROUTINE komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0) BIND(C)
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, &
-  &                            threshold, iz_seed, lz_conv
-#if defined(MPI)
-  USE komega_parameter, ONLY : comm
-#endif
+  &                            threshold, iz_seed, lz_conv, lmpi, comm
   USE komega_vals_c, ONLY : alpha, alpha_save, beta, beta_save, pi, &
   &                               pi_old, pi_save, rho, z, z_seed 
   USE komega_vecs_c, ONLY : p, r_l_save, v3
@@ -156,21 +145,23 @@ SUBROUTINE komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0) BIND(C
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
-  REAL(8),INTENT(IN) :: threshold0
-  COMPLEX(8),INTENT(IN) :: z0(nz0)
-  COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
-#if defined(MPI)
-  INTEGER,INTENT(IN) :: comm0
-#endif
+  INTEGER(C_INT),INTENT(IN) :: ndim0, nl0, nz0, itermax0
+  REAL(C_DOUBLE),INTENT(IN) :: threshold0
+  COMPLEX(C_DOUBLE),INTENT(IN) :: z0(nz0)
+  COMPLEX(C_DOUBLE),INTENT(OUT) :: x(nl0,nz0)
+  INTEGER(C_INT),INTENT(IN),OPTIONAL :: comm0
   !
   ndim = ndim0
   nl = nl0
   nz = nz0
   itermax = itermax0
   threshold = threshold0
+  !
+  comm = 0
+  IF(PRESENT(comm0)) comm = comm0
+  lmpi = .FALSE.
 #if defined(MPI)
-  comm = comm0
+  IF(PRESENT(comm0)) lmpi = .TRUE.
 #endif
   !
   ALLOCATE(z(nz), v3(ndim), pi(nz), pi_old(nz), p(nl,nz), lz_conv(nz))
@@ -194,24 +185,14 @@ SUBROUTINE komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0) BIND(C
      pi_save(1:nz,-1:0) = CMPLX(1d0, 0d0, KIND(0d0))
   END IF
   !
-#if defined(MPI)
-END SUBROUTINE pkomega_COCG_init
-#else
 END SUBROUTINE komega_COCG_init
-#endif
 !
 ! Restart by input
 !
-#if defined(MPI)
-SUBROUTINE pkomega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
-&                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0) &
-& BIND(C)
-#else
 SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
-&                       iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0) &
-& BIND(C)
-#endif
+& iter_old, v2, v12, alpha_save0, beta_save0, z_seed0, r_l_save0, comm0) BIND(C)
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed, lz_conv, nz, resnorm
   USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed, pi
   USE komega_vecs_c, ONLY : r_l_save, v3
@@ -219,30 +200,28 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
-  REAL(8),INTENT(IN) :: threshold0
-  COMPLEX(8),INTENT(IN) :: z0(nz0)
-  COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
-  INTEGER,INTENT(OUT) :: status(3)
-#if defined(MPI)
-  INTEGER,INTENT(IN) :: comm0
-#endif
+  INTEGER(C_INT),INTENT(IN) :: ndim0, nl0, nz0, itermax0
+  REAL(C_DOUBLE),INTENT(IN) :: threshold0
+  COMPLEX(C_DOUBLE),INTENT(IN) :: z0(nz0)
+  COMPLEX(C_DOUBLE),INTENT(OUT) :: x(nl0,nz0)
+  INTEGER(C_INT),INTENT(OUT) :: status(3)
+  INTEGER(C_INT),INTENT(IN),OPTIONAL :: comm0
   !
   ! For Restarting
   !
-  INTEGER,INTENT(IN) :: iter_old
-  COMPLEX(8),INTENT(IN) :: &
+  INTEGER(C_INT),INTENT(IN) :: iter_old
+  COMPLEX(C_DOUBLE),INTENT(IN) :: &
   & alpha_save0(iter_old), beta_save0(iter_old), z_seed0
-  COMPLEX(8),INTENT(IN) :: r_l_save0(nl0,iter_old)
-  COMPLEX(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
+  COMPLEX(C_DOUBLE),INTENT(IN) :: r_l_save0(nl0,iter_old)
+  COMPLEX(C_DOUBLE),INTENT(INOUT) :: v2(ndim), v12(ndim)
   !
   INTEGER :: iz
   !
-#if defined(MPI)
-  CALL pkomega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
-#else
-  CALL komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
-#endif
+  IF(PRESENT(comm0)) THEN
+     CALL komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
+  ELSE
+     CALL komega_COCG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0)
+  END IF
   z_seed = z_seed0
   iz_seed = 0
   !
@@ -313,20 +292,13 @@ SUBROUTINE komega_COCG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
      status(2) = 0
   END IF
   !
-#if defined(MPI)
-END SUBROUTINE pkomega_COCG_restart
-#else
 END SUBROUTINE komega_COCG_restart
-#endif
 !
 ! Update x, p, r
 !
-#if defined(MPI)
-SUBROUTINE pkomega_COCG_update(v12, v2, x, r_l, status) BIND(C)
-#else
 SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status) BIND(C)
-#endif
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, &
   &                            threshold, almost0, lz_conv, resnorm
   USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, &
@@ -336,9 +308,9 @@ SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status) BIND(C)
   !
   IMPLICIT NONE
   !
-  COMPLEX(8),INTENT(INOUT) :: v12(ndim), v2(ndim), x(nl,nz)
-  COMPLEX(8),INTENT(IN) :: r_l(nl)
-  INTEGER,INTENT(INOUT) :: status(3)
+  COMPLEX(C_DOUBLE),INTENT(INOUT) :: v12(ndim), v2(ndim), x(nl,nz)
+  COMPLEX(C_DOUBLE),INTENT(IN) :: r_l(nl)
+  INTEGER(C_INT),INTENT(INOUT) :: status(3)
   !
   INTEGER :: iz
   COMPLEX(8) :: rho_old, alpha_denom
@@ -432,20 +404,13 @@ SUBROUTINE komega_COCG_update(v12, v2, x, r_l, status) BIND(C)
      status(2) = 0
   END IF
   !
-#if defined(MPI)
-END SUBROUTINE pkomega_COCG_update
-#else
 END SUBROUTINE komega_COCG_update
-#endif
 !
 ! Return saved alpha, beta, r_l
 !
-#if defined(MPI)
-SUBROUTINE pkomega_COCG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND(C)
-#else
 SUBROUTINE komega_COCG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND(C)
-#endif
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : iter, nl
   USE komega_vals_c, ONLY : alpha_save, beta_save, z_seed
   USE komega_vecs_c, ONLY : r_l_save
@@ -453,74 +418,52 @@ SUBROUTINE komega_COCG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND
   !
   IMPLICIT NONE
   !
-  COMPLEX(8),INTENT(OUT) :: alpha_save0(iter), beta_save0(iter), z_seed0
-  COMPLEX(8),INTENT(OUT) :: r_l_save0(nl,iter)
+  COMPLEX(C_DOUBLE),INTENT(OUT) :: alpha_save0(iter), beta_save0(iter), z_seed0
+  COMPLEX(C_DOUBLE),INTENT(OUT) :: r_l_save0(nl,iter)
   !
   z_seed0 = z_seed
   CALL zcopy(iter,alpha_save,1,alpha_save0,1)
   CALL zcopy(iter,beta_save,1,beta_save0,1)
   CALL zcopy(nl*iter,r_l_save,1,r_l_save0,1)
   !
-#if defined(MPI)
-END SUBROUTINE pkomega_COCG_getcoef
-#else
 END SUBROUTINE komega_COCG_getcoef
-#endif
 !
 ! Return r_old
 !
-#if defined(MPI)
-SUBROUTINE pkomega_COCG_getvec(r_old) BIND(C)
-#else
 SUBROUTINE komega_COCG_getvec(r_old) BIND(C)
-#endif
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : ndim
   USE komega_vecs_c, ONLY : v3
   USE komega_math, ONLY : zcopy
   !
   IMPLICIT NONE
   !
-  COMPLEX(8),INTENT(OUT) :: r_old(ndim)
+  COMPLEX(C_DOUBLE),INTENT(OUT) :: r_old(ndim)
   !
   CALL zcopy(ndim,v3,1,r_old,1)
   !
-#if defined(MPI)
-END SUBROUTINE pkomega_COCG_getvec
-#else
 END SUBROUTINE komega_COCG_getvec
-#endif
 !
 ! Return Residual Norm
 !
-#if defined(MPI)
-SUBROUTINE pkomega_COCG_getresidual(res) BIND(C)
-#else
 SUBROUTINE komega_COCG_getresidual(res) BIND(C)
-#endif
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : nz, resnorm
   USE komega_vals_c, ONLY : pi
   !
   IMPLICIT NONE
   !
-  REAL(8),INTENT(OUT) :: res(nz)
+  REAL(C_DOUBLE),INTENT(OUT) :: res(nz)
   !
   res(1:nz) = resnorm / ABS(pi(1:nz))
   !
-#if defined(MPI)
-END SUBROUTINE pkomega_COCG_getresidual
-#else
 END SUBROUTINE komega_COCG_getresidual
-#endif
 !
 ! Deallocate private arrays
 !
-#if defined(MPI)
-SUBROUTINE pkomega_COCG_finalize() BIND(C)
-#else
 SUBROUTINE komega_COCG_finalize() BIND(C)
-#endif
   !
   USE komega_parameter, ONLY : itermax, lz_conv
   USE komega_vals_c, ONLY : alpha_save, beta_save, &
@@ -535,10 +478,6 @@ SUBROUTINE komega_COCG_finalize() BIND(C)
      DEALLOCATE(alpha_save, beta_save, r_l_save, pi_save, lz_conv)
   END IF
   !
-#if defined(MPI)
-END SUBROUTINE pkomega_COCG_finalize
-#else
 END SUBROUTINE komega_COCG_finalize
-#endif
 !
 END MODULE komega_cocg

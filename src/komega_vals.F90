@@ -27,13 +27,15 @@ MODULE komega_parameter
   !
   INTEGER,SAVE :: &
   & comm,    & !< Communicator for MPI
-  & nproc,   & !< Number of processes in this communicator
   & iz_seed, & !< Index of frequency of seed
   & ndim,    & !< Dimension of Hamiltonian
   & nl,      & !< Dimension of projection
   & nz,      & !< Number of Frequency (Shift)
   & itermax, & !< Maximum number of iteration
   & iter       !< Counter of iteration
+  !
+  LOGICAL,SAVE :: &
+  & lmpi !< Use MPI or not
   !
   REAL(8),SAVE :: &
   & threshold, & !< Convergence threshold
@@ -85,7 +87,7 @@ MODULE komega_vecs_r
   REAL(8),ALLOCATABLE,SAVE :: &
   & v3(:),        &
   & p(:,:),       &
-  & r_l_save(:,:) &
+  & r_l_save(:,:)
   !
 #if defined(_KOMEGA_THREAD)
   !$OMP THREADPRIVATE(v3, p, r_l_save)

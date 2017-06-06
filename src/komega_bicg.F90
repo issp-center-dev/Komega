@@ -195,11 +195,9 @@ END SUBROUTINE komega_BICG_seed_switch
 !!
 SUBROUTINE komega_BICG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0) BIND(C)
   !
-#if defined(MPI)
-  use mpi, only : MPI_COMM_WORLD
-#endif
-  USE komega_parameter, ONLY : iter, itermax, nproc, comm, ndim, nl, nz, &
-  &                            threshold, iz_seed, lz_conv
+  USE ISO_C_BINDING
+  USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, &
+  &                            threshold, iz_seed, lz_conv, lmpi, comm
   USE komega_vals_c, ONLY : alpha, alpha_save, beta, beta_save, pi, &
   &                               pi_old, pi_save, rho, z, z_seed 
   USE komega_vecs_c, ONLY : p, r_l_save, v3, v5
@@ -207,29 +205,24 @@ SUBROUTINE komega_BICG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
-  REAL(8),INTENT(IN) :: threshold0
-  COMPLEX(8),INTENT(IN) :: z0(nz0)
-  COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
-  INTEGER,INTENT(IN),OPTIONAL :: comm0
+  INTEGER(C_INT),INTENT(IN) :: ndim0, nl0, nz0, itermax0
+  REAL(C_DOUBLE),INTENT(IN) :: threshold0
+  COMPLEX(C_DOUBLE),INTENT(IN) :: z0(nz0)
+  COMPLEX(C_DOUBLE),INTENT(OUT) :: x(nl0,nz0)
+  INTEGER(C_INT),INTENT(IN),OPTIONAL :: comm0
   !
   ndim = ndim0
   nl = nl0
   nz = nz0
   itermax = itermax0
   threshold = threshold0
-  IF(PRESENT(comm0)) THEN
+  !
+  comm = 0
+  IF(PRESENT(comm0)) comm = comm0
+  lmpi = .FALSE.
 #if defined(MPI)
-     comm = comm0
-     CALL MPI_COMM_SIZE(MPI_COMM_WORLD, nproc, ierr)
-#else
-     comm = 0
-     nproc = 1
+  IF(PRESENT(comm0)) lmpi = .TRUE.
 #endif
-  ELSE
-     comm = 0
-     nproc = 1
-  END IF
   !
   ALLOCATE(z(nz), v3(ndim), v5(ndim), pi(nz), pi_old(nz), p(nl,nz), lz_conv(nz))
   CALL zcopy(nz,z0,1,z,1)
@@ -257,10 +250,10 @@ END SUBROUTINE komega_BICG_init
 !
 ! Restart by input
 !
-SUBROUTINE komega_BICG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0, status, &
-&                       iter_old, v2, v12, v4, v14, alpha_save0, beta_save0, z_seed0, r_l_save0) &
-&  BIND(C)
+SUBROUTINE komega_BICG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, status, &
+& iter_old, v2, v12, v4, v14, alpha_save0, beta_save0, z_seed0, r_l_save0, comm0) BIND(C)
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, threshold, iz_seed, lz_conv, nz, resnorm
   USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, beta, beta_save, rho, z_seed, pi
   USE komega_vecs_c, ONLY : r_l_save, v3, v5
@@ -268,21 +261,21 @@ SUBROUTINE komega_BICG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, com
   !
   IMPLICIT NONE
   !
-  INTEGER,INTENT(IN) :: ndim0, nl0, nz0, itermax0
-  REAL(8),INTENT(IN) :: threshold0
-  COMPLEX(8),INTENT(IN) :: z0(nz0)
-  COMPLEX(8),INTENT(OUT) :: x(nl0,nz0)
-  INTEGER,INTENT(OUT) :: status(3)
-  INTEGER,INTENT(IN),OPTIONAL :: comm0
+  INTEGER(C_INT),INTENT(IN) :: ndim0, nl0, nz0, itermax0
+  REAL(C_DOUBLE),INTENT(IN) :: threshold0
+  COMPLEX(C_DOUBLE),INTENT(IN) :: z0(nz0)
+  COMPLEX(C_DOUBLE),INTENT(OUT) :: x(nl0,nz0)
+  INTEGER(C_INT),INTENT(OUT) :: status(3)
+  INTEGER(C_INT),INTENT(IN),OPTIONAL :: comm0
   !
   ! For Restarting
   !
-  INTEGER,INTENT(IN) :: iter_old
-  COMPLEX(8),INTENT(IN) :: &
+  INTEGER(C_INT),INTENT(IN) :: iter_old
+  COMPLEX(C_DOUBLE),INTENT(IN) :: &
   & alpha_save0(iter_old), beta_save0(iter_old), z_seed0
-  COMPLEX(8),INTENT(IN) :: r_l_save0(nl0,iter_old)
-  COMPLEX(8),INTENT(INOUT) :: v2(ndim), v12(ndim)
-  COMPLEX(8),INTENT(INOUT) :: v4(ndim), v14(ndim)
+  COMPLEX(C_DOUBLE),INTENT(IN) :: r_l_save0(nl0,iter_old)
+  COMPLEX(C_DOUBLE),INTENT(INOUT) :: v2(ndim), v12(ndim)
+  COMPLEX(C_DOUBLE),INTENT(INOUT) :: v4(ndim), v14(ndim)
   !
   INTEGER :: iz
   !
@@ -362,16 +355,13 @@ SUBROUTINE komega_BICG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, com
      status(2) = 0
   END IF
   !
-#if defined(MPI)
-END SUBROUTINE pkomega_BICG_restart
-#else
 END SUBROUTINE komega_BICG_restart
-#endif
 !>
 !! Update x, p, r
 !!
 SUBROUTINE komega_BICG_update(v12, v2, v14, v4, x, r_l, status) BIND(C)
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : iter, itermax, ndim, nl, nz, &
   &                            threshold, almost0, lz_conv, resnorm
   USE komega_vals_c, ONLY : alpha, alpha_old, alpha_save, &
@@ -381,9 +371,9 @@ SUBROUTINE komega_BICG_update(v12, v2, v14, v4, x, r_l, status) BIND(C)
   !
   IMPLICIT NONE
   !
-  COMPLEX(8),INTENT(INOUT) :: v12(ndim), v2(ndim), v14(ndim), v4(ndim), x(nl,nz)
-  COMPLEX(8),INTENT(IN) :: r_l(nl)
-  INTEGER,INTENT(INOUT) :: status(3)
+  COMPLEX(C_DOUBLE),INTENT(INOUT) :: v12(ndim), v2(ndim), v14(ndim), v4(ndim), x(nl,nz)
+  COMPLEX(C_DOUBLE),INTENT(IN) :: r_l(nl)
+  INTEGER(C_INT),INTENT(INOUT) :: status(3)
   !
   INTEGER :: iz
   COMPLEX(8) :: rho_old, alpha_denom
@@ -489,6 +479,7 @@ END SUBROUTINE komega_BICG_update
 !!
 SUBROUTINE komega_BICG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND(C)
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : iter, nl
   USE komega_vals_c, ONLY : alpha_save, beta_save, z_seed
   USE komega_vecs_c, ONLY : r_l_save
@@ -496,8 +487,8 @@ SUBROUTINE komega_BICG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND
   !
   IMPLICIT NONE
   !
-  COMPLEX(8),INTENT(OUT) :: alpha_save0(iter), beta_save0(iter), z_seed0
-  COMPLEX(8),INTENT(OUT) :: r_l_save0(nl,iter)
+  COMPLEX(C_DOUBLE),INTENT(OUT) :: alpha_save0(iter), beta_save0(iter), z_seed0
+  COMPLEX(C_DOUBLE),INTENT(OUT) :: r_l_save0(nl,iter)
   !
   z_seed0 = z_seed
   CALL zcopy(iter,alpha_save,1,alpha_save0,1)
@@ -510,13 +501,14 @@ END SUBROUTINE komega_BICG_getcoef
 !!
 SUBROUTINE komega_BICG_getvec(r_old, r_tilde_old) BIND(C)
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : ndim
   USE komega_vecs_c, ONLY : v3, v5
   USE komega_math, ONLY : zcopy
   !
   IMPLICIT NONE
   !
-  COMPLEX(8),INTENT(OUT) :: r_old(ndim), r_tilde_old(ndim)
+  COMPLEX(C_DOUBLE),INTENT(OUT) :: r_old(ndim), r_tilde_old(ndim)
   !
   CALL zcopy(ndim,v3,1,r_old,1)
   CALL zcopy(ndim,v5,1,r_tilde_old,1)
@@ -527,28 +519,21 @@ END SUBROUTINE komega_BICG_getvec
 !!
 SUBROUTINE komega_BICG_getresidual(res) BIND(C)
   !
+  USE ISO_C_BINDING
   USE komega_parameter, ONLY : nz, resnorm
   USE komega_vals_c, ONLY : pi
   !
   IMPLICIT NONE
   !
-  REAL(8),INTENT(OUT) :: res(nz)
+  REAL(C_DOUBLE),INTENT(OUT) :: res(nz)
   !
   res(1:nz) = resnorm / ABS(pi(1:nz))
   !
-#if defined(MPI)
-END SUBROUTINE pkomega_BICG_getresidual
-#else
 END SUBROUTINE komega_BICG_getresidual
-#endif
 !>
 !! Deallocate private arrays
 !!
-#if defined(MPI)
-SUBROUTINE pkomega_BICG_finalize() BIND(C)
-#else
 SUBROUTINE komega_BICG_finalize() BIND(C)
-#endif
   !
   USE komega_parameter, ONLY : itermax, lz_conv
   USE komega_vals_c, ONLY : alpha_save, beta_save, &
@@ -563,10 +548,6 @@ SUBROUTINE komega_BICG_finalize() BIND(C)
      DEALLOCATE(alpha_save, beta_save, r_l_save, pi_save)
   END IF
   !
-#if defined(MPI)
-END SUBROUTINE pkomega_BICG_finalize
-#else
 END SUBROUTINE komega_BICG_finalize
-#endif
 !
 END MODULE komega_bicg

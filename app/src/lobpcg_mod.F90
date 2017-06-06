@@ -29,8 +29,8 @@ MODULE lobpcg_mod
   PUBLIC lobpcg_driver, zdotcMPI
   !
   INTERFACE
-     DOUBLE COMPLEX FUNCTION zdotc(n,zx,incx,zy,incy)
-       DOUBLE COMPLEX zx(*),zy(*)
+     COMPLEX(8) FUNCTION zdotc(n,zx,incx,zy,incy)
+       COMPLEX(8) zx(*),zy(*)
        INTEGER        incx,incy,n
      END FUNCTION zdotc
   END INTERFACE
@@ -193,8 +193,6 @@ SUBROUTINE lobpcg(itarget,x,hx,x_r,x_i,eig)
      END DO
      !
   END DO
-  !
-10 CONTINUE
   !
 END SUBROUTINE lobpcg
 !

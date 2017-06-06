@@ -22,13 +22,13 @@ For more details, See ‘COPYING.LESSER’ in the root directory of this library
 #pragma once
 
 void komega_cocg_init(int *ndim, int *nl, int *nz, double complex *x,
-                      double complex *z, int *itermax, double *threshold);
+                      double complex *z, int *itermax, double *threshold, int *comm);
 void komega_cocg_restart(int *ndim, int *nl, int *nz, double complex *x,
                          double complex *z, int *itermax, double *threshold,
                          int *status, int *iter_old, double complex *v2,
                          double complex *v12, 
                          double complex *alpha_save, double complex *beta_save,
-                         double complex *z_seed, double complex *r_l_save);
+                         double complex *z_seed, double complex *r_l_save, int *comm);
 void komega_cocg_update(double complex *v12, double complex *v2,
                         double complex *x, double complex *r_l, int *status);
 void komega_cocg_getcoef(double complex *alpha_save, double complex *beta_save,

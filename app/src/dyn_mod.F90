@@ -36,17 +36,10 @@ SUBROUTINE dyn()
   USE shiftk_vals, ONLY : alpha, beta, calctype, ndim, nomega, maxloops, iter_old, lBiCG, nl, myrank, &
   &                       outrestart, v12, v2, v14, v4, rhs, r_l, r_l_save, stdout, threshold, x_l, z, z_seed
   !
-#if defined(MPI)
-  USE komega_cocg, ONLY : pkomega_COCG_init, pkomega_COCG_restart, pkomega_COCG_update, pkomega_COCG_getcoef, &
-  &                       pkomega_COCG_getresidual, pkomega_COCG_getvec, pkomega_COCG_finalize
-  USE komega_bicg, ONLY : pkomega_BiCG_init, pkomega_BiCG_restart, pkomega_BiCG_update, pkomega_BiCG_getcoef, &
-  &                       pkomega_BiCG_getresidual, pkomega_BiCG_getvec, pkomega_BiCG_finalize
-#else
   USE komega_cocg, ONLY : komega_COCG_init, komega_COCG_restart, komega_COCG_update, komega_COCG_getcoef, &
   &                       komega_COCG_getresidual, komega_COCG_getvec, komega_COCG_finalize
   USE komega_bicg, ONLY : komega_BiCG_init, komega_BiCG_restart, komega_BiCG_update, komega_BiCG_getcoef, &
   &                       komega_BiCG_getresidual, komega_BiCG_getvec, komega_BiCG_finalize
-#endif
   USE lobpcg_mod, ONLY : zdotcMPI
 #if defined (MPI)
   USE mpi, ONLY : MPI_COMM_WORLD
@@ -98,37 +91,37 @@ SUBROUTINE dyn()
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
 #if defined (MPI)
-           CALL pkomega_BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, MPI_COMM_WORLD, &
-           &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+           CALL komega_BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, status, &
+           &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save, MPI_COMM_WORLD)
 #else
-           CALL komega_BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, &
-           &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+           CALL komega_BiCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, status, &
+           &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
 #endif
         ELSE
 #if defined (MPI)
-           CALL pkomega_COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, MPI_COMM_WORLD, &
-           &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+           CALL pkomega_COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, status, &
+           &                 iter_old, v2, v12,          alpha, beta, z_seed, r_l_save, MPI_COMM_WORLD)
 #else
-           CALL komega_COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, &
-           &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+           CALL komega_COCG_restart(ndim, nl, nomega, x_l, z, maxloops, threshold, status, &
+           &                 iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
 #endif
         END IF
      ELSE
         IF(lBiCG) THEN
 #if defined (MPI)
-           CALL pkomega_BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, MPI_COMM_WORLD, &
-           &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+           CALL pkomega_BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, status, &
+           &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save, MPI_COMM_WORLD)
 #else
-           CALL komega_BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, &
-           &                 status, iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
+           CALL komega_BiCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, status, &
+           &                 iter_old, v2, v12, v4, v14, alpha, beta, z_seed, r_l_save)
 #endif
         ELSE
 #if defined (MPI)
-           CALL pkomega_COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, MPI_COMM_WORLD, &
-           &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+           CALL pkomega_COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, status, &
+           &                 iter_old, v2, v12,          alpha, beta, z_seed, r_l_save, MPI_COMM_WORLD)
 #else
-           CALL komega_COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, &
-           &                 status, iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
+           CALL komega_COCG_restart(ndim, nl, nomega, x_l, z, 0,        threshold, status, &
+           &                 iter_old, v2, v12,          alpha, beta, z_seed, r_l_save)
 #endif
         END IF
      END IF
@@ -150,13 +143,13 @@ SUBROUTINE dyn()
      IF(outrestart .EQV. .TRUE.) THEN
         IF(lBiCG) THEN
 #if defined (MPI)
-           CALL pkomega_BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, MPI_COMM_WORLD)
+           CALL komega_BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, MPI_COMM_WORLD)
 #else
            CALL komega_BiCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold)
 #endif
         ELSE
 #if defined (MPI)
-           CALL pkomega_COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, MPI_COMM_WORLD)
+           CALL komega_COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold, MPI_COMM_WORLD)
 #else
            CALL komega_COCG_init(ndim, nl, nomega, x_l, z, maxloops, threshold)
 #endif
@@ -164,13 +157,13 @@ SUBROUTINE dyn()
      ELSE
         IF(lBiCG) THEN
 #if defined (MPI)
-           CALL pkomega_BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, MPI_COMM_WORLD)
+           CALL komega_BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, MPI_COMM_WORLD)
 #else
            CALL komega_BiCG_init(ndim, nl, nomega, x_l, z, 0,        threshold)
 #endif
         ELSE
 #if defined (MPI)
-           CALL pkomega_COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, MPI_COMM_WORLD)
+           CALL komega_COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold, MPI_COMM_WORLD)
 #else
            CALL komega_COCG_init(ndim, nl, nomega, x_l, z, 0,        threshold)
 #endif
@@ -222,31 +215,15 @@ SUBROUTINE dyn()
      ! Update result x with COCG
      !
      IF(lBiCG) THEN
-#if defined (MPI)
-        CALL pkomega_BiCG_update(v12, v2, v14, v4, x_l, r_l, status)
-#else
         CALL komega_BiCG_update(v12, v2, v14, v4, x_l, r_l, status)
-#endif
      ELSE
-#if defined (MPI)
-        CALL pkomega_COCG_update(v12, v2,          x_l, r_l, status)
-#else
         CALL komega_COCG_update(v12, v2,          x_l, r_l, status)
-#endif
      END IF
      !
      IF(lBiCG) THEN
-#if defined (MPI)
-        CALL pkomega_BiCG_getresidual(res2norm)
-#else
         CALL komega_BiCG_getresidual(res2norm)
-#endif
      ELSE
-#if defined (MPI)
-        CALL pkomega_COCG_getresidual(res2norm)
-#else
         CALL komega_COCG_getresidual(res2norm)
-#endif
      END IF
      !
      IF(myrank == 0) THEN
@@ -298,21 +275,11 @@ SUBROUTINE dyn()
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl, iter_old))
      !
      IF(lBiCG) THEN
-#if defined (MPI)
-        CALL pkomega_BiCG_getcoef(alpha, beta, z_seed, r_l_save)
-        CALL pkomega_BiCG_getvec(v12,v14)
-#else
         CALL komega_BiCG_getcoef(alpha, beta, z_seed, r_l_save)
         CALL komega_BiCG_getvec(v12,v14)
-#endif
      ELSE
-#if defined (MPI)
-        CALL pkomega_COCG_getcoef(alpha, beta, z_seed, r_l_save)
-        CALL pkomega_COCG_getvec(v12)
-#else
         CALL komega_COCG_getcoef(alpha, beta, z_seed, r_l_save)
         CALL komega_COCG_getvec(v12)
-#endif
      END IF
      !
      CALL output_restart_parameter()
@@ -325,17 +292,9 @@ SUBROUTINE dyn()
   ! Deallocate all intrinsic vectors
   !
   IF(lBiCG) THEN
-#if defined (MPI)
-     CALL pkomega_BiCG_finalize()
-#else
      CALL komega_BiCG_finalize()
-#endif
   ELSE
-#if defined (MPI)
-     CALL pkomega_COCG_finalize()
-#else
      CALL komega_COCG_finalize()
-#endif
   END IF
   !
   ! Output to a file
