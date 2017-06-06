@@ -27,6 +27,7 @@ MODULE komega_parameter
   !
   INTEGER,SAVE :: &
   & comm,    & !< Communicator for MPI
+  & nproc,   & !< Number of processes in this communicator
   & iz_seed, & !< Index of frequency of seed
   & ndim,    & !< Dimension of Hamiltonian
   & nl,      & !< Dimension of projection
