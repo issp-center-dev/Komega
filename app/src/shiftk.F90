@@ -42,7 +42,7 @@ PROGRAM shiftk
   !
   IMPLICIT NONE
   !
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER :: ierr
 #endif
   !
@@ -80,7 +80,7 @@ PROGRAM shiftk
   !
   CALL finalize_ham()
   !
-#if defined(MPI)
+#if defined(__MPI)
   call MPI_FINALIZE(ierr)
 #endif
   !

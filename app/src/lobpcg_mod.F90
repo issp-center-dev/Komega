@@ -200,7 +200,7 @@ END SUBROUTINE lobpcg
 !
 FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   !
-#if defined(MPI)
+#if defined(__MPI)
   use mpi, only : MPI_IN_PLACE, MPI_DOUBLE_COMPLEX, MPI_SUM, MPI_COMM_WORLD
 #endif
   !
@@ -210,7 +210,7 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   COMPLEX(8),INTENT(IN) :: zx(n), zy(n)
   COMPLEX(8) prod
   !
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER :: ierr
 #endif
   !
@@ -220,7 +220,7 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   prod = zdotc(n,zx,1,zy,1)
 #endif
   !
-#if defined(MPI)
+#if defined(__MPI)
   call MPI_allREDUCE(MPI_IN_PLACE, prod, 1, &
   &                  MPI_DOUBLE_COMPLEX, MPI_SUM, MPI_COMM_WORLD, ierr)
 #endif

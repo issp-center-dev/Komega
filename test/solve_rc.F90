@@ -18,7 +18,7 @@
 ! 
 ! For more details, See `COPYING.LESSER' in the root directory of this library.
 !
-MODULE solve_cr_vals
+MODULE solve_rc_vals
   !
   IMPLICIT NONE
   !
@@ -57,11 +57,11 @@ MODULE solve_cr_vals
   COMPLEX(8),ALLOCATABLE,SAVE :: &
   & r_l_save(:,:) ! (nl,iter_old) Projected residual vectors
   !
-END MODULE solve_cr_vals
+END MODULE solve_rc_vals
 !
 ! Routines
 !
-MODULE solve_cr_routines
+MODULE solve_rc_routines
   !
   IMPLICIT NONE
   !
@@ -69,7 +69,7 @@ CONTAINS
   !
 SUBROUTINE input_size()
   !
-  USE solve_cr_vals, ONLY : ndim, nl, nz, itermax, threshold, rnd_seed, restart
+  USE solve_rc_vals, ONLY : ndim, nl, nz, itermax, threshold, rnd_seed, restart
   !
   IMPLICIT NONE
   !
@@ -108,7 +108,7 @@ END SUBROUTINE input_size
 !
 SUBROUTINE input_restart()
   !
-  USE solve_cr_vals, ONLY : iter_old, v2, v12, alpha, beta, z_seed, r_l_save, nl, ndim
+  USE solve_rc_vals, ONLY : iter_old, v2, v12, alpha, beta, z_seed, r_l_save, nl, ndim
   !
   IMPLICIT NONE
   !
@@ -150,7 +150,7 @@ END SUBROUTINE input_restart
 !
 SUBROUTINE generate_system()
   !
-  USE solve_cr_vals, ONLY : ndim, nz, ham, rhs, z, rnd_seed
+  USE solve_rc_vals, ONLY : ndim, nz, ham, rhs, z, rnd_seed
   USE mathlib, ONLY : zgemm, zcopy
   !
   IMPLICIT NONE
@@ -213,7 +213,7 @@ END SUBROUTINE generate_system
 !
 SUBROUTINE output_restart()
   !
-  USE solve_cr_vals, ONLY : iter_old, v2, v12, alpha, beta, z_seed, r_l_save, nl, ndim
+  USE solve_rc_vals, ONLY : iter_old, v2, v12, alpha, beta, z_seed, r_l_save, nl, ndim
   !
   IMPLICIT NONE
   !
@@ -244,7 +244,7 @@ END SUBROUTINE output_restart
 SUBROUTINE output_result()
   !
   USE mathlib, ONLY : dgemv
-  USE solve_cr_vals, ONLY : v2, ndim, nl, x, rhs, z, nz, ham
+  USE solve_rc_vals, ONLY : v2, ndim, nl, x, rhs, z, nz, ham
   !
   IMPLICIT NONE
   !
@@ -280,17 +280,17 @@ SUBROUTINE output_result()
   !
 END SUBROUTINE output_result
 !
-END MODULE solve_cr_routines
+END MODULE solve_rc_routines
 !
 !
 !
-PROGRAM solve_cr
+PROGRAM solve_rc
   !
   USE komega_COCG, ONLY : komega_COCG_init, komega_COCG_restart, komega_COCG_update, &
   &                       komega_COCG_getcoef, komega_COCG_getvec, komega_COCG_finalize
-  USE solve_cr_routines, ONLY : input_size, input_restart, generate_system, &
+  USE solve_rc_routines, ONLY : input_size, input_restart, generate_system, &
   &                             output_restart, output_result
-  USE solve_cr_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, restart, &
+  USE solve_rc_vals, ONLY : alpha, beta, ndim, nz, nl, itermax, iter_old, ham, restart, &
   &                         rhs, v12, v2, r_l, r_l_save, threshold, x, z, z_seed
   USE mathlib, ONLY : zgemv
   !
@@ -419,4 +419,4 @@ test_r(1:ndim,iter) = v2(1:ndim)
   WRITE(*,*) "#####  Done  #####"
   WRITE(*,*)
   !
-END PROGRAM solve_cr
+END PROGRAM solve_rc

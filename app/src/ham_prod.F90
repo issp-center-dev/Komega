@@ -46,7 +46,7 @@ MODULE ham_vals
   COMPLEX(8),ALLOCATABLE,SAVE :: &
   & ham(:) ! Compressed Hamiltonian
   !
-#if defined(MPI)
+#if defined(__MPI)
   COMPLEX(8),ALLOCATABLE,SAVE :: &
   & veci_buf(:)
 #endif
@@ -118,7 +118,7 @@ END SUBROUTINE ham_prod_compress
 !
 SUBROUTINE ham_prod_onthefly(veci,veco)
   !
-#if defined(MPI)
+#if defined(__MPI)
   USE mpi, ONLY : MPI_COMM_WORLD, MPI_DOUBLE_COMPLEX, MPI_STATUS_SIZE
   USE shiftk_vals, ONLY : myrank
   USE ham_vals, ONLY : veci_buf
@@ -133,7 +133,7 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
   !
   INTEGER :: isite, isite1, mask1, mask2, mask12, spin, idim, nsite2
   COMPLEX(8) :: matrix, cmatrix
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER :: origin, status(MPI_STATUS_SIZE), ierr
 #endif
   !
@@ -243,7 +243,7 @@ SUBROUTINE ham_prod_onthefly(veci,veco)
   !
   ! isite = nsite - nsitep .OR. isite = nsite
   !
-#if defined(MPI)
+#if defined(__MPI)
   IF(nsitep > 0) THEN
      !
      DO isite = 1, 2
@@ -446,14 +446,14 @@ SUBROUTINE onthefly_init()
   !
   USE shiftk_vals, ONLY : ndim
   USE ham_vals, ONLY : ud, du, para, pair
-#if defined(MPI)
+#if defined(__MPI)
   USE ham_vals, ONLY : veci_buf
 #endif  
   !
   IMPLICIT NONE
   !
   ALLOCATE(ud(ndim), du(ndim), para(ndim), pair(ndim))
-#if defined(MPI)
+#if defined(__MPI)
   ALLOCATE(veci_buf(ndim))
 #endif
   !
@@ -465,7 +465,7 @@ SUBROUTINE finalize_ham()
   !
   USE shiftk_vals, ONLY : inham
   USE ham_vals, ONLY : ud, du, para, pair, ham, ham_indx
-#if defined(MPI)
+#if defined(__MPI)
   USE ham_vals, ONLY : veci_buf
 #endif  
   !
@@ -473,7 +473,7 @@ SUBROUTINE finalize_ham()
   !
   IF(inham == "") THEN
      DEALLOCATE(ud, du, para, pair)
-#if defined(MPI)
+#if defined(__MPI)
      DEALLOCATE(veci_buf)
 #endif
   ELSE
@@ -486,7 +486,7 @@ END SUBROUTINE finalize_ham
 !
 SUBROUTINE print_ham()
   !
-#if defined(MPI)
+#if defined(__MPI)
   use mpi, ONLY : MPI_COMM_WORLD, MPI_IN_PLACE, MPI_INTEGER, MPI_SUM
 #endif
   USE shiftk_vals, ONLY : ndim, almost0, myrank, nproc
@@ -495,7 +495,7 @@ SUBROUTINE print_ham()
   IMPLICIT NONE
   !
   INTEGER :: idim, jdim, fo = 21, iproc, jproc
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER :: ierr
 #endif
   COMPLEX(8),ALLOCATABLE :: veci(:), veco(:)
@@ -525,7 +525,7 @@ SUBROUTINE print_ham()
      END DO ! idim = 1, ndim
   END DO ! iproc = 1, nproc
   !
-#if defined(MPI)
+#if defined(__MPI)
   call MPI_allREDUCE(MPI_IN_PLACE,nham, 1, &
   &                  MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr)
 #endif
@@ -549,7 +549,7 @@ SUBROUTINE print_ham()
               &  WRITE(fo,'(2i10,2f15.8)') jdim + ndim * myrank, idim + ndim *iproc, &
               & DBLE(veco(jdim)), AIMAG(veco(jdim))
            END DO
-#if defined(MPI)
+#if defined(__MPI)
            CALL MPI_BARRIER(MPI_COMM_WORLD, ierr)
 #endif
         END DO

@@ -31,7 +31,7 @@ CONTAINS
 !
 SUBROUTINE shiftk_init()
   !
-#if defined(MPI)
+#if defined(__MPI)
   USE mpi, only : MPI_COMM_WORLD
 #endif
   !$ USE omp_lib, only : OMP_GET_NUM_THREADS
@@ -47,7 +47,7 @@ SUBROUTINE shiftk_init()
      stop
   end if
   !
-#if defined(MPI)
+#if defined(__MPI)
   call MPI_INIT(ierr)
   call MPI_COMM_SIZE (MPI_COMM_WORLD, nproc, ierr)
   call MPI_COMM_RANK (MPI_COMM_WORLD, myrank, ierr)
@@ -67,7 +67,7 @@ SUBROUTINE shiftk_init()
      !
      IF(ierr /= 0) THEN
         WRITE(*,*) "Cannot open input file ", TRIM(fname)
-#if defined(MPI)
+#if defined(__MPI)
         CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
 #endif
         STOP
@@ -95,14 +95,14 @@ END SUBROUTINE shiftk_init
 !
 SUBROUTINE input_filename()
   !
-#if defined(MPI)
+#if defined(__MPI)
   USE mpi, only : MPI_COMM_WORLD, MPI_CHARACTER
 #endif
   USE shiftk_vals, ONLY : inham, invec, stdout, myrank, inpunit
   !
   IMPLICIT NONE
   !
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER ierr
 #endif
   NAMELIST /filename/ inham, invec
@@ -112,7 +112,7 @@ SUBROUTINE input_filename()
   !
   IF(myrank == 0) READ(inpunit,filename,err=100)
   !
-#if defined(MPI)
+#if defined(__MPI)
   call MPI_BCAST(inham, 256, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
   call MPI_BCAST(invec, 256, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
 #endif
@@ -127,7 +127,7 @@ SUBROUTINE input_filename()
   !
 100 write(*,*) "Stop in INPUT_FILENAME. reading namelist FILENAME"
   !
-#if defined(MPI)
+#if defined(__MPI)
      CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
 #endif
   STOP
@@ -138,7 +138,7 @@ END SUBROUTINE input_filename
 !
 SUBROUTINE input_parameter_ham()
   !
-#if defined(MPI)
+#if defined(__MPI)
   USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER, MPI_DOUBLE_PRECISION
 #endif
   USE shiftk_vals, ONLY : ndim, almost0, lBiCG, stdout, myrank, nproc, inpunit
@@ -146,7 +146,7 @@ SUBROUTINE input_parameter_ham()
   !
   IMPLICIT NONE
   !
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER ierr
 #endif
   NAMELIST /ham/ Jx, Jy, Jz, Dz, nsite
@@ -159,7 +159,7 @@ SUBROUTINE input_parameter_ham()
   !
   IF(myrank == 0) READ(inpunit,ham,err=100)
   !
-#if defined(MPI)
+#if defined(__MPI)
   call MPI_BCAST(nsite, 1, MPI_INTEGER,       0, MPI_COMM_WORLD, ierr)
   call MPI_BCAST(Jx, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
   call MPI_BCAST(Jy, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
@@ -175,7 +175,7 @@ SUBROUTINE input_parameter_ham()
   nsitep = NINT(LOG(DBLE(nproc)) / LOG(2d0))
   IF(2**nsitep /= nproc) THEN
      WRITE(*,*) "ERROR ! Number of processes is not 2-exponent."
-#if defined(MPI)
+#if defined(__MPI)
      CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
 #endif
      STOP
@@ -203,7 +203,7 @@ SUBROUTINE input_parameter_ham()
   !
 100 write(*,*) "Stop in INPUT_PARAMETER for Hamiltonian. reading namelist HAM"
   !
-#if defined(MPI)
+#if defined(__MPI)
   CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
 #endif
   STOP
@@ -214,7 +214,7 @@ END SUBROUTINE input_parameter_ham
 !
 SUBROUTINE input_parameter_cg()
   !
-#if defined(MPI)
+#if defined(__MPI)
   USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER
 #endif
   USE shiftk_vals, ONLY : maxloops, threshold, ndim, stdout, myrank, inpunit
@@ -222,7 +222,7 @@ SUBROUTINE input_parameter_cg()
   IMPLICIT NONE
   !
   INTEGER :: convfactor
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER ierr
 #endif
   NAMELIST /cg/ maxloops, convfactor
@@ -232,7 +232,7 @@ SUBROUTINE input_parameter_cg()
   !
   IF(myrank == 0) READ(inpunit,cg,err=100)
   !
-#if defined(MPI)
+#if defined(__MPI)
   call MPI_BCAST(maxloops,   1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
   call MPI_BCAST(convfactor, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
 #endif
@@ -249,7 +249,7 @@ SUBROUTINE input_parameter_cg()
   !
 100 write(*,*) "Stop in INPUT_PARAMETER for CG. reading namelist CG"
   !
-#if defined(MPI)
+#if defined(__MPI)
   CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
 #endif
   STOP
@@ -260,7 +260,7 @@ END SUBROUTINE input_parameter_cg
 !
 SUBROUTINE input_parameter_dyn()
   !
-#if defined(MPI)
+#if defined(__MPI)
   USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER, MPI_DOUBLE_COMPLEX, &
   &               MPI_CHARACTER, MPI_LOGICAL
 #endif
@@ -269,7 +269,7 @@ SUBROUTINE input_parameter_dyn()
   IMPLICIT NONE
   !
   INTEGER :: iomega
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER ierr
 #endif
   COMPLEX(8) :: omegamax, omegamin
@@ -283,7 +283,7 @@ SUBROUTINE input_parameter_dyn()
   !
   IF(myrank == 0) READ(inpunit,dyn,err=100)
   !
-#if defined(MPI)
+#if defined(__MPI)
   call MPI_BCAST(nomega,   1, MPI_INTEGER,        0, MPI_COMM_WORLD, ierr)
   call MPI_BCAST(omegamin, 1, MPI_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD, ierr)
   call MPI_BCAST(omegamax, 1, MPI_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD, ierr)
@@ -309,7 +309,7 @@ SUBROUTINE input_parameter_dyn()
   !
 100 write(*,*) "Stop in INPUT_PARAMETER_DYN. reading namelist DYN"
   !
-#if defined(MPI)
+#if defined(__MPI)
   CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
 #endif
   STOP
@@ -320,7 +320,7 @@ END SUBROUTINE input_parameter_dyn
 !
 SUBROUTINE input_hamiltonian()
   !
-#if defined(MPI)
+#if defined(__MPI)
   USE mpi, only : MPI_COMM_WORLD
 #endif
   USE shiftk_vals, ONLY : ndim, inham, lBiCG, almost0, nproc, stdout
@@ -329,7 +329,7 @@ SUBROUTINE input_hamiltonian()
   IMPLICIT NONE
   !
   INTEGER :: fi = 10, ndim2, iham, ham_indx0(2)
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER ierr
 #endif
   REAL(8) :: ham_r, ham_i
@@ -342,7 +342,7 @@ SUBROUTINE input_hamiltonian()
   !
   IF(nproc /= 1) THEN
      WRITE(*,*) "ERROR ! MPI is not available in this mode."
-#if defined(MPI)
+#if defined(__MPI)
      CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
 #endif
      STOP
@@ -406,7 +406,7 @@ END SUBROUTINE input_hamiltonian
 !
 SUBROUTINE input_rhs_vector()
   !
-#if defined(MPI)
+#if defined(__MPI)
   USE mpi, only : MPI_COMM_WORLD
 #endif
   USE shiftk_vals, ONLY : ndim, rhs, invec, e_min, e_max, nproc, stdout
@@ -414,7 +414,7 @@ SUBROUTINE input_rhs_vector()
   IMPLICIT NONE
   !
   INTEGER :: fi = 10, ndim2, idim
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER ierr
 #endif
   REAL(8) :: rhs_r, rhs_i
@@ -425,7 +425,7 @@ SUBROUTINE input_rhs_vector()
   !
   IF(nproc /= 1) THEN
      WRITE(*,*) "ERROR ! MPI is not available in this mode."
-#if defined(MPI)
+#if defined(__MPI)
      CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
 #endif
      STOP
@@ -458,7 +458,7 @@ END SUBROUTINE input_rhs_vector
 !
 SUBROUTINE input_restart_parameter()
   !
-#if defined(MPI)
+#if defined(__MPI)
   USE mpi, only : MPI_COMM_WORLD, MPI_INTEGER, MPI_DOUBLE_COMPLEX
 #endif
   USE shiftk_vals, ONLY : iter_old, alpha, beta, z_seed, nl, r_l_save, myrank, stdout
@@ -466,7 +466,7 @@ SUBROUTINE input_restart_parameter()
   IMPLICIT NONE
   !
   INTEGER :: fi = 10, iter, il
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER ierr
 #endif
   REAL(8) :: z_seed_r, z_seed_i, alpha_r, alpha_i, beta_r, beta_i
@@ -514,7 +514,7 @@ SUBROUTINE input_restart_parameter()
      !
   END IF ! (myrank == 0)
   !
-#if defined(MPI)
+#if defined(__MPI)
   call MPI_BCAST(iter_old, 1, MPI_INTEGER,          0, MPI_COMM_WORLD, ierr)
   IF(myrank /= 0) THEN
      ALLOCATE(alpha(iter_old), beta(iter_old), r_l_save(nl, iter_old))
@@ -531,7 +531,7 @@ END SUBROUTINE input_restart_parameter
 !
 SUBROUTINE input_restart_vector()
   !
-#if defined(MPI)
+#if defined(__MPI)
   USE mpi, only : MPI_COMM_WORLD
 #endif
   USE shiftk_vals, ONLY : ndim, v2, v12, v4, v14, lBiCG, myrank, stdout
@@ -541,7 +541,7 @@ SUBROUTINE input_restart_vector()
   INTEGER :: fi = 10, ndim2, idim
   REAL(8) :: v2_r, v2_i, v12_r, v12_i
   CHARACTER(256) :: fname, cmyrank
-#if defined(MPI)
+#if defined(__MPI)
   INTEGER ierr
 #endif
   !
@@ -558,7 +558,7 @@ SUBROUTINE input_restart_vector()
   !
   IF(ndim2 /= ndim) THEN
      WRITE(stdout,*) "ERROR ! Dimension is Incorrect."
-#if defined(MPI)
+#if defined(__MPI)
      CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
 #endif
      STOP

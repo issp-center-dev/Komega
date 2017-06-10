@@ -220,7 +220,7 @@ SUBROUTINE komega_BICG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
   comm = 0
   IF(PRESENT(comm0)) comm = comm0
   lmpi = .FALSE.
-#if defined(MPI)
+#if defined(__MPI)
   IF(PRESENT(comm0)) lmpi = .TRUE.
 #endif
   !
