@@ -7,14 +7,18 @@ AC_CONFIG_AUX_DIR([config])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_HEADERS([config.h])
 
+echo ""
+echo "  Check compiler"
+echo ""
+AC_PROG_F77
 # If --with-mpi=auto is used, try to find MPI, but use standard FC compiler if it is not found.
 # If --with-mpi=yes is used, try to find MPI and fail if it isn't found.
 # If --with-mpi=no is used, use a standard FC compiler instead.
 AC_ARG_WITH(mpi, [AS_HELP_STRING([--with-mpi],
-    [compile with MPI (parallelization) support. If none is found,
-    MPI is not used. Default: no])
-],,[with_mpi=no])
- AX_PROG_FC_MPI([test x"$with_mpi" != xno],[use_mpi=yes],[
+                                 [compile with MPI (parallelization) support.
+                                  If none is found, MPI is not used. Default: no])],,
+            [with_mpi=no])
+AX_PROG_FC_MPI([test x"$with_mpi" != xno],[use_mpi=yes],[
   use_mpi=no
   if test x"$with_mpi" = xyes; then
     AC_MSG_FAILURE([MPI compiler requested, but couldn't use MPI.])
@@ -22,14 +26,21 @@ AC_ARG_WITH(mpi, [AS_HELP_STRING([--with-mpi],
     AC_MSG_WARN([No MPI compiler found, won't use MPI.])
   fi
 ])
+echo ""
+echo "  Check library generation"
+echo ""
 AM_PROG_AR
-AC_PROG_RANLIB
+AC_PROG_LIBTOOL
+echo ""
+echo "  Check BLAS and LAPACK"
+echo ""
 AX_BLAS
 AX_LAPACK
 AM_CONDITIONAL(USE_MPI, test x"$use_mpi" = xyes)
 
-#AC_PROG_LIBTOOL
-
+echo ""
+echo "  Output files"
+echo ""
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
@@ -43,7 +54,12 @@ echo ""
 echo "  SUMMARY"
 echo ""
 echo "           FC = ${FC}"
+echo "          F77 = ${FC}"
+echo "        MPIFC = ${FC}"
 echo "      FCFLAGS = ${FCFLAGS}"
 echo "  LAPACK_LIBS = ${LAPACK_LIBS}"
 echo "    BLAS_LIBS = ${BLAS_LIBS}"
 echo "          MPI = ${use_mpi}"
+echo ""
+echo "  Configure done."
+echo ""
