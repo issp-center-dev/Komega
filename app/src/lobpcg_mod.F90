@@ -214,7 +214,7 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
-#if defined(NO_ZDOT)
+#if defined(__NO_ZDOT)
   prod = DOT_PRODUCT(zx,zy)
 #else
   prod = zdotc(n,zx,1,zy,1)

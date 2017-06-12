@@ -635,8 +635,6 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-USE_MPI_FALSE
-USE_MPI_TRUE
 LAPACK_LIBS
 BLAS_LIBS
 FLIBS
@@ -668,6 +666,8 @@ build_vendor
 build_cpu
 build
 LIBTOOL
+ac_ct_AR
+AR
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
 CCDEPMODE
@@ -682,8 +682,6 @@ ac_ct_CC
 CPPFLAGS
 CFLAGS
 CC
-ac_ct_AR
-AR
 FCFLAGS
 ac_ct_FC
 FC
@@ -764,6 +762,7 @@ ac_user_opts='
 enable_option_checking
 enable_silent_rules
 with_mpi
+with_openmp
 enable_dependency_tracking
 enable_shared
 enable_static
@@ -774,6 +773,8 @@ with_sysroot
 enable_libtool_lock
 with_blas
 with_lapack
+enable_threadsafe
+enable_zdot
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1418,12 +1419,16 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-threadsafe     Thread-safe mode (experimental).
+  --disable-zdot          Do not use ZDOTC and ZDOTU in BLAS.
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-mpi              compile with MPI (parallelization) support. If none
                           is found, MPI is not used. Default: no
+  --with-openmp           compile with OpenMP (parallelization) support. If
+                          none is found, OpenMP is not used. Default: yes
   --with-pic[=PKGS]       try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
@@ -3363,9 +3368,6 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-# If --with-mpi=auto is used, try to find MPI, but use standard FC compiler if it is not found.
-# If --with-mpi=yes is used, try to find MPI and fail if it isn't found.
-# If --with-mpi=no is used, use a standard FC compiler instead.
 
 # Check whether --with-mpi was given.
 if test "${with_mpi+set}" = set; then :
@@ -3374,19 +3376,10 @@ else
   with_mpi=no
 fi
 
+if test x"$with_mpi" != xno; then
 
 
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to compile using MPI" >&5
-$as_echo_n "checking whether to compile using MPI... " >&6; }
-    if test x"$with_mpi" != xno; then
-      _ax_prog_fc_mpi_mpi_wanted=yes
-    else
-      _ax_prog_fc_mpi_mpi_wanted=no
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $_ax_prog_fc_mpi_mpi_wanted" >&5
-$as_echo "$_ax_prog_fc_mpi_mpi_wanted" >&6; }
-
+  _ax_prog_fc_mpi_mpi_wanted=yes
   if test x"$_ax_prog_fc_mpi_mpi_wanted" = xyes; then
     if test -z "$FC" && test -n "$MPIFC"; then
       FC="$MPIFC"
@@ -3794,32 +3787,248 @@ fi
 # Finally, execute ACTION-IF-FOUND/ACTION-IF-NOT-FOUND:
 if test x"$_ax_prog_fc_mpi_mpi_found" = xyes; then :
 
-        use_mpi=yes
+        FCFLAGS="$FCFLAGS -D__MPI"
         :
 
 else
 
 
-  use_mpi=no
-  if test x"$with_mpi" = xyes; then
     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "MPI compiler requested, but couldn't use MPI.
 See \`config.log' for more details" "$LINENO" 5; }
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: No MPI compiler found, won't use MPI." >&5
-$as_echo "$as_me: WARNING: No MPI compiler found, won't use MPI." >&2;}
-  fi
 
         :
 
 fi
 
 
+else
+  ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+if test -n "$ac_tool_prefix"; then
+  for ac_prog in gfortran g95 xlf95 f95 fort ifort ifc efc pgfortran pgf95 lf95 ftn nagfor xlf90 f90 pgf90 pghpf epcf90 g77 xlf f77 frt pgf77 cf77 fort77 fl32 af77
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_FC+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$FC"; then
+  ac_cv_prog_FC="$FC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_FC="$ac_tool_prefix$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+FC=$ac_cv_prog_FC
+if test -n "$FC"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $FC" >&5
+$as_echo "$FC" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    test -n "$FC" && break
+  done
+fi
+if test -z "$FC"; then
+  ac_ct_FC=$FC
+  for ac_prog in gfortran g95 xlf95 f95 fort ifort ifc efc pgfortran pgf95 lf95 ftn nagfor xlf90 f90 pgf90 pghpf epcf90 g77 xlf f77 frt pgf77 cf77 fort77 fl32 af77
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ac_ct_FC+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_FC"; then
+  ac_cv_prog_ac_ct_FC="$ac_ct_FC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_FC="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_FC=$ac_cv_prog_ac_ct_FC
+if test -n "$ac_ct_FC"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_FC" >&5
+$as_echo "$ac_ct_FC" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_FC" && break
+done
+
+  if test "x$ac_ct_FC" = x; then
+    FC=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    FC=$ac_ct_FC
+  fi
+fi
+
+
+# Provide some information about the compiler.
+$as_echo "$as_me:${as_lineno-$LINENO}: checking for Fortran compiler version" >&5
+set X $ac_compile
+ac_compiler=$2
+for ac_option in --version -v -V -qversion; do
+  { { ac_try="$ac_compiler $ac_option >&5"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+$as_echo "$ac_try_echo"; } >&5
+  (eval "$ac_compiler $ac_option >&5") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    sed '10a\
+... rest of stderr output deleted ...
+         10q' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+  fi
+  rm -f conftest.er1 conftest.err
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+done
+rm -f a.out
+
+# If we don't use `.F' as extension, the preprocessor is not run on the
+# input file.  (Note that this only needs to work for GNU compilers.)
+ac_save_ext=$ac_ext
+ac_ext=F
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we are using the GNU Fortran compiler" >&5
+$as_echo_n "checking whether we are using the GNU Fortran compiler... " >&6; }
+if ${ac_cv_fc_compiler_gnu+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat > conftest.$ac_ext <<_ACEOF
+      program main
+#ifndef __GNUC__
+       choke me
+#endif
+
+      end
+_ACEOF
+if ac_fn_fc_try_compile "$LINENO"; then :
+  ac_compiler_gnu=yes
+else
+  ac_compiler_gnu=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+ac_cv_fc_compiler_gnu=$ac_compiler_gnu
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_fc_compiler_gnu" >&5
+$as_echo "$ac_cv_fc_compiler_gnu" >&6; }
+ac_ext=$ac_save_ext
+ac_test_FCFLAGS=${FCFLAGS+set}
+ac_save_FCFLAGS=$FCFLAGS
+FCFLAGS=
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $FC accepts -g" >&5
+$as_echo_n "checking whether $FC accepts -g... " >&6; }
+if ${ac_cv_prog_fc_g+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  FCFLAGS=-g
+cat > conftest.$ac_ext <<_ACEOF
+      program main
+
+      end
+_ACEOF
+if ac_fn_fc_try_compile "$LINENO"; then :
+  ac_cv_prog_fc_g=yes
+else
+  ac_cv_prog_fc_g=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_prog_fc_g" >&5
+$as_echo "$ac_cv_prog_fc_g" >&6; }
+if test "$ac_test_FCFLAGS" = set; then
+  FCFLAGS=$ac_save_FCFLAGS
+elif test $ac_cv_prog_fc_g = yes; then
+  if test "x$ac_cv_fc_compiler_gnu" = xyes; then
+    FCFLAGS="-g -O2"
+  else
+    FCFLAGS="-g"
+  fi
+else
+  if test "x$ac_cv_fc_compiler_gnu" = xyes; then
+    FCFLAGS="-O2"
+  else
+    FCFLAGS=
+  fi
+fi
+
+if test $ac_compiler_gnu = yes; then
+  GFC=yes
+else
+  GFC=
+fi
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+fi
 echo ""
-echo "  Check library generation"
+echo "  Check OpenMP"
 echo ""
-DEPDIR="${am__leading_dot}deps"
+
+# Check whether --with-openmp was given.
+if test "${with_openmp+set}" = set; then :
+  withval=$with_openmp;
+else
+  with_openmp=yes
+fi
+
+if test x"$with_openmp" != xno; then
+  DEPDIR="${am__leading_dot}deps"
 
 ac_config_commands="$ac_config_commands depfiles"
 
@@ -4609,6 +4818,77 @@ fi
 
 
 
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenMP flag of C compiler" >&5
+$as_echo_n "checking for OpenMP flag of C compiler... " >&6; }
+if ${ax_cv_c_openmp+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  saveCFLAGS=$CFLAGS
+ax_cv_c_openmp=unknown
+# Flags to try:  -fopenmp (gcc), -openmp (icc), -mp (SGI & PGI),
+#                -xopenmp (Sun), -omp (Tru64), -qsmp=omp (AIX), none
+ax_openmp_flags="-fopenmp -openmp -mp -xopenmp -omp -qsmp=omp none"
+if test "x$OPENMP_CFLAGS" != x; then
+  ax_openmp_flags="$OPENMP_CFLAGS $ax_openmp_flags"
+fi
+for ax_openmp_flag in $ax_openmp_flags; do
+  case $ax_openmp_flag in
+    none) CFLAGS=$saveC ;;
+    *) CFLAGS="$saveCFLAGS $ax_openmp_flag" ;;
+  esac
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+void omp_set_num_threads(int);
+int
+main ()
+{
+const int N = 100000;
+  int i, arr[N];
+
+  omp_set_num_threads(2);
+
+  #pragma omp parallel for
+  for (i = 0; i < N; i++) {
+    arr[i] = i;
+  }
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ax_cv_c_openmp=$ax_openmp_flag; break
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+done
+CFLAGS=$saveCFLAGS
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_c_openmp" >&5
+$as_echo "$ax_cv_c_openmp" >&6; }
+if test "x$ax_cv_c_openmp" = "xunknown"; then
+
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "OpenMP requested, but couldn't use OpenMP.
+See \`config.log' for more details" "$LINENO" 5; }
+
+else
+  if test "x$ax_cv_c_openmp" != "xnone"; then
+    OPENMP_CFLAGS=$ax_cv_c_openmp
+  fi
+  FCFLAGS="$FCFLAGS $OPENMP_CFLAGS"
+fi
+
+fi
+echo ""
+echo "  Check library generation"
+echo ""
 if test -n "$ac_tool_prefix"; then
   for ac_prog in ar lib "link -lib"
   do
@@ -20109,15 +20389,32 @@ else
 
 fi
 
- if test x"$use_mpi" = xyes; then
-  USE_MPI_TRUE=
-  USE_MPI_FALSE='#'
+#
+# Shread-safe
+#
+# Check whether --enable-threadsafe was given.
+if test "${enable_threadsafe+set}" = set; then :
+  enableval=$enable_threadsafe;
 else
-  USE_MPI_TRUE='#'
-  USE_MPI_FALSE=
+  enable_threadsafe=no
 fi
 
+if test x"$enable_threadsafe" != xno; then
+  FCFLAGS="$FCFLAGS -D__KOMEGA_THREAD"
+fi
+#
+# zdotc and adotu
+#
+# Check whether --enable-zdot was given.
+if test "${enable_zdot+set}" = set; then :
+  enableval=$enable_zdot;
+else
+  enable_zdot=yes
+fi
 
+if test x"$enable_zdot" != xyes; then
+  FCFLAGS="$FCFLAGS -D__NO_ZDOT"
+fi
 echo ""
 echo "  Output files"
 echo ""
@@ -20255,10 +20552,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${USE_MPI_TRUE}" && test -z "${USE_MPI_FALSE}"; then
-  as_fn_error $? "conditional \"USE_MPI\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -23001,13 +23294,10 @@ fi
 echo ""
 echo "  SUMMARY"
 echo ""
-echo "           FC = ${FC}"
-echo "          F77 = ${FC}"
-echo "        MPIFC = ${FC}"
-echo "      FCFLAGS = ${FCFLAGS}"
-echo "  LAPACK_LIBS = ${LAPACK_LIBS}"
-echo "    BLAS_LIBS = ${BLAS_LIBS}"
-echo "          MPI = ${use_mpi}"
+echo "             FC = ${FC}"
+echo "        FCFLAGS = ${FCFLAGS}"
+echo "    LAPACK_LIBS = ${LAPACK_LIBS}"
+echo "      BLAS_LIBS = ${BLAS_LIBS}"
 echo ""
 echo "  Configure done."
 echo ""

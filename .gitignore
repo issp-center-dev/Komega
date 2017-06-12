@@ -420,3 +420,4 @@ doc/software/ja/_build
 doc/software/en/_build/
 doc/html/
 doc/latex/
+autom4te.cache/

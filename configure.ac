@@ -11,21 +11,29 @@ echo ""
 echo "  Check compiler"
 echo ""
 AC_PROG_F77
-# If --with-mpi=auto is used, try to find MPI, but use standard FC compiler if it is not found.
-# If --with-mpi=yes is used, try to find MPI and fail if it isn't found.
-# If --with-mpi=no is used, use a standard FC compiler instead.
 AC_ARG_WITH(mpi, [AS_HELP_STRING([--with-mpi],
                                  [compile with MPI (parallelization) support.
                                   If none is found, MPI is not used. Default: no])],,
             [with_mpi=no])
-AX_PROG_FC_MPI([test x"$with_mpi" != xno],[use_mpi=yes],[
-  use_mpi=no
-  if test x"$with_mpi" = xyes; then
+if test x"$with_mpi" != xno; then
+  AX_PROG_FC_MPI(,[FCFLAGS="$FCFLAGS -D__MPI"],[
     AC_MSG_FAILURE([MPI compiler requested, but couldn't use MPI.])
-  else
-    AC_MSG_WARN([No MPI compiler found, won't use MPI.])
-  fi
-])
+    ])
+else
+  AC_PROG_FC
+fi
+echo ""
+echo "  Check OpenMP"
+echo ""
+AC_ARG_WITH(openmp, [AS_HELP_STRING([--with-openmp],
+                                 [compile with OpenMP (parallelization) support.
+                                  If none is found, OpenMP is not used. Default: yes])],,
+            [with_openmp=yes])
+if test x"$with_openmp" != xno; then
+  AX_OPENMP([FCFLAGS="$FCFLAGS $OPENMP_CFLAGS"],[
+    AC_MSG_FAILURE([OpenMP requested, but couldn't use OpenMP.])
+  ])
+fi
 echo ""
 echo "  Check library generation"
 echo ""
@@ -36,8 +44,24 @@ echo "  Check BLAS and LAPACK"
 echo ""
 AX_BLAS
 AX_LAPACK
-AM_CONDITIONAL(USE_MPI, test x"$use_mpi" = xyes)
-
+#
+# Shread-safe
+#
+AC_ARG_ENABLE(threadsafe, [AS_HELP_STRING([--enable-threadsafe],
+                                 [Thread-safe mode (experimental).])],,
+                           [enable_threadsafe=no])
+if test x"$enable_threadsafe" != xno; then
+  FCFLAGS="$FCFLAGS -D__KOMEGA_THREAD"
+fi
+#
+# zdotc and adotu
+#
+AC_ARG_ENABLE(zdot, [AS_HELP_STRING([--disable-zdot],
+                           [Do not use ZDOTC and ZDOTU in BLAS.])],,
+                           [enable_zdot=yes])
+if test x"$enable_zdot" != xyes; then
+  FCFLAGS="$FCFLAGS -D__NO_ZDOT"
+fi
 echo ""
 echo "  Output files"
 echo ""
@@ -53,13 +77,10 @@ AC_OUTPUT
 echo ""
 echo "  SUMMARY"
 echo ""
-echo "           FC = ${FC}"
-echo "          F77 = ${FC}"
-echo "        MPIFC = ${FC}"
-echo "      FCFLAGS = ${FCFLAGS}"
-echo "  LAPACK_LIBS = ${LAPACK_LIBS}"
-echo "    BLAS_LIBS = ${BLAS_LIBS}"
-echo "          MPI = ${use_mpi}"
+echo "             FC = ${FC}"
+echo "        FCFLAGS = ${FCFLAGS}"
+echo "    LAPACK_LIBS = ${LAPACK_LIBS}"
+echo "      BLAS_LIBS = ${BLAS_LIBS}"
 echo ""
 echo "  Configure done."
 echo ""

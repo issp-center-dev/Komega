@@ -79,7 +79,6 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = ShiftK.out$(EXEEXT)
-@USE_MPI_TRUE@am__append_1 = -D __MPI
 subdir = app/src
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -293,7 +292,7 @@ MAINTAINERCLEANFILES = Makefile.in
 ShiftK_out_SOURCES = dyn_mod.F90 ham_prod.F90 lobpcg_mod.F90 \
                      shiftk.F90 shiftk_io.F90 shiftk_vals.F90
 
-AM_FCFLAGS = -I$(top_builddir) -I$(top_builddir)/src $(am__append_1)
+AM_FCFLAGS = -I$(top_builddir) -I$(top_builddir)/src
 ShiftK_out_LDADD = -L$(top_builddir)/src -lkomega $(LAPACK_LIBS) $(BLAS_LIBS)
 all: all-am
 

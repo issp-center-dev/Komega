@@ -121,7 +121,7 @@ FUNCTION zdotcMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
-#if defined(NO_ZDOT)
+#if defined(__NO_ZDOT)
   prod = DOT_PRODUCT(zx,zy)
 #else
   prod = zdotc(n,zx,1,zy,1)
@@ -154,7 +154,7 @@ FUNCTION zdotuMPI(n,zx,zy) RESULT(prod)
   INTEGER :: ierr
 #endif
   !
-#if defined(NO_ZDOT)
+#if defined(__NO_ZDOT)
   prod = SUM(zx(1:n) * zy(1:n))
 #else
   prod = zdotu(n,zx,1,zy,1)

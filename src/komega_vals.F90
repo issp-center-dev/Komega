@@ -44,7 +44,7 @@ MODULE komega_parameter
   LOGICAL,ALLOCATABLE,SAVE :: &
   & lz_conv(:) !< If converged at this frequency -> .TRUE.
   !
-#if defined(_KOMEGA_THREAD)
+#if defined(__KOMEGA_THREAD)
   !$OMP THREADPRIVATE(comm, iz_seed, ndim, nl, nz, itermax, &
   !$OMP &             iter, threshold, resnorm, lz_conv)
 #endif
@@ -71,7 +71,7 @@ MODULE komega_vals_r
   REAL(8),ALLOCATABLE,SAVE :: alpha_save(:) !< \f$\alpha\f$ saved for restart
   REAL(8),ALLOCATABLE,SAVE :: beta_save(:)  !< \f$\beta\f$ saved for restart
   !
-#if defined(_KOMEGA_THREAD)
+#if defined(__KOMEGA_THREAD)
   !$OMP THREADPRIVATE(z_seed, rho, alpha, alpha_old, beta, z, pi, &
   !$OMP &             pi_old, pi_save, alpha_save, beta_save)
 #endif
@@ -89,7 +89,7 @@ MODULE komega_vecs_r
   & p(:,:),       &
   & r_l_save(:,:)
   !
-#if defined(_KOMEGA_THREAD)
+#if defined(__KOMEGA_THREAD)
   !$OMP THREADPRIVATE(v3, p, r_l_save)
 #endif
   !
@@ -116,7 +116,7 @@ MODULE komega_vals_c
   & alpha_save(:), &
   & beta_save(:)
   !
-#if defined(_KOMEGA_THREAD)
+#if defined(__KOMEGA_THREAD)
   !$OMP THREADPRIVATE(z_seed, rho, alpha, alpha_old, beta, z, pi, pi_old, &
   !$OMP &             pi_save, alpha_save, beta_save)
 #endif
@@ -135,7 +135,7 @@ MODULE komega_vecs_c
   & p(:,:), &
   & r_l_save(:,:)
   !
-#if defined(_KOMEGA_THREAD)
+#if defined(__KOMEGA_THREAD)
   !$OMP THREADPRIVATE(v3, v5, p, r_l_save)
 #endif
   !
