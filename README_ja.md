@@ -49,35 +49,26 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
    * `index.html` : ドキュメントのトップページ
    * `library/`: ライブラリのドキュメントのディレクトリ
    * `software/`: ミニアプリのドキュメントのディレクトリ
- * `make.sys`: ビルド環境指定ファイル
- * `makefile`: Makeファイル
+ * `configure`: ビルド環境指定ファイル
  * `src/`: ライブラリ本体のディレクトリ
-   * `mpi/`: MPI版ライブラリのディレクトリ
-   * `shared/`: 動的ライブラリのディレクトリ
-   * `shared_mpi/`: MPI版動的ライブラリのディレクトリ
  * `test/`: ライブラリのテスト用ディレクトリ
 
-# Build
+# Install
 
- * 必要に応じて`make.sys`を編集する.
-   * `F90`:fortranコンパイルコマンド
-   * `FFLAGS`: オプション.BLASのリンク(`-lblas`や`-mkl`)など.
-   * `MPIF90`:MPI版fortranコンパイルコマンド. MPI版が必要ない場合には指定しない.
- * `$ make`
+もっともシンプルには次のとおりである.
 
-以下のものが作られる.
+ * コンソールで `$ ./configure --prefix=**PREFIX**; make; make install` とタイプする.
+ * `**PREFIX**`で指定したディレクトリに以下のものが作られる.
+   * `**PREFIX**/lib/`内: 共有および静的ライブラリ
+   * `**PREFIX**/include/komega.h`: C/C++用ヘッダーファイル
+   * `**PREFIX**/bin/Shiftk.out`: ミニアプリ
 
- * `src/libkomega.a` : シリアル版静的ライブラリ
- * `src/shared/libkomega.so` : シリアル版動的ライブラリ
- * `src/mpi/libpkomega.a` : MPI版静的ライブラリ(Optional)
- * `src/shared_mpi/libpkomega.so` : MPI版動的ライブラリ(Optional)
- * `app/src/Shiftk.out` : ミニアプリ
- * `app/src/mpi/Shiftk.out` : MPI版ミニアプリ (Optional)
+詳しくはマニュアルを参照のこと.
 
 # ミニアプリのテスト
 
  * `app/sample/denovo/`もしくは`app/sample/from_file/`ディレクトリに移動する.
- * `$ ../../src/ShiftK.out namelist.def`とやる.
+ * `**PREFIX**/bin/ShiftK.out namelist.def`とやる.
  * `dynamicalG.dat`などが作られると成功.
  * `namelist.def`の書式はマニュアル参照
 
@@ -91,22 +82,14 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
 ## ライブラリのリンク方法
 
- * 静的リンク
-   ``` bash
-   $ gfortran myprog.f90 -L パス/src -lshiftk -lblas -I パス/src
-   $ gcc myprog.c -L パス/src -lshiftk -lblas -I パス/sr\c
-   ```
-   など.
+``` bash
+$ gfortran myprog.f90 -L **PREFIX**/src/shared -lshiftk -lblas -I **PREFIX**/src/shared
+$ gcc myprog.c -L **PREFIX**/src/shared -lshiftk -lblas -I **PREFIX**/src/shared
+```
+など.
 
- * 動的リンク
-   ``` bash
-   $ gfortran myprog.f90 -L パス/src/shared -lshiftk -lblas -I パス/src/shared
-   $ gcc myprog.c -L パス/src/shared -lshiftk -lblas -I パス/src/shared
-   ```
-   など.
-
-   動的リンクを行ったファイルを実行するときには,
-   環境変数`LD_LIBRARY_PATH`に`src/shared`ディレクトリを追加しておく必要がある.
+動的リンクを行ったファイルを実行するときには,
+環境変数`LD_LIBRARY_PATH`に`**PREFIX**/lib`ディレクトリを追加しておく必要がある.
 
 # ライブラリのテスト(Optional)
 

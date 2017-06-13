@@ -1,5 +1,33 @@
-License
-=======
+Re-distribution of this library
+===============================
+
+Contain Kω in your program
+---------------------------
+
+:math:`K\omega` library is distributed with the :ref:`lgplicense` (LGPL).
+It is summarized as follows:
+
+ * :math:`K\omega` can be freely distributed, modified, cut and pasted,
+   in a private program (in the research group, co-workers, etc.).
+   
+ * For the released program (open-source, free, commercial software etc.):
+   
+    * When you contain the source-code of :math:`K\omega` (either as is and modified)
+      in the distributed source code of your program,
+      please distribute your program with LGPL/GPL.
+      
+    * If you do not include the source-code of :math:`K\omega` (just call it),
+      you can freely distribute your program with any licenses.
+      
+    * If you distribute a binary file which is statically linked to :math:`K\omega` library,
+      please use LGPL/GPL. However, if you distribute a binary file which is dynamically linked to
+      :math:`K\omega` library (therefore :math:`K\omega` itself is not contained),
+      you can freely distribute your binary file with any licenses.
+
+.. _lgplicense:
+      
+Lesser General Public License
+-----------------------------
 
 *© 2016- The University of Tokyo. All rights reserved.*
 

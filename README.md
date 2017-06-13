@@ -47,41 +47,32 @@ This package provides the solver library based on Shifted-Krylov subspace method
    * `index.html` : Top page for documents
    * `library/`: Directory for the document of the librariy
    * `software/`: Directory for the document of the sample program
- * `make.sys`: Configuration file to build
- * `makefile`: Makefile
+ * `configure`: Configuration script to build
  * `src/`: The source directory for the libraries
-   * `mpi/`: Directory for the library with MPI
-   * `shared/`: Directory for the dynamic library
-   * `shared_mpi/`: Directory for the dynamic library with MPI
  * `test/`: The test directory for the libraries
 
-# Build
+# Install
 
- * Edit `make.sys` for your circumstances.
-   * `F90`:The fortran compile command
-   * `FFLAGS`:Options such as the BLAS link; `-lblas`, `-mkl`.
-   * `MPIF90`:The MPI fortran compile command. If you do not use the MPI, you can ignore this command.
- * `$ make`
+The simplest procedure is as follows:
 
-The following objects are generated.
+ * Type `$ ./configure --prefix=**PREFIX**; make; make install`
+ * The following objects are generated in the directory specified by `**PREFIX**`.
+   * In `**PREFIX**/lib/`: Static and shared libraries.
+   * In `**PREFIX**/include/`: Header file for C/C++.
+   * `**PREFIX**/bin/Shiftk.out`: Sample program
 
- * `src/libkomega.a` : Static library in serial version
- * `src/shared/libkomega.so` : Dynamical library in serial version
- * `src/mpi/libpkomega.a` : Static library (MPI) in serial version (Optional)
- * `src/shared_mpi/libpkomega.so` : Dynamical library (MPI) in serial version (Optional)
- * `app/src/Shiftk.out` : Software
- * `app/src/mpi/Shiftk.out` : Software in MPI version(Optional)
+For more details, please see the manual.
 
 # Test of the software
 
  * Change the directory to `app/sample/denovo/` or `app/sample/from_file/`.
- * Type the command `$ ../../src/ShiftK.out namelist.def`.
+ * Type the command `$ **PREFIX**/bin/ShiftK.out namelist.def`.
  * When the software works well, the files such as `dynamicalG.dat` will be generated.
  * The details of the file format of `namelist.def` is written in the manual.
 
 # Usage of libraries
 
-## How to call each rouchines in the program
+## How to call each routines in the program
 
 ### For fortran/C/C++
 
@@ -89,22 +80,14 @@ See the manual.
 
 ## How to link the libraries
 
-- Static link
-  ```
-  $ gfortran myprog.f90 -L Path/src -lshiftk -lblas -I Path/src
-  $ gcc myprog.c -L Path/src -lshiftk -lblas -I Path/src
-  ```
-  etc.
+```
+$ gfortran myprog.f90 -L **PREFIX**/lib -lshiftk -lblas -I **PREFIX**/include
+$ gcc myprog.c -L **PREFIX**/lib -lshiftk -lblas -I **PREFIX**/include
+```
+etc.
 
-- Dynamical link
-  ```
-  $ gfortran myprog.f90 -L Path/src/shared -lshiftk -lblas -I Path/src/shared
-  $ gcc myprog.c -L Path/src/shared -lshiftk -lblas -I Path/src/shared
-  ```
-  etc.
-
-  Add the `src/shared` directry to the environment
-  variable `LD_LIBRARY_PATH` to execute the file with dyncamic link.
+Add the `**PREFIX**/lib` directry to the environment
+variable `LD_LIBRARY_PATH` to execute the file with dynamic link.
 
 # Test for libraries(Optional)
 

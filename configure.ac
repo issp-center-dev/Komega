@@ -31,7 +31,7 @@ AC_ARG_WITH(openmp, [AS_HELP_STRING([--with-openmp],
             [with_openmp=yes])
 if test x"$with_openmp" != xno; then
   AX_OPENMP([FCFLAGS="$FCFLAGS $OPENMP_CFLAGS"],[
-    AC_MSG_FAILURE([OpenMP requested, but couldn't use OpenMP.])
+      AC_MSG_WARN([OpenMP requested, but couldn't use OpenMP.])
   ])
 fi
 echo ""

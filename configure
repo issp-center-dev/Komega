@@ -4873,10 +4873,8 @@ fi
 $as_echo "$ax_cv_c_openmp" >&6; }
 if test "x$ax_cv_c_openmp" = "xunknown"; then
 
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "OpenMP requested, but couldn't use OpenMP.
-See \`config.log' for more details" "$LINENO" 5; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: OpenMP requested, but couldn't use OpenMP." >&5
+$as_echo "$as_me: WARNING: OpenMP requested, but couldn't use OpenMP." >&2;}
 
 else
   if test "x$ax_cv_c_openmp" != "xnone"; then
