@@ -426,3 +426,7 @@ config.status
 libtool
 Makefile
 stamp-h1
+*.la
+*.lo
+*.so.*
+*.lai

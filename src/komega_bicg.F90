@@ -207,8 +207,8 @@ SUBROUTINE komega_BICG_init(ndim0, nl0, nz0, x, z0, itermax0, threshold0, comm0)
   !
   INTEGER(C_INT),INTENT(IN) :: ndim0, nl0, nz0, itermax0
   REAL(C_DOUBLE),INTENT(IN) :: threshold0
-  COMPLEX(C_DOUBLE),INTENT(IN) :: z0(nz0)
-  COMPLEX(C_DOUBLE),INTENT(OUT) :: x(nl0,nz0)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(IN) :: z0(nz0)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(OUT) :: x(nl0,nz0)
   INTEGER(C_INT),INTENT(IN),OPTIONAL :: comm0
   !
   ndim = ndim0
@@ -263,19 +263,19 @@ SUBROUTINE komega_BICG_restart(ndim0, nl0, nz0, x, z0, itermax0, threshold0, sta
   !
   INTEGER(C_INT),INTENT(IN) :: ndim0, nl0, nz0, itermax0
   REAL(C_DOUBLE),INTENT(IN) :: threshold0
-  COMPLEX(C_DOUBLE),INTENT(IN) :: z0(nz0)
-  COMPLEX(C_DOUBLE),INTENT(OUT) :: x(nl0,nz0)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(IN) :: z0(nz0)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(OUT) :: x(nl0,nz0)
   INTEGER(C_INT),INTENT(OUT) :: status(3)
   INTEGER(C_INT),INTENT(IN),OPTIONAL :: comm0
   !
   ! For Restarting
   !
   INTEGER(C_INT),INTENT(IN) :: iter_old
-  COMPLEX(C_DOUBLE),INTENT(IN) :: &
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(IN) :: &
   & alpha_save0(iter_old), beta_save0(iter_old), z_seed0
-  COMPLEX(C_DOUBLE),INTENT(IN) :: r_l_save0(nl0,iter_old)
-  COMPLEX(C_DOUBLE),INTENT(INOUT) :: v2(ndim), v12(ndim)
-  COMPLEX(C_DOUBLE),INTENT(INOUT) :: v4(ndim), v14(ndim)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(IN) :: r_l_save0(nl0,iter_old)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(INOUT) :: v2(ndim), v12(ndim)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(INOUT) :: v4(ndim), v14(ndim)
   !
   INTEGER :: iz
   !
@@ -371,8 +371,8 @@ SUBROUTINE komega_BICG_update(v12, v2, v14, v4, x, r_l, status) BIND(C)
   !
   IMPLICIT NONE
   !
-  COMPLEX(C_DOUBLE),INTENT(INOUT) :: v12(ndim), v2(ndim), v14(ndim), v4(ndim), x(nl,nz)
-  COMPLEX(C_DOUBLE),INTENT(IN) :: r_l(nl)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(INOUT) :: v12(ndim), v2(ndim), v14(ndim), v4(ndim), x(nl,nz)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(IN) :: r_l(nl)
   INTEGER(C_INT),INTENT(INOUT) :: status(3)
   !
   INTEGER :: iz
@@ -487,8 +487,8 @@ SUBROUTINE komega_BICG_getcoef(alpha_save0, beta_save0, z_seed0, r_l_save0) BIND
   !
   IMPLICIT NONE
   !
-  COMPLEX(C_DOUBLE),INTENT(OUT) :: alpha_save0(iter), beta_save0(iter), z_seed0
-  COMPLEX(C_DOUBLE),INTENT(OUT) :: r_l_save0(nl,iter)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(OUT) :: alpha_save0(iter), beta_save0(iter), z_seed0
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(OUT) :: r_l_save0(nl,iter)
   !
   z_seed0 = z_seed
   CALL zcopy(iter,alpha_save,1,alpha_save0,1)
@@ -508,7 +508,7 @@ SUBROUTINE komega_BICG_getvec(r_old, r_tilde_old) BIND(C)
   !
   IMPLICIT NONE
   !
-  COMPLEX(C_DOUBLE),INTENT(OUT) :: r_old(ndim), r_tilde_old(ndim)
+  COMPLEX(C_DOUBLE_COMPLEX),INTENT(OUT) :: r_old(ndim), r_tilde_old(ndim)
   !
   CALL zcopy(ndim,v3,1,r_old,1)
   CALL zcopy(ndim,v5,1,r_tilde_old,1)
