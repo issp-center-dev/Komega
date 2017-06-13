@@ -1,8 +1,8 @@
 Re-distribution of this library
 ===============================
 
-Contain Kω in your program
----------------------------
+Contain Komega in your program
+------------------------------
 
 :math:`K\omega` library is distributed with the :ref:`lgplicense` (LGPL).
 It is summarized as follows:
@@ -24,8 +24,8 @@ It is summarized as follows:
       :math:`K\omega` library (therefore :math:`K\omega` itself is not contained),
       you can freely distribute your binary file with any licenses.
 
-Build Kω without Autoconf
---------------------------
+Build Komega without Autoconf
+-----------------------------
 
 In this package, :math:`K\omega` is built with Autotools (Autoconf, Automake, Libtool).
 If you do not want to use Autotools for your distributed program with :math:`K\omega` source,
