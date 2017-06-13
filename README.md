@@ -11,10 +11,10 @@ This package provides the solver library based on Shifted-Krylov subspace method
 
  * Latest release
 
-   https://github.com/issp-center-dev/Komega/releases/download/v1.0.0/komega-1.0.0.tar.gz
+   https://github.com/issp-center-dev/Komega/releases/download/v2.0.0/komega-2.0.0.tar.gz
  * Release note
 
-   https://github.com/issp-center-dev/Komega/releases/tag/v1.0.0
+   https://github.com/issp-center-dev/Komega/releases/tag/v2.0.0
  * Other version
  
    https://github.com/issp-center-dev/Komega/releases

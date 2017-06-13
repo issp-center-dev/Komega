@@ -12,11 +12,11 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
  * 最新版のパッケージはこちらから.
  
-   https://github.com/issp-center-dev/Komega/releases/download/v1.0.0/komega-1.0.0.tar.gz
+   https://github.com/issp-center-dev/Komega/releases/download/v2.0.0/komega-2.0.0.tar.gz
 
  * リリースノート
  
-   https://github.com/issp-center-dev/Komega/releases/tag/v1.0.0
+   https://github.com/issp-center-dev/Komega/releases/tag/v2.0.0
  * 過去のリリース
  
    https://github.com/issp-center-dev/Komega/releases
