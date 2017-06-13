@@ -8,13 +8,13 @@
 
 .. code-block:: bash
 
-   $ ./configure --prefix=**PREFIX**
+   $ ./configure --prefix=install_dir
 
 これにより, ビルドに必要なコンパイラやライブラリ等の環境のチェックが行われ,
 Makefile等が作成される.
-``**PREFIX**`` はライブラリ等がインストールされるディレクトリを示す.
+ただし ``install_dir`` はインストール先のディレクトリの絶対パスとする (以後各自のディレクトリ名で読み替えること).
 なにも指定しないと ``/use/local/`` が設定され, 後述の ``make install`` で
-``/usr/local/lib`` 内にライブラリが置かれる (したがって, 管理者権限がない場合には ``**PREFIX**`` を
+``/usr/local/lib`` 内にライブラリが置かれる (したがって, 管理者権限がない場合には ``install_dir`` を
 別の場所に指定しなければならない).
 ``configure`` にはこの他にも様々なオプションがあり,必要に応じて用途や環境に合わせてそれらを使用する.
 詳しくは :ref:`configoption` を参照.
@@ -31,9 +31,16 @@ Makefile等が作成される.
 
    $ make install
 
-とすると, ライブラリが ``**PREFIX**/lib`` に, ミニアプリが ``**PREFIX**/bin`` に置かれる.
+とすると, ライブラリが ``install_dir/lib`` に, ミニアプリが ``install_dir/bin`` に置かれる.
 ``make install`` をしなくても, ビルドをしたディレクトリ内にあるライブラリやミニアプリを使うことは可能であるが,
 使い勝手がやや異なる.
+
+共有リンクを行ったプログラムの実行時にライブラリを探しにいけるよう,
+環境変数 ``LD_LIBRARY_PATH`` に :math:`K\omega` をインストールしたディレクトリを追加する.
+
+.. code-block:: bash
+
+   $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:install_dir/lib
 
 .. _configoption:
 

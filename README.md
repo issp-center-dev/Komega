@@ -55,18 +55,20 @@ This package provides the solver library based on Shifted-Krylov subspace method
 
 The simplest procedure is as follows:
 
- * Type `$ ./configure --prefix=**PREFIX**; make; make install`
- * The following objects are generated in the directory specified by `**PREFIX**`.
-   * In `**PREFIX**/lib/`: Static and shared libraries.
-   * In `**PREFIX**/include/`: Header file for C/C++.
-   * `**PREFIX**/bin/Shiftk.out`: Sample program
+ * Type `$ ./configure --prefix=install_dir; make; make install`
+   where `install_dir` should be replaced with the full path of the directory where
+   the library will be stored.
+ * The following objects are generated in the directory specified by `install_dir`.
+   * In `install_dir/lib/`: Static and shared libraries.
+   * In `install_dir/include/`: Header file for C/C++.
+   * `install_dir/bin/Shiftk.out`: Sample program
 
 For more details, please see the manual.
 
 # Test of the software
 
  * Change the directory to `app/sample/denovo/` or `app/sample/from_file/`.
- * Type the command `$ **PREFIX**/bin/ShiftK.out namelist.def`.
+ * Type the command `$ install_dir/bin/ShiftK.out namelist.def`.
  * When the software works well, the files such as `dynamicalG.dat` will be generated.
  * The details of the file format of `namelist.def` is written in the manual.
 
@@ -81,23 +83,25 @@ See the manual.
 ## How to link the libraries
 
 ```
-$ gfortran myprog.f90 -L **PREFIX**/lib -lshiftk -lblas -I **PREFIX**/include
-$ gcc myprog.c -L **PREFIX**/lib -lshiftk -lblas -I **PREFIX**/include
+$ gfortran myprog.f90 -L install_dir/lib -lshiftk -lblas -I install_dir/include
+$ gcc myprog.c -L install_dir/lib -lshiftk -lblas -I install_dir/include
 ```
 etc.
 
-Add the `**PREFIX**/lib` directry to the environment
+Add the `install_dir/lib` directry to the environment
 variable `LD_LIBRARY_PATH` to execute the file with dynamic link.
 
 # Test for libraries(Optional)
 
  * Move to the `test/` directory.
- * Type the command `$ ./solve_cc.x < krylov.in`.
+ * Type the command `$ ./solve_cc.x < complex_freq.in`.
  * The program is normally finished when Residual vector becomes sufficiently small. 
- * You can check other programs such as `solve_rc.x` in a similar way.
+ * You can check other programs (`solve_rc.x`, `solve_cr.x`, `solve_rr.x`) in a similar way.
+   For `solve_cr.x` and `solve_rr.x, please use `real_freq.in` as an input file.
  * The parameters in `krylov.in`(you can modify the file name freely) are as follows
    * `ndim`: The dimeinsion of the psuedo Hamiltonian
-   * `nl`: This parameter is used to test the projection. The vectors are calculated from the target vector up to `nl(<=ndim)`th vector.
+   * `nl`: This parameter is used to test the projection.
+     The vectors are calculated from the target vector up to `nl(<=ndim)`th vector.
    * `nz`: The number of the frequences to calculate.
    * `itermax`: The maximum number of iterations.
    * `threshold`: The threshold to judge the convergence.

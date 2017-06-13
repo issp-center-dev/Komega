@@ -8,13 +8,14 @@ First, please type
 
 .. code-block:: bash
 
-   $ ./configure --prefix=**PREFIX**
+   $ ./configure --prefix=install_dir
 
 Then, this script checks the compiler and the libraries required for the installation,
 and creates Makefiles.
-``**PREFIX**`` indicates the directory where the library is installed.
+``install_dir`` indicates the full path of the directory where the library is installed
+(you should replace it according to your case).
 If none is specified, ``/use/local/`` is chosen for storing libraries
-by ``make install``  (Therefore, if one is not the admin, ``**PREFIX**`` must be specified to
+by ``make install``  (Therefore, if one is not the admin, ``install_dir`` must be specified to
 the different directory).
 ``configure`` has many options, and they are used according to the environment etc.
 For more details, please see :ref:`configoption`.
@@ -32,9 +33,16 @@ to build libraries. Then please type
 
    $ make install
 
-to store libraries and the sample program to ``**PREFIX**/lib`` and ``**PREFIX**/bin``, respectively.
+to store libraries and the sample program to ``install_dir/lib`` and ``install_dir/bin``, respectively.
 Although one can use libraries and the sample program without ``make install``,
 they are a little different to the installed one.
+
+Add the :math:`K\omega` library directory (``install_dir/lib``) to the
+search path of the dynamically linked program (environment variable ``LD_LIBRARY_PATH``).
+
+.. code-block:: bash
+
+   $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:install_dir/lib
 
 .. _configoption:
 

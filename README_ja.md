@@ -57,18 +57,20 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 
 もっともシンプルには次のとおりである.
 
- * コンソールで `$ ./configure --prefix=**PREFIX**; make; make install` とタイプする.
- * `**PREFIX**`で指定したディレクトリに以下のものが作られる.
-   * `**PREFIX**/lib/`内: 共有および静的ライブラリ
-   * `**PREFIX**/include/komega.h`: C/C++用ヘッダーファイル
-   * `**PREFIX**/bin/Shiftk.out`: ミニアプリ
+ * コンソールで `$ ./configure --prefix=install_dir; make; make install` とタイプする.
+   ただし`install_dir`はインストール先のディレクトリの絶対パスとする
+   (以後各自のディレクトリ名で読み替えること).
+ * `install_dir`で指定したディレクトリに以下のものが作られる.
+   * `install_dir/lib/`内: 共有および静的ライブラリ
+   * `install_dir/include/komega.h`: C/C++用ヘッダーファイル
+   * `install_dir/bin/Shiftk.out`: ミニアプリ
 
 詳しくはマニュアルを参照のこと.
 
 # ミニアプリのテスト
 
  * `app/sample/denovo/`もしくは`app/sample/from_file/`ディレクトリに移動する.
- * `**PREFIX**/bin/ShiftK.out namelist.def`とやる.
+ * `install_dir/bin/ShiftK.out namelist.def`とやる.
  * `dynamicalG.dat`などが作られると成功.
  * `namelist.def`の書式はマニュアル参照
 
@@ -83,21 +85,21 @@ Shifted-Krylov部分空間法に基づくソルバーライブラリと,
 ## ライブラリのリンク方法
 
 ``` bash
-$ gfortran myprog.f90 -L **PREFIX**/src/shared -lshiftk -lblas -I **PREFIX**/src/shared
-$ gcc myprog.c -L **PREFIX**/src/shared -lshiftk -lblas -I **PREFIX**/src/shared
+$ gfortran myprog.f90 -L install_dir/src/shared -lshiftk -lblas -I install_dir/src/shared
+$ gcc myprog.c -L install_dir/src/shared -lshiftk -lblas -I install_dir/src/shared
 ```
 など.
 
 動的リンクを行ったファイルを実行するときには,
-環境変数`LD_LIBRARY_PATH`に`**PREFIX**/lib`ディレクトリを追加しておく必要がある.
+環境変数`LD_LIBRARY_PATH`に`install_dir/lib`ディレクトリを追加しておく必要がある.
 
 # ライブラリのテスト(Optional)
 
  * `test/`ディレクトリに移動する.
- * `$ ./solve_cc.x < krylov.in`とやる.
+ * `$ ./solve_cc.x < complex_freq.in`とやる.
  * Residual vectorが十分小さくなっていれば成功
- * `solve_rc.x`なども同様
- * `krylov.in`(名称は自由)のパラメーターは次の通り
+ * `solve_rc.x` も同様. `solve_cr.x`, `solve_rr.x` に関しては入力ファイル `real_freq.in` を使う.
+ * `complex_freq.in`(名称は自由)のパラメーターは次の通り
    * `ndim`: 擬似ハミルトニアンの次元
    * `nl`: 射影のテスト用. 解ベクトルの先頭から`nl(<=ndim)`番目までを計算する.
    * `nz`: 振動数の点数
