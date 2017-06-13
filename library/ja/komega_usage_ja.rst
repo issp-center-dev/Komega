@@ -31,8 +31,8 @@
    呼ばなければならない.
    もしもパラレルリージョンの内側で :math:`K\omega` を呼び出したい
    (それぞれのスレッドで異なる問題を解きたい)場合には,
-   ``make.sys`` の ``FFLAGS`` に ``-D _KOMEGA_THREAD`` を追加してコンパイルする.
-   ただしこのモードは試験的なものである.
+   ``configure`` のオプション ``--enable-threadsafe`` を利用する
+   (:ref:`configoption` 参照). ただしこのモードは試験的なものである.
 
 fortran から呼び出すときには
 
@@ -45,43 +45,22 @@ fortran から呼び出すときには
 
 のようにモジュールを呼び出す(すべてのモジュールを呼び出す必要はなく,
 行う計算の種類に対応するものだけでよい). 
-MPI/Hybrid並列版のルーチンを利用するときには,
-
-.. code-block:: fortran
-
-   USE pkomega_cg_r
-   USE pkomega_cg_c
-   USE pkomega_cocg
-   USE pkomega_bicg
-
-のようにする.
 
 C/C++で書かれたプログラムから呼び出すときには、
 
 .. code-block:: c
 
-    #include komega_cg_r.h
-    #include komega_cg_c.h
-    #include komega_cocg.h
-    #include komega_bicg.h
-
+    #include komega.h
+    
 のようにヘッダーファイルを読み込む。
 また、スカラー引数はすべてポインタとして渡す。
-MPI/Hybrid並列版のルーチンを利用するときには,
+
+またMPI/ハイブリッド並列のときにライブラリに渡すコミュニケーター変数を, 
+次のようにC/C++のものからfortranのものに変換する。
 
 .. code-block:: c
 
-    #include pkomega_cg_r.h
-    #include pkomega_cg_c.h
-    #include pkomega_cocg.h
-    #include pkomega_bicg.h
-
-のようにする。
-またライブラリに渡すコミュニケーター変数を、次のようにC/C++のものからfortranのものに変換する。
-
-.. code-block:: c
-
-      comm_f = MPI_Comm_c2f(comm_c);
+   comm_f = MPI_Comm_c2f(comm_c);
 
 各ルーチンの説明
 ----------------
@@ -96,41 +75,23 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 
 構文
 
-   Fortran シリアル/OpenMP版
+   Fortran
 
    .. code-block:: fortran
 
-      CALL komega_cg_r_init(ndim, nl, nz, x, z, itermax, threshold)
-      CALL komega_cg_c_init(ndim, nl, nz, x, z, itermax, threshold)
-      CALL komega_cocg_init(ndim, nl, nz, x, z, itermax, threshold)
-      CALL komega_bicg_init(ndim, nl, nz, x, z, itermax, threshold)
+      CALL komega_cg_r_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+      CALL komega_cg_c_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+      CALL komega_cocg_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+      CALL komega_bicg_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 
-   Fortran MPI/Hybrid並列版
-
-   .. code-block:: fortran
-
-      CALL pkomega_cg_r_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-      CALL pkomega_cg_c_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-      CALL pkomega_cocg_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-      CALL pkomega_bicg_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-
-   C/C++ シリアル/OpenMP版
+   C/C++
 
    .. code-block:: c
 
-      komega_cg_r_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
-      komega_cg_c_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
-      komega_cocg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
-      komega_bicg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
-
-   C/C++ MPI/Hybrid並列版
-
-   .. code-block:: c
-
-      pkomega_cg_r_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
-      pkomega_cg_c_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
-      pkomega_cocg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
-      pkomega_bicg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+      komega_cg_r_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+      komega_cg_c_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+      komega_cocg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+      komega_bicg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
 
 パラメーター
 
@@ -196,11 +157,13 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 
    .. code-block:: fortran
                    
-      INTEGER,INTENT(IN) :: comm
+      INTEGER,INTENT(IN),OPTIONAL :: comm
    ..
 
-      MPI/Hybrid並列版のみ.
+      オプショナル引数. 
       MPIのコミニュケーター( ``MPI_COMM_WORLD`` など)を入れる.
+      :math:`K\omega` を内部でMPI/Hybrid並列するときのみ入力する.
+      C言語では使用しないときには ``NULL`` を入れる.
 
 .. _restart:
    
@@ -213,61 +176,33 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 
 構文
 
-   Fortran (シリアル/OpenMP版)
-
-   .. code-block:: fortran
-
-      CALL komega_cg_r_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
-      &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-      CALL komega_cg_c_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
-      &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-      CALL komega_cocg_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
-      &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-      CALL komega_bicg_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
-      &                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
-      &                 z_seed, r_l_save)
-
-   Fortran (MPI/ハイブリッド並列版)
+   Fortran
 
    .. code-block:: fortran
                    
-      CALL pkomega_cg_r_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
-      &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-      CALL pkomega_cg_c_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
-      &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-      CALL pkomega_cocg_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
-      &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-      CALL pkomega_bicg_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
+      CALL komega_cg_r_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+      &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save, comm)
+      CALL komega_cg_c_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+      &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save, comm)
+      CALL komega_cocg_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
+      &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save, comm)
+      CALL komega_bicg_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
       &                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
-      &                 z_seed, r_l_save)
+      &                 z_seed, r_l_save, comm)
 
-   C/C++ (シリアル/OpenMP版)
+   C/C++
 
    .. code-block:: c
 
       komega_cg_r_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
-      &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+      &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save, &comm);
       komega_cg_c_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
-      &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+      &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save, &comm);
       komega_cocg_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
-      &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+      &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save, &comm);
       komega_bicg_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
       &                 &iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
-      &                 &z_seed, r_l_save);
-
-   C/C++ (MPI/ハイブリッド並列版)
-
-   .. code-block:: c
-
-      pkomega_cg_r_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
-      &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
-      pkomega_cg_c_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
-      &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
-      pkomega_cocg_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
-      &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
-      pkomega_bicg_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
-      &                 &iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
-      &                 &z_seed, r_l_save);
+      &                 &z_seed, r_l_save, &comm);
 
 パラメーター
 
@@ -281,7 +216,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
       COMPLEX(8),INTENT(IN) :: z(nz) ! (それ以外)
       INTEGER,INTENT(IN) :: itermax
       REAL(8),INTENT(IN) :: threshold
-      INTEGER,INTENT(IN) :: comm
+      INTEGER,INTENT(IN),OPTIONAL :: comm
    ..
    
       :ref:`init` と同様.
@@ -398,7 +333,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 
 構文
 
-   Fortran (シリアル/OpenMPI版)
+   Fortran
 
    .. code-block:: fortran
 
@@ -407,16 +342,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
       CALL komega_cocg_update(v12, v2, x, r_l, status)
       CALL komega_bicg_update(v12, v2, v14, v4, x, r_l, status)
 
-   Fortran (MPI/ハイブリッド並列版)
-
-   .. code-block:: fortran
-
-      CALL pkomega_cg_r_update(v12, v2, x, r_l, status)
-      CALL pkomega_cg_c_update(v12, v2, x, r_l, status)
-      CALL pkomega_cocg_update(v12, v2, x, r_l, status)
-      CALL pkomega_bicg_update(v12, v2, v14, v4, x, r_l, status)
-
-   C/C++ (シリアル/OpenMPI版)
+   C/C++
 
    .. code-block:: c
 
@@ -424,15 +350,6 @@ MPI/Hybrid並列版のルーチンを利用するときには,
       komega_cg_c_update(v12, v2, x, r_l, status);
       komega_cocg_update(v12, v2, x, r_l, status);
       komega_bicg_update(v12, v2, v14, v4, x, r_l, status);
-
-   C/C++ (MPI/ハイブリッド並列版)
-
-   .. code-block:: c
-
-      pkomega_cg_r_update(v12, v2, x, r_l, status);
-      pkomega_cg_c_update(v12, v2, x, r_l, status);
-      pkomega_cocg_update(v12, v2, x, r_l, status);
-      pkomega_bicg_update(v12, v2, v14, v4, x, r_l, status);
 
    パラメーター
 
@@ -521,7 +438,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 
 構文
 
-   Fortran (シリアル/OpenMP版)
+   Fortran
 
    .. code-block:: fortran
 
@@ -530,16 +447,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
        CALL komega_cocg_getcoef(alpha_save, beta_save, z_seed, r_l_save)
        CALL komega_bicg_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 
-   Fortran (MPI/ハイブリッド並列版)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-       CALL pkomega_cg_c_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-       CALL pkomega_cocg_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-       CALL pkomega_bicg_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-
-   C/C++ (シリアル/OpenMP版)
+   C/C++
 
    .. code-block:: c
 
@@ -547,15 +455,6 @@ MPI/Hybrid並列版のルーチンを利用するときには,
        komega_cg_c_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
        komega_cocg_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
        komega_bicg_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
-
-   C/C++ (MPI/ハイブリッド並列版)
-
-   .. code-block:: c
-
-       pkomega_cg_r_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
-       pkomega_cg_c_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
-       pkomega_cocg_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
-       pkomega_bicg_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
 
 パラメーター
 
@@ -602,7 +501,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 
 構文
 
-   Fortran (シリアル/OpenMP版)
+   Fortran
 
    .. code-block:: fortran
 
@@ -611,16 +510,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
        CALL komega_cocg_getvec(r_old)
        CALL komega_bicg_getvec(r_old, r_tilde_old)
 
-   Fortran (MPI/ハイブリッド並列版)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_getvec(r_old)
-       CALL pkomega_cg_c_getvec(r_old)
-       CALL pkomega_cocg_getvec(r_old)
-       CALL pkomega_bicg_getvec(r_old, r_tilde_old)
-
-   C/C++ (シリアル/OpenMP版)
+   C/C++
 
    .. code-block:: c
 
@@ -628,15 +518,6 @@ MPI/Hybrid並列版のルーチンを利用するときには,
        komega_cg_c_getvec(r_old);
        komega_cocg_getvec(r_old);
        komega_bicg_getvec(r_old, r_tilde_old);
-
-   C/C++ (MPI/ハイブリッド並列版)
-
-   .. code-block:: c
-
-       pkomega_cg_r_getvec(r_old);
-       pkomega_cg_c_getvec(r_old);
-       pkomega_cocg_getvec(r_old);
-       pkomega_bicg_getvec(r_old, r_tilde_old);
 
 パラメーター
 
@@ -666,7 +547,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 
 構文
 
-   Fortran (シリアル/OpenMP版)
+   Fortran
 
    .. code-block:: fortran
 
@@ -675,16 +556,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
        CALL komega_cocg_getresidual(res)
        CALL komega_bicg_getresidual(res)
 
-   Fortran (MPI/ハイブリッド並列版)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_getresidual(res)
-       CALL pkomega_cg_c_getresidual(res)
-       CALL pkomega_cocg_getresidual(res)
-       CALL pkomega_bicg_getresidual(res)
-
-   C/C++ (シリアル/OpenMP版)
+   C/C++
 
    .. code-block:: c
 
@@ -692,15 +564,6 @@ MPI/Hybrid並列版のルーチンを利用するときには,
        komega_cg_c_getresidual(res);
        komega_cocg_getresidual(res);
        komega_bicg_getresidual(res);
-
-   C/C++ (MPI/ハイブリッド並列版)
-
-   .. code-block:: c
-
-       pkomega_cg_r_getresidual(res);
-       pkomega_cg_c_getresidual(res);
-       pkomega_cocg_getresidual(res);
-       pkomega_bicg_getresidual(res);
 
 パラメーター
 
@@ -720,7 +583,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
 
 構文
 
-   Fortran (シリアル/OpenMP版)
+   Fortran
 
    .. code-block:: fortran
 
@@ -729,16 +592,7 @@ MPI/Hybrid並列版のルーチンを利用するときには,
        CALL komega_cocg_finalize()
        CALL komega_bicg_finalize()
 
-   Fortran (MPI/ハイブリッド並列版)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_finalize()
-       CALL pkomega_cg_c_finalize()
-       CALL pkomega_cocg_finalize()
-       CALL pkomega_bicg_finalize()
-
-   C/C++ (シリアル/OpenMP版)
+   C/C++
 
    .. code-block:: c
 
@@ -746,15 +600,6 @@ MPI/Hybrid並列版のルーチンを利用するときには,
        komega_cg_c_finalize();
        komega_cocg_finalize();
        komega_bicg_finalize();
-
-   C/C++ (MPI/ハイブリッド並列版)
-
-   .. code-block:: c
-
-       pkomega_cg_r_finalize();
-       pkomega_cg_c_finalize();
-       pkomega_cocg_finalize();
-       pkomega_bicg_finalize();
 
 Shifted BiCGライブラリを使用したソースコードの例
 ------------------------------------------------

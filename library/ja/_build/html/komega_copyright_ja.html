@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>ライセンス &mdash; komega 1.0.0 ドキュメント</title>
+    <title>プログラムの再配布 &mdash; komega 2.0.0 ドキュメント</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0.0',
+        VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,9 +25,9 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="komega 1.0.0 ドキュメント" href="index.html" />
-    <link rel="next" title="アルゴリズム" href="komega_algorithm_ja.html" />
-    <link rel="prev" title="概要" href="komega_overview_ja.html" /> 
+    <link rel="top" title="komega 2.0.0 ドキュメント" href="index.html" />
+    <link rel="next" title="Contact" href="komega_contact_ja.html" />
+    <link rel="prev" title="使用方法" href="komega_usage_ja.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,12 +37,12 @@
           <a href="genindex.html" title="総合索引"
              accesskey="I">索引</a></li>
         <li class="right" >
-          <a href="komega_algorithm_ja.html" title="アルゴリズム"
+          <a href="komega_contact_ja.html" title="Contact"
              accesskey="N">次へ</a> |</li>
         <li class="right" >
-          <a href="komega_overview_ja.html" title="概要"
+          <a href="komega_usage_ja.html" title="使用方法"
              accesskey="P">前へ</a> |</li>
-        <li><a href="index.html">komega 1.0.0 ドキュメント</a> &raquo;</li> 
+        <li><a href="index.html">komega 2.0.0 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -52,7 +52,79 @@
           <div class="body">
             
   <div class="section" id="id1">
-<h1>ライセンス<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<h1>プログラムの再配布<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<div class="section" id="komega">
+<h2>自分のプログラムにKomegaを含める<a class="headerlink" href="#komega" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p><span class="math">\(K\omega\)</span> ライブラリは下記の <a class="reference internal" href="#lgplicense"><em>Lesser General Public License</em></a> (LGPL)に基づいて配布されている.
+これはかいつまんで言うと次のようなことである.</p>
+<blockquote>
+<div><ul>
+<li><p class="first">個人的なプログラムや, 研究室や共同研究者等のグループでソースコードをやりとりする時には,
+自由にコピペしたり改変して良い.</p>
+</li>
+<li><p class="first">公開したり売ったりするプログラムに関しては次のとおりである.</p>
+<blockquote>
+<div><ul class="simple">
+<li>配布するソースコードに <span class="math">\(K\omega\)</span> をそのまま,
+あるいは改変して含めるときには, そのプログラム本体をLGPL/GPLで配布する.</li>
+<li>配布するソースコードに含めず呼び出すだけならばライセンスによらず自由に配布できる.</li>
+<li>ただしバイナリファイルを配布する場合に, そのバイナリに <span class="math">\(K\omega\)</span> が
+静的リンクされている場合にはLGPL/GPLで配布する.
+動的リンクされている(したがって <span class="math">\(K\omega\)</span> そのものはバイナリに含まれていない)
+場合にはライセンスによらず自由に配布できる.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="autoconfkomega">
+<h2>Autoconfを使わずにKomegaをビルドする<a class="headerlink" href="#autoconfkomega" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>このパッケージではAutotools (Autoconf, Aitomake, Libtool)を使って <span class="math">\(K\omega\)</span> をビルドしている.
+もし再配布するソースコードに <span class="math">\(K\omega\)</span> を含めるときに,
+Autoconfの使用に支障がある場合には, 以下の簡易版のMakefileを使うと良い (タブに注意).</p>
+<div class="highlight-makefile"><div class="highlight"><pre>F90 = gfortran
+FFLAGS = -fopenmp -g -O2 #-D__MPI -D__NO_ZDOT -D__KOMEGA_THREAD
+
+.SUFFIXES :
+.SUFFIXES : .o .F90
+
+OBJS = \
+komega_cg_c.o \
+komega_cg_r.o \
+komega_cocg.o \
+komega_bicg.o \
+komega_math.o \
+komega_vals.o
+
+all:libkomega.a
+
+libkomega.a:$(OBJS)
+     ar cr libkomega.a $(OBJS)
+
+.F90.o:
+     $(F90) -c $&lt; $(FFLAGS)
+
+clean:
+     rm -f *.o *.a *.mod
+
+komega_cg_c.o:komega_math.o
+komega_cg_c.o:komega_vals.o
+komega_cg_r.o:komega_math.o
+komega_cg_r.o:komega_vals.o
+komega_cocg.o:komega_math.o
+komega_cocg.o:komega_vals.o
+komega_bicg.o:komega_math.o
+komega_bicg.o:komega_vals.o
+komega_math.o:komega_vals.o
+</pre></div>
+</div>
+<p>プリプロセッサマクロ <tt class="docutils literal"><span class="pre">__MPI</span></tt>, <tt class="docutils literal"><span class="pre">__NO_ZDOT</span></tt>, <tt class="docutils literal"><span class="pre">__KOMEGA_THREAD</span></tt> はそれぞれ
+<tt class="docutils literal"><span class="pre">configure</span></tt> のオプション <tt class="docutils literal"><span class="pre">--with-mpi=yes</span></tt>, <tt class="docutils literal"><span class="pre">--disable-zdot</span></tt>, <tt class="docutils literal"><span class="pre">--enable-thread</span></tt>
+に対応する.</p>
+</div>
+<div class="section" id="lesser-general-public-license">
+<span id="lgplicense"></span><h2>Lesser General Public License<a class="headerlink" href="#lesser-general-public-license" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p><em>© 2016- The University of Tokyo. All rights reserved.</em></p>
 <div class="line-block">
 <div class="line">This software is developed under the support of</div>
@@ -75,6 +147,7 @@
 <div class="line">For more details, See &#8216;COPYING.LESSER&#8217; in the root directory of this library.</div>
 </div>
 </div>
+</div>
 
 
           </div>
@@ -85,12 +158,22 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/komega.png" alt="Logo"/>
             </a></p>
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">プログラムの再配布</a><ul>
+<li><a class="reference internal" href="#komega">自分のプログラムにKomegaを含める</a></li>
+<li><a class="reference internal" href="#autoconfkomega">Autoconfを使わずにKomegaをビルドする</a></li>
+<li><a class="reference internal" href="#lesser-general-public-license">Lesser General Public License</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>前のトピックへ</h4>
-  <p class="topless"><a href="komega_overview_ja.html"
-                        title="前の章へ">概要</a></p>
+  <p class="topless"><a href="komega_usage_ja.html"
+                        title="前の章へ">使用方法</a></p>
   <h4>次のトピックへ</h4>
-  <p class="topless"><a href="komega_algorithm_ja.html"
-                        title="次の章へ">アルゴリズム</a></p>
+  <p class="topless"><a href="komega_contact_ja.html"
+                        title="次の章へ">Contact</a></p>
   <h3>このページ</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/komega_copyright_ja.txt"
@@ -120,12 +203,12 @@
           <a href="genindex.html" title="総合索引"
              >索引</a></li>
         <li class="right" >
-          <a href="komega_algorithm_ja.html" title="アルゴリズム"
+          <a href="komega_contact_ja.html" title="Contact"
              >次へ</a> |</li>
         <li class="right" >
-          <a href="komega_overview_ja.html" title="概要"
+          <a href="komega_usage_ja.html" title="使用方法"
              >前へ</a> |</li>
-        <li><a href="index.html">komega 1.0.0 ドキュメント</a> &raquo;</li> 
+        <li><a href="index.html">komega 2.0.0 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

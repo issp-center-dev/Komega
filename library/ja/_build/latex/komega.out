@@ -1,15 +1,21 @@
 \BOOKMARK [0][-]{chapter.1}{概要}{}% 1
-\BOOKMARK [0][-]{chapter.2}{ライセンス}{}% 2
-\BOOKMARK [0][-]{chapter.3}{アルゴリズム}{}% 3
-\BOOKMARK [1][-]{section.3.1}{Seed switch 付き Shifted BiCG法}{chapter.3}% 4
-\BOOKMARK [1][-]{section.3.2}{Seed switch 付き Shifted COCG法}{chapter.3}% 5
-\BOOKMARK [1][-]{section.3.3}{Seed switch 付き Shifted CG法}{chapter.3}% 6
-\BOOKMARK [0][-]{chapter.4}{プログラム内でのライブラリの動作イメージ}{}% 7
-\BOOKMARK [1][-]{section.4.1}{Shifted BiCGライブラリの動作イメージ}{chapter.4}% 8
-\BOOKMARK [1][-]{section.4.2}{Shifted COCGライブラリの動作イメージ}{chapter.4}% 9
-\BOOKMARK [1][-]{section.4.3}{Shifted CGライブラリの動作イメージ}{chapter.4}% 10
-\BOOKMARK [0][-]{chapter.5}{使用方法}{}% 11
-\BOOKMARK [1][-]{section.5.1}{各ルーチンの説明}{chapter.5}% 12
-\BOOKMARK [1][-]{section.5.2}{Shifted BiCGライブラリを使用したソースコードの例}{chapter.5}% 13
-\BOOKMARK [0][-]{chapter.6}{Contact}{}% 14
-\BOOKMARK [0][-]{chapter.7}{参考文献}{}% 15
+\BOOKMARK [0][-]{chapter.2}{アルゴリズム}{}% 2
+\BOOKMARK [1][-]{section.2.1}{Seed switch 付き Shifted BiCG法}{chapter.2}% 3
+\BOOKMARK [1][-]{section.2.2}{Seed switch 付き Shifted COCG法}{chapter.2}% 4
+\BOOKMARK [1][-]{section.2.3}{Seed switch 付き Shifted CG法}{chapter.2}% 5
+\BOOKMARK [0][-]{chapter.3}{インストール方法}{}% 6
+\BOOKMARK [1][-]{section.3.1}{大まかな手順}{chapter.3}% 7
+\BOOKMARK [1][-]{section.3.2}{configureのオプション}{chapter.3}% 8
+\BOOKMARK [0][-]{chapter.4}{プログラム内でのライブラリの動作イメージ}{}% 9
+\BOOKMARK [1][-]{section.4.1}{Shifted BiCGライブラリの動作イメージ}{chapter.4}% 10
+\BOOKMARK [1][-]{section.4.2}{Shifted COCGライブラリの動作イメージ}{chapter.4}% 11
+\BOOKMARK [1][-]{section.4.3}{Shifted CGライブラリの動作イメージ}{chapter.4}% 12
+\BOOKMARK [0][-]{chapter.5}{使用方法}{}% 13
+\BOOKMARK [1][-]{section.5.1}{各ルーチンの説明}{chapter.5}% 14
+\BOOKMARK [1][-]{section.5.2}{Shifted BiCGライブラリを使用したソースコードの例}{chapter.5}% 15
+\BOOKMARK [0][-]{chapter.6}{プログラムの再配布}{}% 16
+\BOOKMARK [1][-]{section.6.1}{自分のプログラムにKomegaを含める}{chapter.6}% 17
+\BOOKMARK [1][-]{section.6.2}{Autoconfを使わずにKomegaをビルドする}{chapter.6}% 18
+\BOOKMARK [1][-]{section.6.3}{Lesser General Public License}{chapter.6}% 19
+\BOOKMARK [0][-]{chapter.7}{Contact}{}% 20
+\BOOKMARK [0][-]{chapter.8}{参考文献}{}% 21

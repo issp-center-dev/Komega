@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>インストール方法 &mdash; komega 2.0.0 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="komega 2.0.0 ドキュメント" href="index.html" />
+    <link rel="next" title="プログラム内でのライブラリの動作イメージ" href="komega_workflow_ja.html" />
+    <link rel="prev" title="アルゴリズム" href="komega_algorithm_ja.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="komega_workflow_ja.html" title="プログラム内でのライブラリの動作イメージ"
+             accesskey="N">次へ</a> |</li>
+        <li class="right" >
+          <a href="komega_algorithm_ja.html" title="アルゴリズム"
+             accesskey="P">前へ</a> |</li>
+        <li><a href="index.html">komega 2.0.0 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>インストール方法<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<div class="section" id="id2">
+<h2>大まかな手順<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>最もシンプルには次のとおりである.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>./configure --prefix<span class="o">=</span>install_dir
+</pre></div>
+</div>
+<p>これにより, ビルドに必要なコンパイラやライブラリ等の環境のチェックが行われ,
+Makefile等が作成される.
+ただし <tt class="docutils literal"><span class="pre">install_dir</span></tt> はインストール先のディレクトリの絶対パスとする (以後各自のディレクトリ名で読み替えること).
+なにも指定しないと <tt class="docutils literal"><span class="pre">/use/local/</span></tt> が設定され, 後述の <tt class="docutils literal"><span class="pre">make</span> <span class="pre">install</span></tt> で
+<tt class="docutils literal"><span class="pre">/usr/local/lib</span></tt> 内にライブラリが置かれる (したがって, 管理者権限がない場合には <tt class="docutils literal"><span class="pre">install_dir</span></tt> を
+別の場所に指定しなければならない).
+<tt class="docutils literal"><span class="pre">configure</span></tt> にはこの他にも様々なオプションがあり,必要に応じて用途や環境に合わせてそれらを使用する.
+詳しくは <a class="reference internal" href="#configoption"><em>configureのオプション</em></a> を参照.</p>
+<p><tt class="docutils literal"><span class="pre">configure</span></tt> の実行が正常に行われ, <tt class="docutils literal"><span class="pre">Makefile</span></tt> が生成された後は</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>make
+</pre></div>
+</div>
+<p>とタイプしてライブラリ等のビルドを行う.これが成功したのちに</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>make install
+</pre></div>
+</div>
+<p>とすると, ライブラリが <tt class="docutils literal"><span class="pre">install_dir/lib</span></tt> に, ミニアプリが <tt class="docutils literal"><span class="pre">install_dir/bin</span></tt> に置かれる.
+<tt class="docutils literal"><span class="pre">make</span> <span class="pre">install</span></tt> をしなくても, ビルドをしたディレクトリ内にあるライブラリやミニアプリを使うことは可能であるが,
+使い勝手がやや異なる.</p>
+<p>共有リンクを行ったプログラムの実行時にライブラリを探しにいけるよう,
+環境変数 <tt class="docutils literal"><span class="pre">LD_LIBRARY_PATH</span></tt> に <span class="math">\(K\omega\)</span> をインストールしたディレクトリを追加する.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">export </span><span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span><span class="k">${</span><span class="nv">LD_LIBRARY_PATH</span><span class="k">}</span>:install_dir/lib
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure">
+<span id="configoption"></span><h2>configureのオプション<a class="headerlink" href="#configure" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>configureには多数のオプションと変数があり, それらを組み合わせて指定する.
+指定しない場合にはデフォルト値が使われる.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>./configure --prefix<span class="o">=</span>/home/komega/ --with-mpi<span class="o">=</span>yes <span class="nv">FC</span><span class="o">=</span>mpif90
+</pre></div>
+</div>
+<p>おもなものを次に挙げる.</p>
+<p><tt class="docutils literal"><span class="pre">---prefix</span></tt></p>
+<blockquote>
+<div>デフォルト: <tt class="docutils literal"><span class="pre">---prefix=/usr/local/</span></tt>.
+ライブラリ等のインストールを行うディレクトリツリーを指定する.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--with-mpi</span></tt></p>
+<blockquote>
+<div>デフォルト: <tt class="docutils literal"><span class="pre">--with-mpi=no</span></tt> (MPIを用いない).
+MPIを用いるか (<tt class="docutils literal"><span class="pre">--with-mpi=yes</span></tt>), 否かを指定する.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--with-openmp</span></tt></p>
+<blockquote>
+<div>デフォルト: <tt class="docutils literal"><span class="pre">--with-openmp=yes</span></tt> (OpenMPを用いる).
+OpenMPを用いるか否か (<tt class="docutils literal"><span class="pre">--with-openmp=no</span></tt>) を指定する.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--enable-shared</span></tt></p>
+<blockquote>
+<div>デフォルト: <tt class="docutils literal"><span class="pre">--enable-shared</span></tt>.
+共有ライブラリを作成するか否か</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--enable-static</span></tt></p>
+<blockquote>
+<div>デフォルト: <tt class="docutils literal"><span class="pre">--enable-static</span></tt>.
+静的ライブラリを作成するか否か.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--disable-zdot</span></tt></p>
+<blockquote>
+<div>デフォルト: <tt class="docutils literal"><span class="pre">--enable-zdot</span></tt>.
+MacOSXの標準のBLAS等では, ZDOTCおよびZDOTU関数が正常に動作しないため,
+このオプションでこれらの関数を使わないようにする.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--enable-threadsafe</span></tt></p>
+<blockquote>
+<div>デフォルト: <tt class="docutils literal"><span class="pre">--disable-threadsafe</span></tt>.
+もしもOpenMPのパラレルリージョンの内側で <span class="math">\(K\omega\)</span> を呼び出したい
+(それぞれのスレッドで異なる問題を解きたい)場合には,
+このオプションを用いる (<strong>試験的</strong>).</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">FC</span></tt></p>
+<blockquote>
+<div>デフォルト: システムにインストールされているfortranコンパイラをスキャンして,
+自動的に設定する. <tt class="docutils literal"><span class="pre">--with-mpiP</span></tt> を指定した時にはそれに応じたコマンド
+(<tt class="docutils literal"><span class="pre">mpif90</span></tt> 等)を自動で探し出して設定する.
+<tt class="docutils literal"><span class="pre">configure</span></tt> の最後に出力される <tt class="docutils literal"><span class="pre">FC</span></tt> が望んだものでは無かった場合には
+<tt class="docutils literal"><span class="pre">./configure</span> <span class="pre">FC=gfortran</span></tt> のように手で指定する.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--help</span></tt></p>
+<blockquote>
+<div>このオプションを指定した時には, ビルドの環境設定は行われず,
+上記を含めたすべてのオプションを表示する.</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/komega.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">インストール方法</a><ul>
+<li><a class="reference internal" href="#id2">大まかな手順</a></li>
+<li><a class="reference internal" href="#configure">configureのオプション</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>前のトピックへ</h4>
+  <p class="topless"><a href="komega_algorithm_ja.html"
+                        title="前の章へ">アルゴリズム</a></p>
+  <h4>次のトピックへ</h4>
+  <p class="topless"><a href="komega_workflow_ja.html"
+                        title="次の章へ">プログラム内でのライブラリの動作イメージ</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/komega_install_ja.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="komega_workflow_ja.html" title="プログラム内でのライブラリの動作イメージ"
+             >次へ</a> |</li>
+        <li class="right" >
+          <a href="komega_algorithm_ja.html" title="アルゴリズム"
+             >前へ</a> |</li>
+        <li><a href="index.html">komega 2.0.0 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, kawamura.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2 で生成しました。
+    </div>
+  </body>
+</html>

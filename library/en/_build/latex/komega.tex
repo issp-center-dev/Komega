@@ -14,8 +14,8 @@
 
 
 \title{$K\omega$ Documentation}
-\date{February 15, 2017}
-\release{1.0.0}
+\date{June 13, 2017}
+\release{2.0.0}
 \author{}
 \newcommand{\sphinxlogo}{\includegraphics{komega.png}\par}
 \renewcommand{\releasename}{Release}
@@ -136,32 +136,6 @@ This library provides routines to solve the following shifted linear equation
 \end{gather}
 The source codes of \(K\omega\) is written in FORTRAN
 and requires the BLAS Level 1 routines.
-
-
-\chapter{License}
-\label{komega_copyright_en::doc}\label{komega_copyright_en:license}
-\emph{© 2016- The University of Tokyo. All rights reserved.}
-
-\begin{DUlineblock}{0em}
-\item[] This software is developed under the support of
-\item[] ``\emph{Project for advancement of software usability in materials science}'' by The
-\item[] Institute for Solid State Physics, The University of Tokyo.
-\item[] 
-\item[] This library is free software; you can redistribute it and/or
-\item[] modify it under the terms of the GNU Lesser General Public
-\item[] License as published by the Free Software Foundation; either
-\item[] version 2.1 of the License, or (at your option) any later version.
-\item[] This library is distributed in the hope that it will be useful,
-\item[] but WITHOUT ANY WARRANTY; without even the implied warranty of
-\item[] MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-\item[] Lesser General Public License for more details.
-\item[] 
-\item[] You should have received a copy of the GNU Lesser General Public
-\item[] License along with this library; if not, write to the Free Software
-\item[] Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-\item[] 
-\item[] For more details, See `COPYING.LESSER' in the root directory of this library.
-\end{DUlineblock}
 
 
 \chapter{Algorithm}
@@ -732,6 +706,133 @@ Deallocate \({\boldsymbol v}_3\), \(\{\pi_k\}\),
 The workflow is the same as that of the shifted COCG library.
 
 
+\chapter{Install}
+\label{komega_install_en::doc}\label{komega_install_en:install}
+
+\section{Overall procedure}
+\label{komega_install_en:overall-procedure}
+First, please type
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nv}{\PYGZdl{} }./configure \PYGZhy{}\PYGZhy{}prefix\PYG{o}{=}install\PYGZus{}dir
+\end{Verbatim}
+
+Then, this script checks the compiler and the libraries required for the installation,
+and creates Makefiles.
+\code{install\_dir} indicates the full path of the directory where the library is installed
+(you should replace it according to your case).
+If none is specified, \code{/use/local/} is chosen for storing libraries
+by \code{make install}  (Therefore, if one is not the admin, \code{install\_dir} must be specified to
+the different directory).
+\code{configure} has many options, and they are used according to the environment etc.
+For more details, please see {\hyperref[komega_install_en:configoption]{\emph{Options for configure}}}.
+
+After \code{configure} finishes successfully and Makefiles are generated,
+please type
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nv}{\PYGZdl{} }make
+\end{Verbatim}
+
+to build libraries. Then please type
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nv}{\PYGZdl{} }make install
+\end{Verbatim}
+
+to store libraries and the sample program to \code{install\_dir/lib} and \code{install\_dir/bin}, respectively.
+Although one can use libraries and the sample program without \code{make install},
+they are a little different to the installed one.
+
+Add the \(K\omega\) library directory (\code{install\_dir/lib}) to the
+search path of the dynamically linked program (environment variable \code{LD\_LIBRARY\_PATH}).
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nv}{\PYGZdl{} }\PYG{n+nb}{export }\PYG{n+nv}{LD\PYGZus{}LIBRARY\PYGZus{}PATH}\PYG{o}{=}\PYG{k}{\PYGZdl{}\PYGZob{}}\PYG{n+nv}{LD\PYGZus{}LIBRARY\PYGZus{}PATH}\PYG{k}{\PYGZcb{}}:install\PYGZus{}dir/lib
+\end{Verbatim}
+
+
+\section{Options for configure}
+\label{komega_install_en:options-for-configure}\label{komega_install_en:configoption}
+\code{configure} has many options and environment variables.
+They can be specified at once. E.g.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nv}{\PYGZdl{} }./configure \PYGZhy{}\PYGZhy{}prefix\PYG{o}{=}/home/komega/ \PYGZhy{}\PYGZhy{}with\PYGZhy{}mpi\PYG{o}{=}yes \PYG{n+nv}{FC}\PYG{o}{=}mpif90
+\end{Verbatim}
+
+All options and variables have default values.
+We show a part of them as follows:
+
+\code{-{-}-prefix}
+\begin{quote}
+
+Default: \code{-{-}-prefix=/usr/local/}.
+Specify the directory where the library etc. are installed.
+\end{quote}
+
+\code{-{-}with-mpi}
+\begin{quote}
+
+Default: \code{-{-}with-mpi=no} (without MPI).
+Whether use MPI (\code{-{-}with-mpi=yes}), or not.
+\end{quote}
+
+\code{-{-}with-openmp}
+\begin{quote}
+
+Default: \code{-{-}with-openmp=yes} (with OpenMP).
+Whether use OpenMP or not (\code{-{-}with-openmp=no}).
+\end{quote}
+
+\code{-{-}enable-shared}
+\begin{quote}
+
+Default: \code{-{-}enable-shared}.
+Whether generate shared library.
+\end{quote}
+
+\code{-{-}enable-static}
+\begin{quote}
+
+Default: \code{-{-}enable-static}.
+Whether generate static library.
+\end{quote}
+
+\code{-{-}disable-zdot}
+\begin{quote}
+
+Default: \code{-{-}enable-zdot}.
+When ZDOTC and ZDOTU in BLAS do not work correctly (e.g. standard BLAS in MacOSX),
+please use this option to be disable these functions.
+\end{quote}
+
+\code{-{-}enable-threadsafe}
+\begin{quote}
+
+Default: \code{-{-}disable-threadsafe}.
+If you want to call \(K\omega\) routine in the parallel region
+(i.e. plan to solve different equations among threads),
+please use this option (\textbf{Experimental}).
+\end{quote}
+
+\code{FC}
+\begin{quote}
+
+Default: The fortran compiler chosen automatically from those in the system.
+When \code{-{-}with-mpi} is specified, the corresponding MPI compiler
+(such as \code{mpif90}) is searched.
+If \code{FC} printed the end of the standard-output of \code{configure} is not
+what you want, please set it manually as \code{./configure FC=gfortran}.
+\end{quote}
+
+\code{-{-}help}
+\begin{quote}
+
+Display all options including above, and stop without configuration.
+\end{quote}
+
+
 \chapter{Usage}
 \label{komega_usage_en:usage}\label{komega_usage_en::doc}
 The calculation is done to utilize functions by the following
@@ -772,7 +873,7 @@ Since \(K\omega\) is \textbf{not} thread safe,
 these routine must be called from the outside of the OpenMP-parallel region.
 If you want to call \(K\omega\) routine in the parallel region
 (i.e. plan to solve different equations among threads),
-please add \code{-D \_KOMEGA\_THREAD} to  \code{FFLAGS} in \code{make.sys}
+please use \code{-{-}enable-threadsafe} option of \code{configure}
 (\textbf{Experimental}).
 \end{notice}
 
@@ -785,38 +886,17 @@ For FORTRAN, the modules can be called by
 \PYG{k}{USE }\PYG{n+nv}{komega\PYGZus{}bicg} \PYG{c}{! Biconjugate\PYGZhy{}gradient method}
 \end{Verbatim}
 
-To utilize routines of
-MPI / Hybrid parallelization version, the modules can be called as folows:
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{USE }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}r}
-\PYG{k}{USE }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}c}
-\PYG{k}{USE }\PYG{n+nv}{pkomega\PYGZus{}cocg}
-\PYG{k}{USE }\PYG{n+nv}{pkomega\PYGZus{}bicg}
-\end{Verbatim}
-
 When we call \(K\omega\) from C/C++ codes,
 we should include the header file as
 
 \begin{Verbatim}[commandchars=\\\{\}]
-\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include komega\PYGZus{}cg\PYGZus{}r.h}
-\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include komega\PYGZus{}cg\PYGZus{}c.h}
-\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include komega\PYGZus{}cocg.h}
-\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include komega\PYGZus{}bicg.h}
+\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include komega.h}
 \end{Verbatim}
 
-Scaler arguments should be passed as pointers.
+Scalar arguments should be passed as pointers.
 For MPI/Hybrid parallelized routine,
 the above line becomes
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include pkomega\PYGZus{}cg\PYGZus{}r.h}
-\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include pkomega\PYGZus{}cg\PYGZus{}c.h}
-\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include pkomega\PYGZus{}cocg.h}
-\PYG{c+cp}{\PYGZsh{}}\PYG{c+cp}{include pkomega\PYGZus{}bicg.h}
-\end{Verbatim}
-
-Also the communicator argument for the routine should be
+Also, the communicator argument for the routine should be
 transformed from the C/C++'s one to the fortran's one as follows.
 
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -835,40 +915,22 @@ should be called first before solving the shifted equation.
 Syntax
 \begin{quote}
 
-Fortran (Serial/OpenMP)
+Fortran
 
 \begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cocg\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}bicg\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{)}
+\PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
+\PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
+\PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cocg\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
+\PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}bicg\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
 \end{Verbatim}
 
-Fortran (MPI/Hybrid parallel)
+C/C++
 
 \begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cocg\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}bicg\PYGZus{}init}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
-\end{Verbatim}
-
-C/C++ Serial/OpenMP
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{komega\PYGZus{}cocg\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{komega\PYGZus{}bicg\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{)}\PYG{p}{;}
-\end{Verbatim}
-
-C/C++ MPI/Hybrid parallel
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cocg\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}bicg\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
+\PYG{n}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
+\PYG{n}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
+\PYG{n}{komega\PYGZus{}cocg\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
+\PYG{n}{komega\PYGZus{}bicg\PYGZus{}init}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
 \end{Verbatim}
 \end{quote}
 
@@ -944,12 +1006,13 @@ becomes smaller than this value, the calculation is finished.
 \end{quote}
 
 \begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k+kt}{INTEGER}\PYG{p}{,}\PYG{k}{INTENT}\PYG{p}{(}\PYG{n+nv}{IN}\PYG{p}{)} \PYG{k+kd}{::} \PYG{n+nv}{comm}
+\PYG{k+kt}{INTEGER}\PYG{p}{,}\PYG{k}{INTENT}\PYG{p}{(}\PYG{n+nv}{IN}\PYG{p}{)}\PYG{p}{,}\PYG{k}{OPTIONAL} \PYG{k+kd}{::} \PYG{n+nv}{comm}
 \end{Verbatim}
 \begin{quote}
 
-Only for MPI / Hybrid parallelization
-version. Communicators for MPI such as \code{MPI\_COMM\_WORLD}.
+Optional argument. Communicators for MPI such as \code{MPI\_COMM\_WORLD}.
+Only for MPI / Hybrid parallelization.
+For C compiler, just pass \code{NULL} to omit this argment.
 \end{quote}
 \end{quote}
 
@@ -963,60 +1026,32 @@ These routines should be called first before solving the shifted equation.
 Syntax
 \begin{quote}
 
-Fortran (Serial/OpenMP)
+Fortran
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}restart}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{,} \PYG{p}{\PYGZam{}}
-\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
+\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}restart}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{,} \PYG{p}{\PYGZam{}}
-\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
+\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cocg\PYGZus{}restart}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{,} \PYG{p}{\PYGZam{}}
-\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
+\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}bicg\PYGZus{}restart}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{,} \PYG{p}{\PYGZam{}}
 \PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{v4}\PYG{p}{,} \PYG{n+nv}{v14}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{p}{\PYGZam{}}
-\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
+\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{)}
 \end{Verbatim}
 
-Fortran (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}restart}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{,} \PYG{p}{\PYGZam{}}
-\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}restart}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{,} \PYG{p}{\PYGZam{}}
-\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cocg\PYGZus{}restart}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{,} \PYG{p}{\PYGZam{}}
-\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}bicg\PYGZus{}restart}\PYG{p}{(}\PYG{n+nv}{ndim}\PYG{p}{,} \PYG{n+nv}{nl}\PYG{p}{,} \PYG{n+nv}{nz}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{z}\PYG{p}{,} \PYG{n+nv}{itermax}\PYG{p}{,} \PYG{n+nv}{threshold}\PYG{p}{,} \PYG{n+nv}{comm}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{,} \PYG{p}{\PYGZam{}}
-\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{v4}\PYG{p}{,} \PYG{n+nv}{v14}\PYG{p}{,} \PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{p}{\PYGZam{}}
-\PYG{p}{\PYGZam{}}                 \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
-\end{Verbatim}
-
-C/C++ (Serial/OpenMP)
+C/C++
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}restart}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{n}{status}\PYG{p}{,} \PYG{o}{\PYGZam{}}
-\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
+\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}restart}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{n}{status}\PYG{p}{,} \PYG{o}{\PYGZam{}}
-\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
+\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cocg\PYGZus{}restart}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{n}{status}\PYG{p}{,} \PYG{o}{\PYGZam{}}
-\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
+\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}bicg\PYGZus{}restart}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{n}{status}\PYG{p}{,} \PYG{o}{\PYGZam{}}
 \PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{v4}\PYG{p}{,} \PYG{n}{v14}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}
-\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
-\end{Verbatim}
-
-C/C++ (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}restart}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{,} \PYG{n}{status}\PYG{p}{,} \PYG{o}{\PYGZam{}}
-\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}restart}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{,} \PYG{n}{status}\PYG{p}{,} \PYG{o}{\PYGZam{}}
-\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cocg\PYGZus{}restart}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{,} \PYG{n}{status}\PYG{p}{,} \PYG{o}{\PYGZam{}}
-\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}bicg\PYGZus{}restart}\PYG{p}{(}\PYG{o}{\PYGZam{}}\PYG{n}{ndim}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nl}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{nz}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{z}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{itermax}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{threshold}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{,} \PYG{n}{status}\PYG{p}{,} \PYG{o}{\PYGZam{}}
-\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{iter\PYGZus{}old}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v12}\PYG{p}{,} \PYG{n}{v4}\PYG{p}{,} \PYG{n}{v14}\PYG{p}{,} \PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}
-\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
+\PYG{o}{\PYGZam{}}                 \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{comm}\PYG{p}{)}\PYG{p}{;}
 \end{Verbatim}
 \end{quote}
 
@@ -1032,7 +1067,7 @@ Parameters
 \PYG{k+kt}{COMPLEX}\PYG{p}{(}\PYG{l+m+mi}{8}\PYG{p}{)}\PYG{p}{,}\PYG{k}{INTENT}\PYG{p}{(}\PYG{n+nv}{IN}\PYG{p}{)} \PYG{k+kd}{::} \PYG{n+nv}{z}\PYG{p}{(}\PYG{n+nv}{nz}\PYG{p}{)} \PYG{c}{! (Other)}
 \PYG{k+kt}{INTEGER}\PYG{p}{,}\PYG{k}{INTENT}\PYG{p}{(}\PYG{n+nv}{IN}\PYG{p}{)} \PYG{k+kd}{::} \PYG{n+nv}{itermax}
 \PYG{k+kt}{REAL}\PYG{p}{(}\PYG{l+m+mi}{8}\PYG{p}{)}\PYG{p}{,}\PYG{k}{INTENT}\PYG{p}{(}\PYG{n+nv}{IN}\PYG{p}{)} \PYG{k+kd}{::} \PYG{n+nv}{threshold}
-\PYG{k+kt}{INTEGER}\PYG{p}{,}\PYG{k}{INTENT}\PYG{p}{(}\PYG{n+nv}{IN}\PYG{p}{)} \PYG{k+kd}{::} \PYG{n+nv}{comm}
+\PYG{k+kt}{INTEGER}\PYG{p}{,}\PYG{k}{INTENT}\PYG{p}{(}\PYG{n+nv}{IN}\PYG{p}{)}\PYG{p}{,}\PYG{k}{OPTIONAL} \PYG{k+kd}{::} \PYG{n+nv}{comm}
 \end{Verbatim}
 \begin{quote}
 
@@ -1167,7 +1202,7 @@ in the loop and updates the solution.
 Syntax
 \begin{quote}
 
-Fortran (Serial/OpenMPI)
+Fortran
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}update}\PYG{p}{(}\PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{)}
@@ -1176,31 +1211,13 @@ Fortran (Serial/OpenMPI)
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}bicg\PYGZus{}update}\PYG{p}{(}\PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v14}\PYG{p}{,} \PYG{n+nv}{v4}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{)}
 \end{Verbatim}
 
-Fortran (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}update}\PYG{p}{(}\PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}update}\PYG{p}{(}\PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cocg\PYGZus{}update}\PYG{p}{(}\PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}bicg\PYGZus{}update}\PYG{p}{(}\PYG{n+nv}{v12}\PYG{p}{,} \PYG{n+nv}{v2}\PYG{p}{,} \PYG{n+nv}{v14}\PYG{p}{,} \PYG{n+nv}{v4}\PYG{p}{,} \PYG{n+nv}{x}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l}\PYG{p}{,} \PYG{n+nv}{status}\PYG{p}{)}
-\end{Verbatim}
-
-C/C++ (Serial/OpenMPI)
+C/C++
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}update}\PYG{p}{(}\PYG{n}{v12}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{r\PYGZus{}l}\PYG{p}{,} \PYG{n}{status}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}update}\PYG{p}{(}\PYG{n}{v12}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{r\PYGZus{}l}\PYG{p}{,} \PYG{n}{status}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cocg\PYGZus{}update}\PYG{p}{(}\PYG{n}{v12}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{r\PYGZus{}l}\PYG{p}{,} \PYG{n}{status}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}bicg\PYGZus{}update}\PYG{p}{(}\PYG{n}{v12}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v14}\PYG{p}{,} \PYG{n}{v4}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{r\PYGZus{}l}\PYG{p}{,} \PYG{n}{status}\PYG{p}{)}\PYG{p}{;}
-\end{Verbatim}
-
-C/C++ (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}update}\PYG{p}{(}\PYG{n}{v12}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{r\PYGZus{}l}\PYG{p}{,} \PYG{n}{status}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}update}\PYG{p}{(}\PYG{n}{v12}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{r\PYGZus{}l}\PYG{p}{,} \PYG{n}{status}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cocg\PYGZus{}update}\PYG{p}{(}\PYG{n}{v12}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{r\PYGZus{}l}\PYG{p}{,} \PYG{n}{status}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}bicg\PYGZus{}update}\PYG{p}{(}\PYG{n}{v12}\PYG{p}{,} \PYG{n}{v2}\PYG{p}{,} \PYG{n}{v14}\PYG{p}{,} \PYG{n}{v4}\PYG{p}{,} \PYG{n}{x}\PYG{p}{,} \PYG{n}{r\PYGZus{}l}\PYG{p}{,} \PYG{n}{status}\PYG{p}{)}\PYG{p}{;}
 \end{Verbatim}
 \end{quote}
 
@@ -1303,7 +1320,7 @@ is computed by using \code{status} which is an output of {\hyperref[komega_usage
 Syntax
 \begin{quote}
 
-Fortran (Serial/OpenMP)
+Fortran
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}getcoef}\PYG{p}{(}\PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
@@ -1312,31 +1329,13 @@ Fortran (Serial/OpenMP)
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}bicg\PYGZus{}getcoef}\PYG{p}{(}\PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
 \end{Verbatim}
 
-Fortran (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}getcoef}\PYG{p}{(}\PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}getcoef}\PYG{p}{(}\PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cocg\PYGZus{}getcoef}\PYG{p}{(}\PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}bicg\PYGZus{}getcoef}\PYG{p}{(}\PYG{n+nv}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{beta\PYGZus{}save}\PYG{p}{,} \PYG{n+nv}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}
-\end{Verbatim}
-
-C/C++ (Serial/OpenMP)
+C/C++
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}getcoef}\PYG{p}{(}\PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}getcoef}\PYG{p}{(}\PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cocg\PYGZus{}getcoef}\PYG{p}{(}\PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}bicg\PYGZus{}getcoef}\PYG{p}{(}\PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
-\end{Verbatim}
-
-C/C++ (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}getcoef}\PYG{p}{(}\PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}getcoef}\PYG{p}{(}\PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cocg\PYGZus{}getcoef}\PYG{p}{(}\PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}bicg\PYGZus{}getcoef}\PYG{p}{(}\PYG{n}{alpha\PYGZus{}save}\PYG{p}{,} \PYG{n}{beta\PYGZus{}save}\PYG{p}{,} \PYG{o}{\PYGZam{}}\PYG{n}{z\PYGZus{}seed}\PYG{p}{,} \PYG{n}{r\PYGZus{}l\PYGZus{}save}\PYG{p}{)}\PYG{p}{;}
 \end{Verbatim}
 \end{quote}
 
@@ -1390,7 +1389,7 @@ To call these routines,
 Syntax
 \begin{quote}
 
-Fortran (Serial/OpenMP)
+Fortran
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}getvec}\PYG{p}{(}\PYG{n+nv}{r\PYGZus{}old}\PYG{p}{)}
@@ -1399,31 +1398,13 @@ Fortran (Serial/OpenMP)
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}bicg\PYGZus{}getvec}\PYG{p}{(}\PYG{n+nv}{r\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}tilde\PYGZus{}old}\PYG{p}{)}
 \end{Verbatim}
 
-Fortran (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}getvec}\PYG{p}{(}\PYG{n+nv}{r\PYGZus{}old}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}getvec}\PYG{p}{(}\PYG{n+nv}{r\PYGZus{}old}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cocg\PYGZus{}getvec}\PYG{p}{(}\PYG{n+nv}{r\PYGZus{}old}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}bicg\PYGZus{}getvec}\PYG{p}{(}\PYG{n+nv}{r\PYGZus{}old}\PYG{p}{,} \PYG{n+nv}{r\PYGZus{}tilde\PYGZus{}old}\PYG{p}{)}
-\end{Verbatim}
-
-C/C++ (Serial/OpenMP)
+C/C++
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}getvec}\PYG{p}{(}\PYG{n}{r\PYGZus{}old}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}getvec}\PYG{p}{(}\PYG{n}{r\PYGZus{}old}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cocg\PYGZus{}getvec}\PYG{p}{(}\PYG{n}{r\PYGZus{}old}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}bicg\PYGZus{}getvec}\PYG{p}{(}\PYG{n}{r\PYGZus{}old}\PYG{p}{,} \PYG{n}{r\PYGZus{}tilde\PYGZus{}old}\PYG{p}{)}\PYG{p}{;}
-\end{Verbatim}
-
-C/C++ (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}getvec}\PYG{p}{(}\PYG{n}{r\PYGZus{}old}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}getvec}\PYG{p}{(}\PYG{n}{r\PYGZus{}old}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cocg\PYGZus{}getvec}\PYG{p}{(}\PYG{n}{r\PYGZus{}old}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}bicg\PYGZus{}getvec}\PYG{p}{(}\PYG{n}{r\PYGZus{}old}\PYG{p}{,} \PYG{n}{r\PYGZus{}tilde\PYGZus{}old}\PYG{p}{)}\PYG{p}{;}
 \end{Verbatim}
 \end{quote}
 
@@ -1459,7 +1440,7 @@ These routines do not affect the calculation results.
 Syntax
 \begin{quote}
 
-Fortran (Serial/OpenMP)
+Fortran
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}getresidual}\PYG{p}{(}\PYG{n+nv}{res}\PYG{p}{)}
@@ -1468,31 +1449,13 @@ Fortran (Serial/OpenMP)
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}bicg\PYGZus{}getresidual}\PYG{p}{(}\PYG{n+nv}{res}\PYG{p}{)}
 \end{Verbatim}
 
-Fortran (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}getresidual}\PYG{p}{(}\PYG{n+nv}{res}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}getresidual}\PYG{p}{(}\PYG{n+nv}{res}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cocg\PYGZus{}getresidual}\PYG{p}{(}\PYG{n+nv}{res}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}bicg\PYGZus{}getresidual}\PYG{p}{(}\PYG{n+nv}{res}\PYG{p}{)}
-\end{Verbatim}
-
-C/C++ (Serial/OpenMP)
+C/C++
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}getresidual}\PYG{p}{(}\PYG{n}{res}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}getresidual}\PYG{p}{(}\PYG{n}{res}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cocg\PYGZus{}getresidual}\PYG{p}{(}\PYG{n}{res}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}bicg\PYGZus{}getresidual}\PYG{p}{(}\PYG{n}{res}\PYG{p}{)}\PYG{p}{;}
-\end{Verbatim}
-
-C/C++ (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}getresidual}\PYG{p}{(}\PYG{n}{res}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}getresidual}\PYG{p}{(}\PYG{n}{res}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cocg\PYGZus{}getresidual}\PYG{p}{(}\PYG{n}{res}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}bicg\PYGZus{}getresidual}\PYG{p}{(}\PYG{n}{res}\PYG{p}{)}\PYG{p}{;}
 \end{Verbatim}
 \end{quote}
 
@@ -1517,7 +1480,7 @@ Release memories of the arrays stored in the library.
 Syntax
 \begin{quote}
 
-Fortran (Serial/OpenMP)
+Fortran
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}
@@ -1526,31 +1489,13 @@ Fortran (Serial/OpenMP)
 \PYG{k}{CALL }\PYG{n+nv}{komega\PYGZus{}bicg\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}
 \end{Verbatim}
 
-Fortran (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}cocg\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}
-\PYG{k}{CALL }\PYG{n+nv}{pkomega\PYGZus{}bicg\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}
-\end{Verbatim}
-
-C/C++ (Serial/OpenMP)
+C/C++
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}r\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cg\PYGZus{}c\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}cocg\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
 \PYG{n}{komega\PYGZus{}bicg\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
-\end{Verbatim}
-
-C/C++ (MPI/hybrid parallel)
-
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}r\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cg\PYGZus{}c\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}cocg\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
-\PYG{n}{pkomega\PYGZus{}bicg\PYGZus{}finalize}\PYG{p}{(}\PYG{p}{)}\PYG{p}{;}
 \end{Verbatim}
 \end{quote}
 
@@ -1746,6 +1691,114 @@ As a typical example, the usage of shifted BiCG library is shown below.
   \PYG{c}{!}
 \PYG{k}{END }\PYG{k}{PROGRAM }\PYG{n+nv}{my\PYGZus{}prog}
 \end{Verbatim}
+
+
+\chapter{Re-distribution of this library}
+\label{komega_copyright_en:re-distribution-of-this-library}\label{komega_copyright_en::doc}
+
+\section{Contain Komega in your program}
+\label{komega_copyright_en:contain-komega-in-your-program}
+\(K\omega\) library is distributed with the {\hyperref[komega_copyright_en:lgplicense]{\emph{Lesser General Public License}}} (LGPL).
+It is summarized as follows:
+\begin{itemize}
+\item {} 
+\(K\omega\) can be freely distributed, modified, copied and pasted,
+in a private program (in the research group, co-workers, etc.).
+
+\item {} 
+For the released program (open-source, free, commercial software etc.):
+\begin{itemize}
+\item {} 
+When you contain the source-code of \(K\omega\) (either as is and modified)
+in the distributed source code of your program,
+please distribute your program with LGPL/GPL.
+
+\item {} 
+If you do not include the source-code of \(K\omega\) (just call it),
+you can freely distribute your program with any licenses.
+
+\item {} 
+If you distribute a binary file which is statically linked to \(K\omega\) library,
+please use LGPL/GPL. However, if you distribute a binary file which is dynamically linked to
+\(K\omega\) library (therefore \(K\omega\) itself is not contained),
+you can freely distribute your binary file with any licenses.
+
+\end{itemize}
+
+\end{itemize}
+
+
+\section{Build Komega without Autoconf}
+\label{komega_copyright_en:build-komega-without-autoconf}
+In this package, \(K\omega\) is built with Autotools (Autoconf, Automake, Libtool).
+If you do not want to use Autotools for your distributed program with \(K\omega\) source,
+you can use the following simple Makefile (please care about TAB).
+
+\begin{Verbatim}[commandchars=\\\{\}]
+F90 = gfortran
+FFLAGS = \PYGZhy{}fopenmp \PYGZhy{}g \PYGZhy{}O2 \PYGZsh{}\PYGZhy{}D\PYGZus{}\PYGZus{}MPI \PYGZhy{}D\PYGZus{}\PYGZus{}NO\PYGZus{}ZDOT \PYGZhy{}D\PYGZus{}\PYGZus{}KOMEGA\PYGZus{}THREAD
+
+.SUFFIXES :
+.SUFFIXES : .o .F90
+
+OBJS = \PYGZbs{}
+komega\PYGZus{}cg\PYGZus{}c.o \PYGZbs{}
+komega\PYGZus{}cg\PYGZus{}r.o \PYGZbs{}
+komega\PYGZus{}cocg.o \PYGZbs{}
+komega\PYGZus{}bicg.o \PYGZbs{}
+komega\PYGZus{}math.o \PYGZbs{}
+komega\PYGZus{}vals.o
+
+all:libkomega.a
+
+libkomega.a:\PYGZdl{}(OBJS)
+     ar cr libkomega.a \PYGZdl{}(OBJS)
+
+.F90.o:
+     \PYGZdl{}(F90) \PYGZhy{}c \PYGZdl{}\PYGZlt{} \PYGZdl{}(FFLAGS)
+
+clean:
+     rm \PYGZhy{}f *.o *.a *.mod
+
+komega\PYGZus{}cg\PYGZus{}c.o:komega\PYGZus{}math.o
+komega\PYGZus{}cg\PYGZus{}c.o:komega\PYGZus{}vals.o
+komega\PYGZus{}cg\PYGZus{}r.o:komega\PYGZus{}math.o
+komega\PYGZus{}cg\PYGZus{}r.o:komega\PYGZus{}vals.o
+komega\PYGZus{}cocg.o:komega\PYGZus{}math.o
+komega\PYGZus{}cocg.o:komega\PYGZus{}vals.o
+komega\PYGZus{}bicg.o:komega\PYGZus{}math.o
+komega\PYGZus{}bicg.o:komega\PYGZus{}vals.o
+komega\PYGZus{}math.o:komega\PYGZus{}vals.o
+\end{Verbatim}
+
+Preprocessor macros \code{\_\_MPI}, \code{\_\_NO\_ZDOT}, and \code{\_\_KOMEGA\_THREAD} correspond to
+\code{-{-}with-mpi=yes}, \code{-{-}disable-zdot}, and \code{-{-}enable-thread} of the options of \code{configure}, respectively.
+
+
+\section{Lesser General Public License}
+\label{komega_copyright_en:lesser-general-public-license}\label{komega_copyright_en:lgplicense}
+\emph{© 2016- The University of Tokyo. All rights reserved.}
+
+\begin{DUlineblock}{0em}
+\item[] This software is developed under the support of
+\item[] ``\emph{Project for advancement of software usability in materials science}'' by The
+\item[] Institute for Solid State Physics, The University of Tokyo.
+\item[] 
+\item[] This library is free software; you can redistribute it and/or
+\item[] modify it under the terms of the GNU Lesser General Public
+\item[] License as published by the Free Software Foundation; either
+\item[] version 2.1 of the License, or (at your option) any later version.
+\item[] This library is distributed in the hope that it will be useful,
+\item[] but WITHOUT ANY WARRANTY; without even the implied warranty of
+\item[] MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+\item[] Lesser General Public License for more details.
+\item[] 
+\item[] You should have received a copy of the GNU Lesser General Public
+\item[] License along with this library; if not, write to the Free Software
+\item[] Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+\item[] 
+\item[] For more details, See `COPYING.LESSER' in the root directory of this library.
+\end{DUlineblock}
 
 
 \chapter{Contact}

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>License &mdash; komega 1.0.0 documentation</title>
+    <title>Re-distribution of this library &mdash; komega 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '1.0.0',
+        VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,9 +24,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="komega 1.0.0 documentation" href="index.html" />
-    <link rel="next" title="Algorithm" href="komega_algorithm_en.html" />
-    <link rel="prev" title="Overview" href="komega_overview_en.html" /> 
+    <link rel="top" title="komega 2.0.0 documentation" href="index.html" />
+    <link rel="next" title="Contact" href="komega_contact_en.html" />
+    <link rel="prev" title="Usage" href="komega_usage_en.html" /> 
   </head>
   <body>
     <div class="related">
@@ -36,12 +36,12 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="komega_algorithm_en.html" title="Algorithm"
+          <a href="komega_contact_en.html" title="Contact"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="komega_overview_en.html" title="Overview"
+          <a href="komega_usage_en.html" title="Usage"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">komega 1.0.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">komega 2.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -50,8 +50,81 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="license">
-<h1>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="re-distribution-of-this-library">
+<h1>Re-distribution of this library<a class="headerlink" href="#re-distribution-of-this-library" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="contain-komega-in-your-program">
+<h2>Contain Komega in your program<a class="headerlink" href="#contain-komega-in-your-program" title="Permalink to this headline">¶</a></h2>
+<p><span class="math">\(K\omega\)</span> library is distributed with the <a class="reference internal" href="#lgplicense"><em>Lesser General Public License</em></a> (LGPL).
+It is summarized as follows:</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><span class="math">\(K\omega\)</span> can be freely distributed, modified, copied and pasted,
+in a private program (in the research group, co-workers, etc.).</p>
+</li>
+<li><p class="first">For the released program (open-source, free, commercial software etc.):</p>
+<blockquote>
+<div><ul class="simple">
+<li>When you contain the source-code of <span class="math">\(K\omega\)</span> (either as is and modified)
+in the distributed source code of your program,
+please distribute your program with LGPL/GPL.</li>
+<li>If you do not include the source-code of <span class="math">\(K\omega\)</span> (just call it),
+you can freely distribute your program with any licenses.</li>
+<li>If you distribute a binary file which is statically linked to <span class="math">\(K\omega\)</span> library,
+please use LGPL/GPL. However, if you distribute a binary file which is dynamically linked to
+<span class="math">\(K\omega\)</span> library (therefore <span class="math">\(K\omega\)</span> itself is not contained),
+you can freely distribute your binary file with any licenses.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="build-komega-without-autoconf">
+<h2>Build Komega without Autoconf<a class="headerlink" href="#build-komega-without-autoconf" title="Permalink to this headline">¶</a></h2>
+<p>In this package, <span class="math">\(K\omega\)</span> is built with Autotools (Autoconf, Automake, Libtool).
+If you do not want to use Autotools for your distributed program with <span class="math">\(K\omega\)</span> source,
+you can use the following simple Makefile (please care about TAB).</p>
+<div class="highlight-makefile"><div class="highlight"><pre>F90 = gfortran
+FFLAGS = -fopenmp -g -O2 #-D__MPI -D__NO_ZDOT -D__KOMEGA_THREAD
+
+.SUFFIXES :
+.SUFFIXES : .o .F90
+
+OBJS = \
+komega_cg_c.o \
+komega_cg_r.o \
+komega_cocg.o \
+komega_bicg.o \
+komega_math.o \
+komega_vals.o
+
+all:libkomega.a
+
+libkomega.a:$(OBJS)
+     ar cr libkomega.a $(OBJS)
+
+.F90.o:
+     $(F90) -c $&lt; $(FFLAGS)
+
+clean:
+     rm -f *.o *.a *.mod
+
+komega_cg_c.o:komega_math.o
+komega_cg_c.o:komega_vals.o
+komega_cg_r.o:komega_math.o
+komega_cg_r.o:komega_vals.o
+komega_cocg.o:komega_math.o
+komega_cocg.o:komega_vals.o
+komega_bicg.o:komega_math.o
+komega_bicg.o:komega_vals.o
+komega_math.o:komega_vals.o
+</pre></div>
+</div>
+<p>Preprocessor macros <tt class="docutils literal"><span class="pre">__MPI</span></tt>, <tt class="docutils literal"><span class="pre">__NO_ZDOT</span></tt>, and <tt class="docutils literal"><span class="pre">__KOMEGA_THREAD</span></tt> correspond to
+<tt class="docutils literal"><span class="pre">--with-mpi=yes</span></tt>, <tt class="docutils literal"><span class="pre">--disable-zdot</span></tt>, and <tt class="docutils literal"><span class="pre">--enable-thread</span></tt> of the options of <tt class="docutils literal"><span class="pre">configure</span></tt>, respectively.</p>
+</div>
+<div class="section" id="lesser-general-public-license">
+<span id="lgplicense"></span><h2>Lesser General Public License<a class="headerlink" href="#lesser-general-public-license" title="Permalink to this headline">¶</a></h2>
 <p><em>© 2016- The University of Tokyo. All rights reserved.</em></p>
 <div class="line-block">
 <div class="line">This software is developed under the support of</div>
@@ -74,6 +147,7 @@
 <div class="line">For more details, See &#8216;COPYING.LESSER&#8217; in the root directory of this library.</div>
 </div>
 </div>
+</div>
 
 
           </div>
@@ -84,12 +158,22 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/komega.png" alt="Logo"/>
             </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Re-distribution of this library</a><ul>
+<li><a class="reference internal" href="#contain-komega-in-your-program">Contain Komega in your program</a></li>
+<li><a class="reference internal" href="#build-komega-without-autoconf">Build Komega without Autoconf</a></li>
+<li><a class="reference internal" href="#lesser-general-public-license">Lesser General Public License</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
-  <p class="topless"><a href="komega_overview_en.html"
-                        title="previous chapter">Overview</a></p>
+  <p class="topless"><a href="komega_usage_en.html"
+                        title="previous chapter">Usage</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="komega_algorithm_en.html"
-                        title="next chapter">Algorithm</a></p>
+  <p class="topless"><a href="komega_contact_en.html"
+                        title="next chapter">Contact</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/komega_copyright_en.txt"
@@ -119,12 +203,12 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="komega_algorithm_en.html" title="Algorithm"
+          <a href="komega_contact_en.html" title="Contact"
              >next</a> |</li>
         <li class="right" >
-          <a href="komega_overview_en.html" title="Overview"
+          <a href="komega_usage_en.html" title="Usage"
              >previous</a> |</li>
-        <li><a href="index.html">komega 1.0.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">komega 2.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

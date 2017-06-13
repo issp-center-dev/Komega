@@ -1,15 +1,21 @@
 \BOOKMARK [0][-]{chapter.1}{Overview}{}% 1
-\BOOKMARK [0][-]{chapter.2}{License}{}% 2
-\BOOKMARK [0][-]{chapter.3}{Algorithm}{}% 3
-\BOOKMARK [1][-]{section.3.1}{Shifted BiCG method with seed switching technique}{chapter.3}% 4
-\BOOKMARK [1][-]{section.3.2}{Shifted COCG method with seed switching technique}{chapter.3}% 5
-\BOOKMARK [1][-]{section.3.3}{Shifted CG method with seed switching technique}{chapter.3}% 6
-\BOOKMARK [0][-]{chapter.4}{Schematic workflow of this library}{}% 7
-\BOOKMARK [1][-]{section.4.1}{The schematic workflow of shifted BiCG library}{chapter.4}% 8
-\BOOKMARK [1][-]{section.4.2}{The schematic workflow of shifted COCG library}{chapter.4}% 9
-\BOOKMARK [1][-]{section.4.3}{The schematic workflow of shifted CG library}{chapter.4}% 10
-\BOOKMARK [0][-]{chapter.5}{Usage}{}% 11
-\BOOKMARK [1][-]{section.5.1}{Details of each routines}{chapter.5}% 12
-\BOOKMARK [1][-]{section.5.2}{Sample codes for using shifted BiCG library}{chapter.5}% 13
-\BOOKMARK [0][-]{chapter.6}{Contact}{}% 14
-\BOOKMARK [0][-]{chapter.7}{Reference}{}% 15
+\BOOKMARK [0][-]{chapter.2}{Algorithm}{}% 2
+\BOOKMARK [1][-]{section.2.1}{Shifted BiCG method with seed switching technique}{chapter.2}% 3
+\BOOKMARK [1][-]{section.2.2}{Shifted COCG method with seed switching technique}{chapter.2}% 4
+\BOOKMARK [1][-]{section.2.3}{Shifted CG method with seed switching technique}{chapter.2}% 5
+\BOOKMARK [0][-]{chapter.3}{Schematic workflow of this library}{}% 6
+\BOOKMARK [1][-]{section.3.1}{The schematic workflow of shifted BiCG library}{chapter.3}% 7
+\BOOKMARK [1][-]{section.3.2}{The schematic workflow of shifted COCG library}{chapter.3}% 8
+\BOOKMARK [1][-]{section.3.3}{The schematic workflow of shifted CG library}{chapter.3}% 9
+\BOOKMARK [0][-]{chapter.4}{Install}{}% 10
+\BOOKMARK [1][-]{section.4.1}{Overall procedure}{chapter.4}% 11
+\BOOKMARK [1][-]{section.4.2}{Options for configure}{chapter.4}% 12
+\BOOKMARK [0][-]{chapter.5}{Usage}{}% 13
+\BOOKMARK [1][-]{section.5.1}{Details of each routines}{chapter.5}% 14
+\BOOKMARK [1][-]{section.5.2}{Sample codes for using shifted BiCG library}{chapter.5}% 15
+\BOOKMARK [0][-]{chapter.6}{Re-distribution of this library}{}% 16
+\BOOKMARK [1][-]{section.6.1}{Contain Komega in your program}{chapter.6}% 17
+\BOOKMARK [1][-]{section.6.2}{Build Komega without Autoconf}{chapter.6}% 18
+\BOOKMARK [1][-]{section.6.3}{Lesser General Public License}{chapter.6}% 19
+\BOOKMARK [0][-]{chapter.7}{Contact}{}% 20
+\BOOKMARK [0][-]{chapter.8}{Reference}{}% 21

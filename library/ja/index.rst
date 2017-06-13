@@ -10,10 +10,11 @@ Welcome to :math:`K\omega`\ 's documentation!
    :maxdepth: 3
 
    komega_overview_ja
-   komega_copyright_ja
    komega_algorithm_ja
+   komega_install_ja
    komega_workflow_ja
    komega_usage_ja
+   komega_copyright_ja
    komega_contact_ja
    komega_ref_ja
 

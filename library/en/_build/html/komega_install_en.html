@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Install &mdash; komega 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="komega 2.0.0 documentation" href="index.html" />
+    <link rel="next" title="Usage" href="komega_usage_en.html" />
+    <link rel="prev" title="Schematic workflow of this library" href="komega_workflow_en.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="komega_usage_en.html" title="Usage"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="komega_workflow_en.html" title="Schematic workflow of this library"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">komega 2.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="install">
+<h1>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overall-procedure">
+<h2>Overall procedure<a class="headerlink" href="#overall-procedure" title="Permalink to this headline">¶</a></h2>
+<p>First, please type</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>./configure --prefix<span class="o">=</span>install_dir
+</pre></div>
+</div>
+<p>Then, this script checks the compiler and the libraries required for the installation,
+and creates Makefiles.
+<tt class="docutils literal"><span class="pre">install_dir</span></tt> indicates the full path of the directory where the library is installed
+(you should replace it according to your case).
+If none is specified, <tt class="docutils literal"><span class="pre">/use/local/</span></tt> is chosen for storing libraries
+by <tt class="docutils literal"><span class="pre">make</span> <span class="pre">install</span></tt>  (Therefore, if one is not the admin, <tt class="docutils literal"><span class="pre">install_dir</span></tt> must be specified to
+the different directory).
+<tt class="docutils literal"><span class="pre">configure</span></tt> has many options, and they are used according to the environment etc.
+For more details, please see <a class="reference internal" href="#configoption"><em>Options for configure</em></a>.</p>
+<p>After <tt class="docutils literal"><span class="pre">configure</span></tt> finishes successfully and Makefiles are generated,
+please type</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>make
+</pre></div>
+</div>
+<p>to build libraries. Then please type</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>make install
+</pre></div>
+</div>
+<p>to store libraries and the sample program to <tt class="docutils literal"><span class="pre">install_dir/lib</span></tt> and <tt class="docutils literal"><span class="pre">install_dir/bin</span></tt>, respectively.
+Although one can use libraries and the sample program without <tt class="docutils literal"><span class="pre">make</span> <span class="pre">install</span></tt>,
+they are a little different to the installed one.</p>
+<p>Add the <span class="math">\(K\omega\)</span> library directory (<tt class="docutils literal"><span class="pre">install_dir/lib</span></tt>) to the
+search path of the dynamically linked program (environment variable <tt class="docutils literal"><span class="pre">LD_LIBRARY_PATH</span></tt>).</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">export </span><span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span><span class="k">${</span><span class="nv">LD_LIBRARY_PATH</span><span class="k">}</span>:install_dir/lib
+</pre></div>
+</div>
+</div>
+<div class="section" id="options-for-configure">
+<span id="configoption"></span><h2>Options for configure<a class="headerlink" href="#options-for-configure" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">configure</span></tt> has many options and environment variables.
+They can be specified at once. E.g.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>./configure --prefix<span class="o">=</span>/home/komega/ --with-mpi<span class="o">=</span>yes <span class="nv">FC</span><span class="o">=</span>mpif90
+</pre></div>
+</div>
+<p>All options and variables have default values.
+We show a part of them as follows:</p>
+<p><tt class="docutils literal"><span class="pre">---prefix</span></tt></p>
+<blockquote>
+<div>Default: <tt class="docutils literal"><span class="pre">---prefix=/usr/local/</span></tt>.
+Specify the directory where the library etc. are installed.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--with-mpi</span></tt></p>
+<blockquote>
+<div>Default: <tt class="docutils literal"><span class="pre">--with-mpi=no</span></tt> (without MPI).
+Whether use MPI (<tt class="docutils literal"><span class="pre">--with-mpi=yes</span></tt>), or not.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--with-openmp</span></tt></p>
+<blockquote>
+<div>Default: <tt class="docutils literal"><span class="pre">--with-openmp=yes</span></tt> (with OpenMP).
+Whether use OpenMP or not (<tt class="docutils literal"><span class="pre">--with-openmp=no</span></tt>).</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--enable-shared</span></tt></p>
+<blockquote>
+<div>Default: <tt class="docutils literal"><span class="pre">--enable-shared</span></tt>.
+Whether generate shared library.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--enable-static</span></tt></p>
+<blockquote>
+<div>Default: <tt class="docutils literal"><span class="pre">--enable-static</span></tt>.
+Whether generate static library.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--disable-zdot</span></tt></p>
+<blockquote>
+<div>Default: <tt class="docutils literal"><span class="pre">--enable-zdot</span></tt>.
+When ZDOTC and ZDOTU in BLAS do not work correctly (e.g. standard BLAS in MacOSX),
+please use this option to be disable these functions.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--enable-threadsafe</span></tt></p>
+<blockquote>
+<div>Default: <tt class="docutils literal"><span class="pre">--disable-threadsafe</span></tt>.
+If you want to call <span class="math">\(K\omega\)</span> routine in the parallel region
+(i.e. plan to solve different equations among threads),
+please use this option (<strong>Experimental</strong>).</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">FC</span></tt></p>
+<blockquote>
+<div>Default: The fortran compiler chosen automatically from those in the system.
+When <tt class="docutils literal"><span class="pre">--with-mpi</span></tt> is specified, the corresponding MPI compiler
+(such as <tt class="docutils literal"><span class="pre">mpif90</span></tt>) is searched.
+If <tt class="docutils literal"><span class="pre">FC</span></tt> printed the end of the standard-output of <tt class="docutils literal"><span class="pre">configure</span></tt> is not
+what you want, please set it manually as <tt class="docutils literal"><span class="pre">./configure</span> <span class="pre">FC=gfortran</span></tt>.</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">--help</span></tt></p>
+<blockquote>
+<div>Display all options including above, and stop without configuration.</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/komega.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Install</a><ul>
+<li><a class="reference internal" href="#overall-procedure">Overall procedure</a></li>
+<li><a class="reference internal" href="#options-for-configure">Options for configure</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="komega_workflow_en.html"
+                        title="previous chapter">Schematic workflow of this library</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="komega_usage_en.html"
+                        title="next chapter">Usage</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/komega_install_en.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="komega_usage_en.html" title="Usage"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="komega_workflow_en.html" title="Schematic workflow of this library"
+             >previous</a> |</li>
+        <li><a href="index.html">komega 2.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2017, kawamura.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

@@ -28,7 +28,7 @@ The restart calculation can be done by the following procedures.
    these routine must be called from the outside of the OpenMP-parallel region.
    If you want to call :math:`K\omega` routine in the parallel region
    (i.e. plan to solve different equations among threads),
-   please add ``-D _KOMEGA_THREAD`` to  ``FFLAGS`` in ``make.sys``
+   please use ``--enable-threadsafe`` option of ``configure``
    (**Experimental**).
    
 For FORTRAN, the modules can be called by
@@ -40,38 +40,17 @@ For FORTRAN, the modules can be called by
    USE komega_cocg ! Conjugate-orthogonal conjugate-gradient mehod
    USE komega_bicg ! Biconjugate-gradient method
 
-To utilize routines of
-MPI / Hybrid parallelization version, the modules can be called as folows:
-
-.. code-block:: fortran
-
-   USE pkomega_cg_r
-   USE pkomega_cg_c
-   USE pkomega_cocg
-   USE pkomega_bicg
-
 When we call :math:`K\omega` from C/C++ codes,
 we should include the header file as
 
 .. code-block:: c
 
-    #include komega_cg_r.h
-    #include komega_cg_c.h
-    #include komega_cocg.h
-    #include komega_bicg.h
+    #include komega.h
 
-Scaler arguments should be passed as pointers.
+Scalar arguments should be passed as pointers.
 For MPI/Hybrid parallelized routine,
 the above line becomes
-
-.. code-block:: c
-
-    #include pkomega_cg_r.h
-    #include pkomega_cg_c.h
-    #include pkomega_cocg.h
-    #include pkomega_bicg.h
-
-Also the communicator argument for the routine should be
+Also, the communicator argument for the routine should be
 transformed from the C/C++'s one to the fortran's one as follows.
 
 .. code-block:: c
@@ -91,41 +70,23 @@ should be called first before solving the shifted equation.
 
 Syntax
 
-   Fortran (Serial/OpenMP)
+   Fortran
 
    .. code-block:: fortran
 
-       CALL komega_cg_r_init(ndim, nl, nz, x, z, itermax, threshold)
-       CALL komega_cg_c_init(ndim, nl, nz, x, z, itermax, threshold)
-       CALL komega_cocg_init(ndim, nl, nz, x, z, itermax, threshold)
-       CALL komega_bicg_init(ndim, nl, nz, x, z, itermax, threshold)
+       CALL komega_cg_r_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+       CALL komega_cg_c_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+       CALL komega_cocg_init(ndim, nl, nz, x, z, itermax, threshold, comm)
+       CALL komega_bicg_init(ndim, nl, nz, x, z, itermax, threshold, comm)
 
-   Fortran (MPI/Hybrid parallel)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-       CALL pkomega_cg_c_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-       CALL pkomega_cocg_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-       CALL pkomega_bicg_init(ndim, nl, nz, x, z, itermax, threshold, comm)
-
-   C/C++ Serial/OpenMP
+   C/C++
 
    .. code-block:: c
 
-       komega_cg_r_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
-       komega_cg_c_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
-       komega_cocg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
-       komega_bicg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold);
-
-   C/C++ MPI/Hybrid parallel
-
-   .. code-block:: c
-
-       pkomega_cg_r_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
-       pkomega_cg_c_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
-       pkomega_cocg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
-       pkomega_bicg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+       komega_cg_r_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+       komega_cg_c_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+       komega_cocg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
+       komega_bicg_init(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm);
 
 Parameters
 
@@ -192,11 +153,12 @@ Parameters
 
    .. code-block:: fortran
                    
-      INTEGER,INTENT(IN) :: comm
+      INTEGER,INTENT(IN),OPTIONAL :: comm
    ..
 
-      Only for MPI / Hybrid parallelization
-      version. Communicators for MPI such as ``MPI_COMM_WORLD``.
+      Optional argument. Communicators for MPI such as ``MPI_COMM_WORLD``.
+      Only for MPI / Hybrid parallelization.
+      For C compiler, just pass ``NULL`` to omit this argment.
 
 .. _restart:
    
@@ -209,61 +171,33 @@ These routines should be called first before solving the shifted equation.
 
 Syntax
 
-   Fortran (Serial/OpenMP)
+   Fortran
 
    .. code-block:: fortran
 
        CALL komega_cg_r_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
-       &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+       &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save, comm)
        CALL komega_cg_c_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
-       &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+       &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save, comm)
        CALL komega_cocg_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
-       &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
+       &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save, comm)
        CALL komega_bicg_restart(ndim, nl, nz, x, z, itermax, threshold, status, &
        &                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
-       &                 z_seed, r_l_save)
+       &                 z_seed, r_l_save, comm)
 
-   Fortran (MPI/hybrid parallel)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
-       &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-       CALL pkomega_cg_c_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
-       &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-       CALL pkomega_cocg_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
-       &                 iter_old, v2, v12, alpha_save, beta_save, z_seed, r_l_save)
-       CALL pkomega_bicg_restart(ndim, nl, nz, x, z, itermax, threshold, comm, status, &
-       &                 iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
-       &                 z_seed, r_l_save)
-
-   C/C++ (Serial/OpenMP)
+   C/C++
 
    .. code-block:: c
 
        komega_cg_r_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
-       &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+       &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save, &comm);
        komega_cg_c_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
-       &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+       &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save, &comm);
        komega_cocg_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
-       &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
+       &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save, &comm);
        komega_bicg_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, status, &
        &                 &iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
-       &                 &z_seed, r_l_save);
-
-   C/C++ (MPI/hybrid parallel)
-
-   .. code-block:: c
-
-       pkomega_cg_r_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
-       &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
-       pkomega_cg_c_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
-       &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
-       pkomega_cocg_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
-       &                 &iter_old, v2, v12, alpha_save, beta_save, &z_seed, r_l_save);
-       pkomega_bicg_restart(&ndim, &nl, &nz, x, z, &itermax, &threshold, &comm, status, &
-       &                 &iter_old, v2, v12, v4, v14, alpha_save, beta_save, &
-       &                 &z_seed, r_l_save);
+       &                 &z_seed, r_l_save, &comm);
 
 Parameters
 
@@ -277,7 +211,7 @@ Parameters
       COMPLEX(8),INTENT(IN) :: z(nz) ! (Other)
       INTEGER,INTENT(IN) :: itermax
       REAL(8),INTENT(IN) :: threshold
-      INTEGER,INTENT(IN) :: comm
+      INTEGER,INTENT(IN),OPTIONAL :: comm
    ..
    
       The definition is same as :ref:`init`. See the parameters in :ref:`init`.
@@ -394,7 +328,7 @@ in the loop and updates the solution.
 
 Syntax
 
-   Fortran (Serial/OpenMPI)
+   Fortran
 
    .. code-block:: fortran
 
@@ -403,16 +337,7 @@ Syntax
        CALL komega_cocg_update(v12, v2, x, r_l, status)
        CALL komega_bicg_update(v12, v2, v14, v4, x, r_l, status)
 
-   Fortran (MPI/hybrid parallel)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_update(v12, v2, x, r_l, status)
-       CALL pkomega_cg_c_update(v12, v2, x, r_l, status)
-       CALL pkomega_cocg_update(v12, v2, x, r_l, status)
-       CALL pkomega_bicg_update(v12, v2, v14, v4, x, r_l, status)
-
-   C/C++ (Serial/OpenMPI)
+   C/C++
 
    .. code-block:: c
 
@@ -420,15 +345,6 @@ Syntax
        komega_cg_c_update(v12, v2, x, r_l, status);
        komega_cocg_update(v12, v2, x, r_l, status);
        komega_bicg_update(v12, v2, v14, v4, x, r_l, status);
-
-   C/C++ (MPI/hybrid parallel)
-
-   .. code-block:: c
-
-       pkomega_cg_r_update(v12, v2, x, r_l, status);
-       pkomega_cg_c_update(v12, v2, x, r_l, status);
-       pkomega_cocg_update(v12, v2, x, r_l, status);
-       pkomega_bicg_update(v12, v2, v14, v4, x, r_l, status);
 
 Parameters
 
@@ -517,7 +433,7 @@ is computed by using ``status`` which is an output of :ref:`update` as follows:
 
 Syntax
 
-   Fortran (Serial/OpenMP)
+   Fortran
 
    .. code-block:: fortran
 
@@ -526,16 +442,7 @@ Syntax
        CALL komega_cocg_getcoef(alpha_save, beta_save, z_seed, r_l_save)
        CALL komega_bicg_getcoef(alpha_save, beta_save, z_seed, r_l_save)
 
-   Fortran (MPI/hybrid parallel)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-       CALL pkomega_cg_c_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-       CALL pkomega_cocg_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-       CALL pkomega_bicg_getcoef(alpha_save, beta_save, z_seed, r_l_save)
-
-   C/C++ (Serial/OpenMP)
+   C/C++
 
    .. code-block:: c
 
@@ -543,15 +450,6 @@ Syntax
        komega_cg_c_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
        komega_cocg_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
        komega_bicg_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
-
-   C/C++ (MPI/hybrid parallel)
-
-   .. code-block:: c
-
-       pkomega_cg_r_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
-       pkomega_cg_c_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
-       pkomega_cocg_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
-       pkomega_bicg_getcoef(alpha_save, beta_save, &z_seed, r_l_save);
 
 Parameters
 
@@ -598,7 +496,7 @@ To call these routines,
 
 Syntax
 
-   Fortran (Serial/OpenMP)
+   Fortran
 
    .. code-block:: fortran
 
@@ -607,16 +505,7 @@ Syntax
        CALL komega_cocg_getvec(r_old)
        CALL komega_bicg_getvec(r_old, r_tilde_old)
 
-   Fortran (MPI/hybrid parallel)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_getvec(r_old)
-       CALL pkomega_cg_c_getvec(r_old)
-       CALL pkomega_cocg_getvec(r_old)
-       CALL pkomega_bicg_getvec(r_old, r_tilde_old)
-
-   C/C++ (Serial/OpenMP)
+   C/C++
 
    .. code-block:: c
 
@@ -624,15 +513,6 @@ Syntax
        komega_cg_c_getvec(r_old);
        komega_cocg_getvec(r_old);
        komega_bicg_getvec(r_old, r_tilde_old);
-
-   C/C++ (MPI/hybrid parallel)
-
-   .. code-block:: c
-
-       pkomega_cg_r_getvec(r_old);
-       pkomega_cg_c_getvec(r_old);
-       pkomega_cocg_getvec(r_old);
-       pkomega_bicg_getvec(r_old, r_tilde_old);
 
 Parameters
 
@@ -661,7 +541,7 @@ These routines do not affect the calculation results.
 
 Syntax
 
-   Fortran (Serial/OpenMP)
+   Fortran
 
    .. code-block:: fortran
 
@@ -670,16 +550,7 @@ Syntax
        CALL komega_cocg_getresidual(res)
        CALL komega_bicg_getresidual(res)
 
-   Fortran (MPI/hybrid parallel)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_getresidual(res)
-       CALL pkomega_cg_c_getresidual(res)
-       CALL pkomega_cocg_getresidual(res)
-       CALL pkomega_bicg_getresidual(res)
-
-   C/C++ (Serial/OpenMP)
+   C/C++
 
    .. code-block:: c
 
@@ -687,15 +558,6 @@ Syntax
        komega_cg_c_getresidual(res);
        komega_cocg_getresidual(res);
        komega_bicg_getresidual(res);
-
-   C/C++ (MPI/hybrid parallel)
-
-   .. code-block:: c
-
-       pkomega_cg_r_getresidual(res);
-       pkomega_cg_c_getresidual(res);
-       pkomega_cocg_getresidual(res);
-       pkomega_bicg_getresidual(res);
 
 Parameters
 
@@ -716,7 +578,7 @@ Release memories of the arrays stored in the library.
 
 Syntax
 
-   Fortran (Serial/OpenMP)
+   Fortran
 
    .. code-block:: fortran
 
@@ -725,16 +587,7 @@ Syntax
        CALL komega_cocg_finalize()
        CALL komega_bicg_finalize()
 
-   Fortran (MPI/hybrid parallel)
-
-   .. code-block:: fortran
-
-       CALL pkomega_cg_r_finalize()
-       CALL pkomega_cg_c_finalize()
-       CALL pkomega_cocg_finalize()
-       CALL pkomega_bicg_finalize()
-
-   C/C++ (Serial/OpenMP)
+   C/C++
 
    .. code-block:: c
 
@@ -742,15 +595,6 @@ Syntax
        komega_cg_c_finalize();
        komega_cocg_finalize();
        komega_bicg_finalize();
-
-   C/C++ (MPI/hybrid parallel)
-
-   .. code-block:: c
-
-       pkomega_cg_r_finalize();
-       pkomega_cg_c_finalize();
-       pkomega_cocg_finalize();
-       pkomega_bicg_finalize();
 
 Sample codes for using shifted BiCG library
 -------------------------------------------
