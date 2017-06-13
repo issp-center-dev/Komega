@@ -421,3 +421,8 @@ doc/software/en/_build/
 doc/html/
 doc/latex/
 autom4te.cache/
+config.h
+config.status
+libtool
+Makefile
+stamp-h1
