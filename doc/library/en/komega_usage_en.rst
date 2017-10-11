@@ -48,8 +48,6 @@ we should include the header file as
     #include komega.h
 
 Scalar arguments should be passed as pointers.
-For MPI/Hybrid parallelized routine,
-the above line becomes
 Also, the communicator argument for the routine should be
 transformed from the C/C++'s one to the fortran's one as follows.
 
