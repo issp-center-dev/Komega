@@ -472,10 +472,10 @@ SUBROUTINE komega_COCG_finalize() BIND(C)
   !
   IMPLICIT NONE
   !
-  DEALLOCATE(z, v3, pi, pi_old, p)
+  DEALLOCATE(z, v3, pi, pi_old, p, lz_conv)
   !
   IF(itermax > 0) THEN
-     DEALLOCATE(alpha_save, beta_save, r_l_save, pi_save, lz_conv)
+     DEALLOCATE(alpha_save, beta_save, r_l_save, pi_save)
   END IF
   !
 END SUBROUTINE komega_COCG_finalize
