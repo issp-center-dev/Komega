@@ -83,8 +83,8 @@ See the manual.
 ## How to link the libraries
 
 ```
-$ gfortran myprog.f90 -L install_dir/lib -lshiftk -lblas -I install_dir/include
-$ gcc myprog.c -L install_dir/lib -lshiftk -lblas -I install_dir/include
+$ gfortran myprog.f90 -L install_dir/lib -lkomega -lblas -I install_dir/include
+$ gcc myprog.c -L install_dir/lib -lkomega -lblas -I install_dir/include
 ```
 etc.
 
