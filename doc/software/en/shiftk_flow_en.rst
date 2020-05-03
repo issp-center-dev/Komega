@@ -1,7 +1,7 @@
 Overall procedure
 =================
 
-This program performs simulation as follows (See Fig. :num:`calcflow` ):
+This program performs simulation as follows (See Fig. :num:`calcflow_en` ):
 
 #. Read a input file for the numerical condition.
 #. (Optional) Read input files for the Hamiltonian and the right hand side vector.
