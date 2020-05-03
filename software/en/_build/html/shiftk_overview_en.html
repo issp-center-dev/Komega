@@ -1,35 +1,26 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Overview &mdash; shiftk 2.0.0 documentation</title>
-    
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <meta charset="utf-8" />
+    <title>Overview &#8212; shiftk 2.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="shiftk 2.0.0 documentation" href="index.html" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="License" href="shiftk_copy_en.html" />
     <link rel="prev" title="Welcome to \(K\omega\)-sample program’s documentation!" href="index.html" /> 
-  </head>
-  <body>
-    <div class="related">
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,50 +32,50 @@
         <li class="right" >
           <a href="index.html" title="Welcome to \(K\omega\)-sample program’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">shiftk 2.0.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">shiftk 2.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
 <p>This is document for the sample program which uses
-K <span class="math">\(\omega\)</span> library in the ISSP Math Library;
-this program computes the Green&#8217;s function with <span class="math">\(K\omega\)</span>.
-For the details of K <span class="math">\(\omega\)</span> library, See
-&#8220;<span class="math">\(K\omega\)</span> manual&#8221; in this package.</p>
+K <span class="math notranslate nohighlight">\(\omega\)</span> library in the ISSP Math Library;
+this program computes the Green’s function with <span class="math notranslate nohighlight">\(K\omega\)</span>.
+For the details of K <span class="math notranslate nohighlight">\(\omega\)</span> library, See
+“<span class="math notranslate nohighlight">\(K\omega\)</span> manual” in this package.</p>
 <div class="section" id="calculation-in-this-program">
 <h2>Calculation in this program<a class="headerlink" href="#calculation-in-this-program" title="Permalink to this headline">¶</a></h2>
-<p>This program compute the Green&#8217;s function</p>
-<div class="math">
+<p>This program compute the Green’s function</p>
+<div class="math notranslate nohighlight">
 \[\begin{align}
 G_{i}(z) =
 \langle i | (z-{\hat H})^{-1}| i \rangle
 \equiv
 {\boldsymbol \varphi}_i^{*} \cdot (z-{\hat H})^{-1} {\boldsymbol \varphi}_i,
 \end{align}\]</div>
-<p>where <span class="math">\(| i \rangle\)</span> is a wavefunction,
-<span class="math">\({\cal H}\)</span> is the Hamiltonian, and
-<span class="math">\(z\)</span> is a complex frequency.</p>
-<dl class="docutils">
-<dt><span class="math">\({\cal H}\)</span> in the above equation is obtained by either the</dt>
-<dd>following two ways:</dd>
+<p>where <span class="math notranslate nohighlight">\(| i \rangle\)</span> is a wavefunction,
+<span class="math notranslate nohighlight">\({\cal H}\)</span> is the Hamiltonian, and
+<span class="math notranslate nohighlight">\(z\)</span> is a complex frequency.</p>
+<dl class="simple">
+<dt><span class="math notranslate nohighlight">\({\cal H}\)</span> in the above equation is obtained by either the</dt><dd><p>following two ways:</p>
+</dd>
 </dl>
 <ul class="simple">
-<li>Input <span class="math">\({\cal H}\)</span> as a file with the MatrixMarket format</li>
-<li>Construct <span class="math">\({\cal H}\)</span> as a Hamiltonian of the
-Heisenberg model in this program.</li>
+<li><p>Input <span class="math notranslate nohighlight">\({\cal H}\)</span> as a file with the MatrixMarket format</p></li>
+<li><p>Construct <span class="math notranslate nohighlight">\({\cal H}\)</span> as a Hamiltonian of the
+Heisenberg model in this program.</p></li>
 </ul>
-<p>In the computation of the Green&#8217;s function,
+<p>In the computation of the Green’s function,
 we use either the following two method according to the type
-of <span class="math">\({\hat H}\)</span> (a real- or a complex- number).</p>
+of <span class="math notranslate nohighlight">\({\hat H}\)</span> (a real- or a complex- number).</p>
 <ul class="simple">
-<li><span class="math">\({\hat H}\)</span> of real numbers : Shifted Bi-Conjugate Gradient(BiCG) method</li>
-<li><span class="math">\({\hat H}\)</span> of complex numbers : Shifted Conjugate Orthogonal Conjugate Gradient(COCG) method</li>
+<li><p><span class="math notranslate nohighlight">\({\hat H}\)</span> of real numbers : Shifted Bi-Conjugate Gradient(BiCG) method</p></li>
+<li><p><span class="math notranslate nohighlight">\({\hat H}\)</span> of complex numbers : Shifted Conjugate Orthogonal Conjugate Gradient(COCG) method</p></li>
 </ul>
 </div>
 </div>
@@ -93,12 +84,12 @@ of <span class="math">\({\hat H}\)</span> (a real- or a complex- number).</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/komega.png" alt="Logo"/>
             </a></p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#calculation-in-this-program">Calculation in this program</a></li>
@@ -108,33 +99,32 @@ of <span class="math">\({\hat H}\)</span> (a real- or a complex- number).</p>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to <span class="math">\(K\omega\)</span>-sample program&#8217;s documentation!</a></p>
+                        title="previous chapter">Welcome to <span class="math notranslate nohighlight">\(K\omega\)</span>-sample program’s documentation!</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="shiftk_copy_en.html"
                         title="next chapter">License</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/shiftk_overview_en.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/shiftk_overview_en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -146,12 +136,12 @@ of <span class="math">\({\hat H}\)</span> (a real- or a complex- number).</p>
         <li class="right" >
           <a href="index.html" title="Welcome to \(K\omega\)-sample program’s documentation!"
              >previous</a> |</li>
-        <li><a href="index.html">shiftk 2.0.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">shiftk 2.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2017, kawamura.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, kawamura.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
     </div>
   </body>
 </html>

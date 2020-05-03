@@ -1,35 +1,26 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Format of files &mdash; shiftk 2.0.0 documentation</title>
-    
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <meta charset="utf-8" />
+    <title>Format of files &#8212; shiftk 2.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="shiftk 2.0.0 documentation" href="index.html" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Contact" href="shiftk_contact_en.html" />
     <link rel="prev" title="Overall procedure" href="shiftk_flow_en.html" /> 
-  </head>
-  <body>
-    <div class="related">
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,80 +32,80 @@
         <li class="right" >
           <a href="shiftk_flow_en.html" title="Overall procedure"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">shiftk 2.0.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">shiftk 2.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="format-of-files">
 <span id="fileformat"></span><h1>Format of files<a class="headerlink" href="#format-of-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="input-files">
 <h2>Input files<a class="headerlink" href="#input-files" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="namelist-file">
-<span id="modpara"></span><h3>&#8220;Namelist&#8221; file<a class="headerlink" href="#namelist-file" title="Permalink to this headline">¶</a></h3>
-<p>This file has four namelist (<tt class="docutils literal"><span class="pre">filename</span></tt>, <tt class="docutils literal"><span class="pre">ham</span></tt>, <tt class="docutils literal"><span class="pre">cg</span></tt>, <tt class="docutils literal"><span class="pre">dyn</span></tt>).
+<span id="modpara"></span><h3>“Namelist” file<a class="headerlink" href="#namelist-file" title="Permalink to this headline">¶</a></h3>
+<p>This file has four namelist (<code class="docutils literal notranslate"><span class="pre">filename</span></code>, <code class="docutils literal notranslate"><span class="pre">ham</span></code>, <code class="docutils literal notranslate"><span class="pre">cg</span></code>, <code class="docutils literal notranslate"><span class="pre">dyn</span></code>).
 For the details of the namelist of fortran, see some books and Web page for fortran.</p>
-<div class="highlight-python"><div class="highlight"><pre>&amp;filename
-  inham = &quot;&quot;
-  invec = &quot;&quot;
-/
-&amp;ham
-nsite = 4
-Jx = 1d0
-Jy = 1d0
-Jz = 1d0
-Dz = 0d0
-/
-&amp;cg
-  maxloops = 100
-  convfactor = 6
-/
-&amp;dyn
-  calctype = &quot;normal&quot;
-  nomega = 100
-  omegamin = (-2d0, 0.1d0)
-  omegamax = ( 1d0, 0.1d0)
-  outrestart = .TRUE.
-/
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">filename</span>
+  <span class="n">inham</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+  <span class="n">invec</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ham</span>
+<span class="n">nsite</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">Jx</span> <span class="o">=</span> <span class="mi">1</span><span class="n">d0</span>
+<span class="n">Jy</span> <span class="o">=</span> <span class="mi">1</span><span class="n">d0</span>
+<span class="n">Jz</span> <span class="o">=</span> <span class="mi">1</span><span class="n">d0</span>
+<span class="n">Dz</span> <span class="o">=</span> <span class="mi">0</span><span class="n">d0</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">cg</span>
+  <span class="n">maxloops</span> <span class="o">=</span> <span class="mi">100</span>
+  <span class="n">convfactor</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">dyn</span>
+  <span class="n">calctype</span> <span class="o">=</span> <span class="s2">&quot;normal&quot;</span>
+  <span class="n">nomega</span> <span class="o">=</span> <span class="mi">100</span>
+  <span class="n">omegamin</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="n">d0</span><span class="p">,</span> <span class="mf">0.1</span><span class="n">d0</span><span class="p">)</span>
+  <span class="n">omegamax</span> <span class="o">=</span> <span class="p">(</span> <span class="mi">1</span><span class="n">d0</span><span class="p">,</span> <span class="mf">0.1</span><span class="n">d0</span><span class="p">)</span>
+  <span class="n">outrestart</span> <span class="o">=</span> <span class="o">.</span><span class="n">TRUE</span><span class="o">.</span>
+<span class="o">/</span>
 </pre></div>
 </div>
-<p>In the namelist <cite>&#8220;filename&#8221;`</cite>, we specify the file names of the
+<p>In the namelist <cite>“filename”`</cite>, we specify the file names of the
 Hamiltonian and the RHS vector.</p>
 <ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">InHam</span></tt></p>
-<p><strong>Type :</strong> string (default: <tt class="docutils literal"><span class="pre">&quot;&quot;</span></tt>)</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">InHam</span></code></p>
+<p><strong>Type :</strong> string (default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>)</p>
 <p><strong>Description :</strong>
 The name of the file for the Hamiltonian in the MatrixMarket format
 (full path or relative path).
 If this parameter is not specified,
 the Hamiltonian of the 1D spin chain is generated
-with the parameters in <tt class="docutils literal"><span class="pre">ham</span></tt> namelist.</p>
+with the parameters in <code class="docutils literal notranslate"><span class="pre">ham</span></code> namelist.</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">InVec</span></tt></p>
-<p><strong>Type :</strong> string (default: <tt class="docutils literal"><span class="pre">&quot;&quot;</span></tt>)</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">InVec</span></code></p>
+<p><strong>Type :</strong> string (default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>)</p>
 <p><strong>Description :</strong>
 The name of the file for the right hand side vector.
 If this parameter is not specified,
 the RHS vector is generated as follows:
 First the ground-state vector is computed.
 Then RHS vector is calculated by operating
-<span class="math">\({\hat S}_{1 z}\)</span> (<span class="math">\(z\)</span> component of the spin at site 1)
+<span class="math notranslate nohighlight">\({\hat S}_{1 z}\)</span> (<span class="math notranslate nohighlight">\(z\)</span> component of the spin at site 1)
 to the ground-state vector.
 Therefore, we assume the computed system is
 the one-dimensional spin chain.</p>
 </li>
 </ul>
-<dl class="docutils">
-<dt><tt class="docutils literal"><span class="pre">&quot;ham&quot;</span></tt> namelist is read only when</dt>
-<dd><tt class="docutils literal"><span class="pre">InHam</span></tt> is not specified.
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;ham&quot;</span></code> namelist is read only when</dt><dd><p><code class="docutils literal notranslate"><span class="pre">InHam</span></code> is not specified.
 The parameters in this namelist are used to generate
-the Hamiltonian of the one-dimensional spin chain (See Fig. <a href="#spin">2</a>)</dd>
+the Hamiltonian of the one-dimensional spin chain (See Fig. <a href="#spin">2</a>)</p>
+</dd>
 </dl>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{split}\begin{align}
   {\hat H} = \sum_{i}
   \left(
@@ -135,151 +126,151 @@ the Hamiltonian of the one-dimensional spin chain (See Fig. <a href="#spin">2</a
   \end{matrix}
   \right).
   \end{align}\end{split}\]</div>
-<div class="figure" id="spin">
-<img alt="_images/spin.png" src="_images/spin.png" />
-<p class="caption">Schematic picture of the one-dimensional spin chain.</p>
+<div class="figure align-default" id="id2">
+<span id="spin"></span><img alt="_images/spin.png" src="_images/spin.png" />
+<p class="caption"><span class="caption-text">Figure 2: Schematic picture of the one-dimensional spin chain.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">nsite</span></tt></p>
-<p><strong>Type :</strong> int (default: <tt class="docutils literal"><span class="pre">4</span></tt>)</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">nsite</span></code></p>
+<p><strong>Type :</strong> int (default: <code class="docutils literal notranslate"><span class="pre">4</span></code>)</p>
 <p><strong>Description :</strong>
 The number of sites in the 1D spin chain model.</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">Jx</span></tt></p>
-<p><strong>Type :</strong> double (default: <tt class="docutils literal"><span class="pre">1.0</span></tt>)</p>
-<p><strong>Description :</strong> <span class="math">\(J_x\)</span> for the Heisenberg model.</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">Jx</span></code></p>
+<p><strong>Type :</strong> double (default: <code class="docutils literal notranslate"><span class="pre">1.0</span></code>)</p>
+<p><strong>Description :</strong> <span class="math notranslate nohighlight">\(J_x\)</span> for the Heisenberg model.</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">Jy</span></tt></p>
-<p><strong>Type :</strong> double (default: <tt class="docutils literal"><span class="pre">1.0</span></tt>)</p>
-<p><strong>Description :</strong> <span class="math">\(J_y\)</span> for the Heisenberg model.</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">Jy</span></code></p>
+<p><strong>Type :</strong> double (default: <code class="docutils literal notranslate"><span class="pre">1.0</span></code>)</p>
+<p><strong>Description :</strong> <span class="math notranslate nohighlight">\(J_y\)</span> for the Heisenberg model.</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">Jz</span></tt></p>
-<p><strong>Type :</strong> double (default: <tt class="docutils literal"><span class="pre">1.0</span></tt>)</p>
-<p><strong>Description :</strong> <span class="math">\(J_z\)</span> for the Heisenberg model.</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">Jz</span></code></p>
+<p><strong>Type :</strong> double (default: <code class="docutils literal notranslate"><span class="pre">1.0</span></code>)</p>
+<p><strong>Description :</strong> <span class="math notranslate nohighlight">\(J_z\)</span> for the Heisenberg model.</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">Dz</span></tt></p>
-<p><strong>Type :</strong> double (default: <tt class="docutils literal"><span class="pre">0.0</span></tt>)</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">Dz</span></code></p>
+<p><strong>Type :</strong> double (default: <code class="docutils literal notranslate"><span class="pre">0.0</span></code>)</p>
 <p><strong>Description :</strong>
-The parameter of the Dzyaloshinskii-Moriya interaction (<span class="math">\(D_z\)</span>).</p>
+The parameter of the Dzyaloshinskii-Moriya interaction (<span class="math notranslate nohighlight">\(D_z\)</span>).</p>
 </li>
 </ul>
-<p><tt class="docutils literal"><span class="pre">cg</span></tt> namelist has parameters
+<p><code class="docutils literal notranslate"><span class="pre">cg</span></code> namelist has parameters
 for specifying the numerical condition for the
 (Bi)Conjugate-gradient method.</p>
 <ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">MaxLoops</span></tt></p>
+<li><p><code class="docutils literal notranslate"><span class="pre">MaxLoops</span></code></p>
 <p><strong>Type :</strong> int (default: the dimension of the Hamiltonian)</p>
 <p><strong>Description :</strong> The maximum number of iterations.</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">Convfactor</span></tt></p>
-<p><strong>Type :</strong> int (default: <tt class="docutils literal"><span class="pre">8</span></tt>)</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">Convfactor</span></code></p>
+<p><strong>Type :</strong> int (default: <code class="docutils literal notranslate"><span class="pre">8</span></code>)</p>
 <p><strong>Description :</strong> Convergence threshold.
 If the 2-norm of the residual vector becomes smaller than
-<span class="math">\(10^{-{\tt Convfactor}}\)</span>, the calculation finishes.</p>
+<span class="math notranslate nohighlight">\(10^{-{\tt Convfactor}}\)</span>, the calculation finishes.</p>
 </li>
 </ul>
-<p><tt class="docutils literal"><span class="pre">dyn</span></tt> has the parameters for the computation of the spectrum.</p>
+<p><code class="docutils literal notranslate"><span class="pre">dyn</span></code> has the parameters for the computation of the spectrum.</p>
 <ul>
-<li><p class="first"><tt class="docutils literal"><span class="pre">OmegaMin</span></tt></p>
-<p><strong>Type :</strong> Complex (default: If <tt class="docutils literal"><span class="pre">invec</span></tt> is not specified,
+<li><p><code class="docutils literal notranslate"><span class="pre">OmegaMin</span></code></p>
+<p><strong>Type :</strong> Complex (default: If <code class="docutils literal notranslate"><span class="pre">invec</span></code> is not specified,
 the real part of it becomes the smallest eigenvalue,
-and the imaginary part of it becomes <span class="math">\(\times0.01\)</span> times
+and the imaginary part of it becomes <span class="math notranslate nohighlight">\(\times0.01\)</span> times
 the difference between the largest- and the smallest- eigenvalue.
-If <tt class="docutils literal"><span class="pre">invec</span></tt> is specified, the default value becomes <tt class="docutils literal"><span class="pre">(0.0,</span> <span class="pre">0.01)</span></tt>)</p>
+If <code class="docutils literal notranslate"><span class="pre">invec</span></code> is specified, the default value becomes <code class="docutils literal notranslate"><span class="pre">(0.0,</span> <span class="pre">0.01)</span></code>)</p>
 <p><strong>Description :</strong> The smallest frequency.</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">OmegaMax</span></tt></p>
-<p><strong>Type :</strong> Complex (default: If <tt class="docutils literal"><span class="pre">invec</span></tt> is not specified,
+<li><p><code class="docutils literal notranslate"><span class="pre">OmegaMax</span></code></p>
+<p><strong>Type :</strong> Complex (default: If <code class="docutils literal notranslate"><span class="pre">invec</span></code> is not specified,
 the real part of it becomes the largest eigenvalue,
-and the imaginary part of it becomes <span class="math">\(\times0.01\)</span> times
+and the imaginary part of it becomes <span class="math notranslate nohighlight">\(\times0.01\)</span> times
 the difference between the largest- and the smallest- eigenvalue.
-If <tt class="docutils literal"><span class="pre">invec</span></tt> is specified, the default value becomes <tt class="docutils literal"><span class="pre">(1.0,</span> <span class="pre">0.01)</span></tt>)</p>
+If <code class="docutils literal notranslate"><span class="pre">invec</span></code> is specified, the default value becomes <code class="docutils literal notranslate"><span class="pre">(1.0,</span> <span class="pre">0.01)</span></code>)</p>
 <p><strong>Description :</strong> The largest frequency.</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">NOmega</span></tt></p>
-<p><strong>Type :</strong> int (default: <tt class="docutils literal"><span class="pre">10</span></tt>)</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">NOmega</span></code></p>
+<p><strong>Type :</strong> int (default: <code class="docutils literal notranslate"><span class="pre">10</span></code>)</p>
 <p><strong>Description :</strong> The number of frequencies.</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">outrestart</span></tt></p>
-<p><strong>Type :</strong> Logical (default: <tt class="docutils literal"><span class="pre">.FALSE.</span></tt>)</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">outrestart</span></code></p>
+<p><strong>Type :</strong> Logical (default: <code class="docutils literal notranslate"><span class="pre">.FALSE.</span></code>)</p>
 <p><strong>Description :</strong>
-Whether data for restart will be written (<tt class="docutils literal"><span class="pre">.TRUE.</span></tt>) or not (<tt class="docutils literal"><span class="pre">.FALSE.</span></tt>).</p>
+Whether data for restart will be written (<code class="docutils literal notranslate"><span class="pre">.TRUE.</span></code>) or not (<code class="docutils literal notranslate"><span class="pre">.FALSE.</span></code>).</p>
 </li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">calctype</span></tt></p>
+<li><p><code class="docutils literal notranslate"><span class="pre">calctype</span></code></p>
 <p><strong>Type :</strong>
-String.  Choose from <tt class="docutils literal"><span class="pre">&quot;normal&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;recalc&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;restart&quot;</span></tt>.
-(default: <tt class="docutils literal"><span class="pre">&quot;normal&quot;</span></tt>)</p>
+String.  Choose from <code class="docutils literal notranslate"><span class="pre">&quot;normal&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;recalc&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;restart&quot;</span></code>.
+(default: <code class="docutils literal notranslate"><span class="pre">&quot;normal&quot;</span></code>)</p>
 <p><strong>Description :</strong>
-<tt class="docutils literal"><span class="pre">&quot;normal&quot;</span></tt> for computing with the Krylov subspace from scratch.
-<tt class="docutils literal"><span class="pre">&quot;recalc&quot;</span></tt> for computing with the Krylov subspace
+<code class="docutils literal notranslate"><span class="pre">&quot;normal&quot;</span></code> for computing with the Krylov subspace from scratch.
+<code class="docutils literal notranslate"><span class="pre">&quot;recalc&quot;</span></code> for computing with the Krylov subspace
 generated in the previous calculation.
 In this case, the matrix-vector product is not performed.
 The convergence is not guaranteed.
-<tt class="docutils literal"><span class="pre">&quot;restart&quot;</span></tt> for restarting the calculation from the
+<code class="docutils literal notranslate"><span class="pre">&quot;restart&quot;</span></code> for restarting the calculation from the
 previous run.
 In this case, the calculation continues until
-the convergence is achieved or the number of iteration becomes <tt class="docutils literal"><span class="pre">MaxLoops</span></tt>.</p>
+the convergence is achieved or the number of iteration becomes <code class="docutils literal notranslate"><span class="pre">MaxLoops</span></code>.</p>
 </li>
 </ul>
 </div>
 <div class="section" id="inham-file">
-<span id="ham"></span><h3>&#8220;InHam&#8221; file<a class="headerlink" href="#inham-file" title="Permalink to this headline">¶</a></h3>
+<span id="ham"></span><h3>“InHam” file<a class="headerlink" href="#inham-file" title="Permalink to this headline">¶</a></h3>
 <p>The Hamiltonian is written in the MatrixMarket format.</p>
-<p>Example of the &#8220;InHam&#8221; file:</p>
-<div class="highlight-python"><div class="highlight"><pre>%%MatrixMarket matrix coordinate complex hermitian
-16 16 20
-1 1 1.000000 0.000000
-3 2 0.500000 0.000000
-5 3 0.500000 0.000000
-6 4 0.500000 0.000000
-6 6 -1.000000 0.000000
-7 6 0.500000 0.000000
-9 2 0.500000 0.000000
-9 5 0.500000 0.000000
-10 6 0.500000 0.000000
-11 4 0.500000 0.000000
-11 7 0.500000 0.000000
-11 10 0.500000 0.000000
-11 11 -1.000000 0.000000
-12 8 0.500000 0.000000
-13 6 0.500000 0.000000
-13 11 0.500000 0.000000
-14 12 0.500000 0.000000
-15 8 0.500000 0.000000
-15 14 0.500000 0.000000
-16 16 1.000000 0.000000
+<p>Example of the “InHam” file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">MatrixMarket</span> <span class="n">matrix</span> <span class="n">coordinate</span> <span class="nb">complex</span> <span class="n">hermitian</span>
+<span class="mi">16</span> <span class="mi">16</span> <span class="mi">20</span>
+<span class="mi">1</span> <span class="mi">1</span> <span class="mf">1.000000</span> <span class="mf">0.000000</span>
+<span class="mi">3</span> <span class="mi">2</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">5</span> <span class="mi">3</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">6</span> <span class="mi">4</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">6</span> <span class="mi">6</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mf">0.000000</span>
+<span class="mi">7</span> <span class="mi">6</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">9</span> <span class="mi">2</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">9</span> <span class="mi">5</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">10</span> <span class="mi">6</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">11</span> <span class="mi">4</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">11</span> <span class="mi">7</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">11</span> <span class="mi">10</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">11</span> <span class="mi">11</span> <span class="o">-</span><span class="mf">1.000000</span> <span class="mf">0.000000</span>
+<span class="mi">12</span> <span class="mi">8</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">13</span> <span class="mi">6</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">13</span> <span class="mi">11</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">14</span> <span class="mi">12</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">15</span> <span class="mi">8</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">15</span> <span class="mi">14</span> <span class="mf">0.500000</span> <span class="mf">0.000000</span>
+<span class="mi">16</span> <span class="mi">16</span> <span class="mf">1.000000</span> <span class="mf">0.000000</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt>First row:</dt>
-<dd>Arbitrary string (such as comment).</dd>
-<dt>Second row:</dt>
-<dd>The number of rows, columns, and non-zero elements
-(in <strong>the lower triangle part</strong>).</dd>
-<dt>Third row - End:</dt>
-<dd>The row- and the column- index, and
+<dl class="simple">
+<dt>First row:</dt><dd><p>Arbitrary string (such as comment).</p>
+</dd>
+<dt>Second row:</dt><dd><p>The number of rows, columns, and non-zero elements
+(in <strong>the lower triangle part</strong>).</p>
+</dd>
+<dt>Third row - End:</dt><dd><p>The row- and the column- index, and
 the real- and imaginary- part of the non-zero element
-(in <strong>the lower triangle part</strong>).</dd>
+(in <strong>the lower triangle part</strong>).</p>
+</dd>
 </dl>
 </div>
 <div class="section" id="invec-file">
-<span id="vec"></span><h3>&#8220;InVec&#8221; file<a class="headerlink" href="#invec-file" title="Permalink to this headline">¶</a></h3>
+<span id="vec"></span><h3>“InVec” file<a class="headerlink" href="#invec-file" title="Permalink to this headline">¶</a></h3>
 <p>Right hand side vector is contained.</p>
-<p>Example of the &#8220;InVec&#8221; file:</p>
-<div class="highlight-python"><div class="highlight"><pre>8192
-0.02 0.01
-0.02 0.001
-(continue...)
+<p>Example of the “InVec” file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">8192</span>
+<span class="mf">0.02</span> <span class="mf">0.01</span>
+<span class="mf">0.02</span> <span class="mf">0.001</span>
+<span class="p">(</span><span class="k">continue</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul>
-<li><p class="first">First row: [ int01 ]</p>
+<li><p>First row: [ int01 ]</p>
 <p><strong>Type :</strong> int</p>
 <p><strong>Description :</strong>
 The dimension of the Hilbert space.
 It must be the same as the dimension of the Hamiltonian.</p>
 </li>
-<li><p class="first">Second row - End:
+<li><p>Second row - End:
 [ double01 ] [ double02 ]</p>
 <p><strong>Type :</strong> double</p>
 <p><strong>Description :</strong> The element of the RHS vector.
@@ -290,44 +281,44 @@ and [ double02 ] is the imaginary part.</p>
 </div>
 <div class="section" id="coefficients-for-restart">
 <span id="recoeff"></span><h3>Coefficients for restart<a class="headerlink" href="#coefficients-for-restart" title="Permalink to this headline">¶</a></h3>
-<p>The coefficient <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span>
+<p>The coefficient <span class="math notranslate nohighlight">\(\alpha\)</span> and <span class="math notranslate nohighlight">\(\beta\)</span>
 are contained.</p>
-<p>The name of the generated file is <tt class="docutils literal"><span class="pre">TriDiagComp.dat</span></tt>.</p>
+<p>The name of the generated file is <code class="docutils literal notranslate"><span class="pre">TriDiagComp.dat</span></code>.</p>
 <p>The example of this file:</p>
-<div class="highlight-python"><div class="highlight"><pre>1000
-1.0 0.0
-0.1 0 0.01  0
-0.2 0 0.021 0
-(continue...)
-2.1 -0.5
-3.1 4.0
-(continue...)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1000</span>
+<span class="mf">1.0</span> <span class="mf">0.0</span>
+<span class="mf">0.1</span> <span class="mi">0</span> <span class="mf">0.01</span>  <span class="mi">0</span>
+<span class="mf">0.2</span> <span class="mi">0</span> <span class="mf">0.021</span> <span class="mi">0</span>
+<span class="p">(</span><span class="k">continue</span><span class="o">...</span><span class="p">)</span>
+<span class="mf">2.1</span> <span class="o">-</span><span class="mf">0.5</span>
+<span class="mf">3.1</span> <span class="mf">4.0</span>
+<span class="p">(</span><span class="k">continue</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul>
-<li><p class="first">First row: [ int01 ]</p>
+<li><p>First row: [ int01 ]</p>
 <p><strong>Type :</strong> int</p>
 <p><strong>Description :</strong>
-The length of <span class="math">\(\alpha, \beta\)</span>.
+The length of <span class="math notranslate nohighlight">\(\alpha, \beta\)</span>.
 It is the same as the number of iterations in the previous run.</p>
 </li>
-<li><p class="first">Second row: [ double01 ] [ double02 ]</p>
+<li><p>Second row: [ double01 ] [ double02 ]</p>
 <p><strong>Type :</strong> double</p>
-<p><strong>Description :</strong> The seed frequency <span class="math">\(z_{\rm seed}\)</span>.
-[ double01 ] is the real part of <span class="math">\(z_{\rm seed}\)</span>, and
-[ double02 ] is the imaginary par of <span class="math">\(z_{\rm seed}\)</span>.</p>
+<p><strong>Description :</strong> The seed frequency <span class="math notranslate nohighlight">\(z_{\rm seed}\)</span>.
+[ double01 ] is the real part of <span class="math notranslate nohighlight">\(z_{\rm seed}\)</span>, and
+[ double02 ] is the imaginary par of <span class="math notranslate nohighlight">\(z_{\rm seed}\)</span>.</p>
 </li>
-<li><p class="first">Third row - 2 + [ int01 ]th row:
+<li><p>Third row - 2 + [ int01 ]th row:
 [ double03 ] [ double04 ] [ double05 ] [ double06 ]</p>
 <p><strong>Type :</strong> double</p>
-<p><strong>Description :</strong> <span class="math">\(\alpha, \beta\)</span> at the each iteration.
-[ double03 ] is the real part of <span class="math">\(\alpha\)</span>,
-[ double04 ] is the imaginary part of <span class="math">\(\alpha\)</span>,
-[ double05 ] is the real part of <span class="math">\(\beta\)</span>,
-[ double06 ] is the imaginary part of <span class="math">\(\beta\)</span>.</p>
+<p><strong>Description :</strong> <span class="math notranslate nohighlight">\(\alpha, \beta\)</span> at the each iteration.
+[ double03 ] is the real part of <span class="math notranslate nohighlight">\(\alpha\)</span>,
+[ double04 ] is the imaginary part of <span class="math notranslate nohighlight">\(\alpha\)</span>,
+[ double05 ] is the real part of <span class="math notranslate nohighlight">\(\beta\)</span>,
+[ double06 ] is the imaginary part of <span class="math notranslate nohighlight">\(\beta\)</span>.</p>
 </li>
-<li><p class="first">3 + [ int01 ]th row -
-2 + <span class="math">\(2\times[\)</span> int01 ]th row:
+<li><p>3 + [ int01 ]th row -
+2 + <span class="math notranslate nohighlight">\(2\times[\)</span> int01 ]th row:
 [ double07 ] [ double08 ]</p>
 <p><strong>Type :</strong> double</p>
 <p><strong>Description :</strong> The product of the RHS vector and
@@ -340,30 +331,30 @@ the residual vector at the each iteration.
 <div class="section" id="residual-vector">
 <span id="revec"></span><h3>Residual vector<a class="headerlink" href="#residual-vector" title="Permalink to this headline">¶</a></h3>
 <p>The residual vector is contained for the restart.
-The file name is <tt class="docutils literal"><span class="pre">ResVec.dat</span></tt>.</p>
+The file name is <code class="docutils literal notranslate"><span class="pre">ResVec.dat</span></code>.</p>
 <p>Example of this file:</p>
-<div class="highlight-python"><div class="highlight"><pre>8192
-0.02 0.01
-0.02 0.001
-(continue...)
-0.02 0.01
-0.02 0.001
-(continue... Only for BiCG)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">8192</span>
+<span class="mf">0.02</span> <span class="mf">0.01</span>
+<span class="mf">0.02</span> <span class="mf">0.001</span>
+<span class="p">(</span><span class="k">continue</span><span class="o">...</span><span class="p">)</span>
+<span class="mf">0.02</span> <span class="mf">0.01</span>
+<span class="mf">0.02</span> <span class="mf">0.001</span>
+<span class="p">(</span><span class="k">continue</span><span class="o">...</span> <span class="n">Only</span> <span class="k">for</span> <span class="n">BiCG</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul>
-<li><p class="first">First row: [ int01 ]</p>
+<li><p>First row: [ int01 ]</p>
 <p><strong>Type :</strong> int</p>
 <p><strong>Description :</strong> The dimension of the Hilbert space.</p>
 </li>
-<li><p class="first">Second row - 1 + [ int01 ]th row:
+<li><p>Second row - 1 + [ int01 ]th row:
 [ double01 ] [ double02 ]</p>
 <p><strong>Type :</strong> double</p>
 <p><strong>Description :</strong> Each element of the residual vector.
 [ double01 ] is the real part of it, and
 [ double02 ] is the imaginary part of it.</p>
 </li>
-<li><p class="first">Third row - 1 + 2 <span class="math">\(\times\)</span> [ int01 ]th row:
+<li><p>Third row - 1 + 2 <span class="math notranslate nohighlight">\(\times\)</span> [ int01 ]th row:
 [ double03 ] [ double04 ]</p>
 <p><strong>Type :</strong> double</p>
 <p><strong>Description :</strong>
@@ -379,34 +370,34 @@ Each element of the shadow residual vector.
 <h2>Output file<a class="headerlink" href="#output-file" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="coefficient-for-restart">
 <h3>Coefficient for restart<a class="headerlink" href="#coefficient-for-restart" title="Permalink to this headline">¶</a></h3>
-<p>The format is the same as <a class="reference internal" href="#recoeff"><em>Coefficients for restart</em></a>.</p>
+<p>The format is the same as <a class="reference internal" href="#recoeff"><span class="std std-ref">Coefficients for restart</span></a>.</p>
 </div>
 <div class="section" id="id1">
 <h3>Residual vector<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p>The format is the same as <a class="reference internal" href="#revec"><em>Residual vector</em></a>.</p>
+<p>The format is the same as <a class="reference internal" href="#revec"><span class="std std-ref">Residual vector</span></a>.</p>
 </div>
 <div class="section" id="dynamical-green-s-function">
-<span id="dynamicalg"></span><h3>Dynamical Green&#8217;s function<a class="headerlink" href="#dynamical-green-s-function" title="Permalink to this headline">¶</a></h3>
-<p>The dynamical Green&#8217;s function is contained.</p>
+<span id="dynamicalg"></span><h3>Dynamical Green’s function<a class="headerlink" href="#dynamical-green-s-function" title="Permalink to this headline">¶</a></h3>
+<p>The dynamical Green’s function is contained.</p>
 <p>Example of this file:</p>
-<div class="highlight-python"><div class="highlight"><pre>-10 0.001 0.001 -0.0001
--9.8 0.001 0.0012 -0.0002
--9.6 0.001 0.0014 -0.0003
-(continue...)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="mi">10</span> <span class="mf">0.001</span> <span class="mf">0.001</span> <span class="o">-</span><span class="mf">0.0001</span>
+<span class="o">-</span><span class="mf">9.8</span> <span class="mf">0.001</span> <span class="mf">0.0012</span> <span class="o">-</span><span class="mf">0.0002</span>
+<span class="o">-</span><span class="mf">9.6</span> <span class="mf">0.001</span> <span class="mf">0.0014</span> <span class="o">-</span><span class="mf">0.0003</span>
+<span class="p">(</span><span class="k">continue</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul>
-<li><p class="first">First row - END:
+<li><p>First row - END:
 [ double01 ] [ double02 ] [ double03 ] [ double04 ]</p>
 <ul>
-<li><p class="first">[ double01 ], [ double02 ]</p>
+<li><p>[ double01 ], [ double02 ]</p>
 <p><strong>Type :</strong> double</p>
 <p><strong>Description :</strong> The real- ([ double01 ])
 and the imaginary- ([ double02 ]) part of the frequency.</p>
 </li>
-<li><p class="first">[ double03 ], [ double04 ]</p>
+<li><p>[ double03 ], [ double04 ]</p>
 <p><strong>Type :</strong> double</p>
-<p><strong>Description :</strong> The dynamical Green&#8217;s function.
+<p><strong>Description :</strong> The dynamical Green’s function.
 [ double01 ] is the real part of it, and
 [ double02 ] is the imaginary part of it.</p>
 </li>
@@ -421,18 +412,18 @@ and the imaginary- ([ double02 ]) part of the frequency.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/komega.png" alt="Logo"/>
             </a></p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Format of files</a><ul>
 <li><a class="reference internal" href="#input-files">Input files</a><ul>
-<li><a class="reference internal" href="#namelist-file">&#8220;Namelist&#8221; file</a></li>
-<li><a class="reference internal" href="#inham-file">&#8220;InHam&#8221; file</a></li>
-<li><a class="reference internal" href="#invec-file">&#8220;InVec&#8221; file</a></li>
+<li><a class="reference internal" href="#namelist-file">“Namelist” file</a></li>
+<li><a class="reference internal" href="#inham-file">“InHam” file</a></li>
+<li><a class="reference internal" href="#invec-file">“InVec” file</a></li>
 <li><a class="reference internal" href="#coefficients-for-restart">Coefficients for restart</a></li>
 <li><a class="reference internal" href="#residual-vector">Residual vector</a></li>
 </ul>
@@ -440,7 +431,7 @@ and the imaginary- ([ double02 ]) part of the frequency.</p>
 <li><a class="reference internal" href="#output-file">Output file</a><ul>
 <li><a class="reference internal" href="#coefficient-for-restart">Coefficient for restart</a></li>
 <li><a class="reference internal" href="#id1">Residual vector</a></li>
-<li><a class="reference internal" href="#dynamical-green-s-function">Dynamical Green&#8217;s function</a></li>
+<li><a class="reference internal" href="#dynamical-green-s-function">Dynamical Green’s function</a></li>
 </ul>
 </li>
 </ul>
@@ -453,29 +444,28 @@ and the imaginary- ([ double02 ]) part of the frequency.</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="shiftk_contact_en.html"
                         title="next chapter">Contact</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/shiftk_format_en.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/shiftk_format_en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -487,12 +477,12 @@ and the imaginary- ([ double02 ]) part of the frequency.</p>
         <li class="right" >
           <a href="shiftk_flow_en.html" title="Overall procedure"
              >previous</a> |</li>
-        <li><a href="index.html">shiftk 2.0.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">shiftk 2.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2017, kawamura.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, kawamura.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
     </div>
   </body>
 </html>

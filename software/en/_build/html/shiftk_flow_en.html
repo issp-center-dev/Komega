@@ -1,35 +1,26 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Overall procedure &mdash; shiftk 2.0.0 documentation</title>
-    
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <meta charset="utf-8" />
+    <title>Overall procedure &#8212; shiftk 2.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="shiftk 2.0.0 documentation" href="index.html" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Format of files" href="shiftk_format_en.html" />
     <link rel="prev" title="Prerequisite" href="shiftk_env_en.html" /> 
-  </head>
-  <body>
-    <div class="related">
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,31 +32,31 @@
         <li class="right" >
           <a href="shiftk_env_en.html" title="Prerequisite"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">shiftk 2.0.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">shiftk 2.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="overall-procedure">
 <h1>Overall procedure<a class="headerlink" href="#overall-procedure" title="Permalink to this headline">¶</a></h1>
-<p>This program performs simulation as follows (See Fig. <a href="#calcflow">1</a> ):</p>
+<p>This program performs simulation as follows (See Fig. <a href="#calcflow">4</a> ):</p>
 <ol class="arabic simple">
-<li>Read a input file for the numerical condition.</li>
-<li>(Optional) Read input files for the Hamiltonian and the right hand side vector.</li>
-<li>(Optional) Read a file for the restart (<span class="math">\(\alpha\)</span>, <span class="math">\(\beta\)</span>, residual vectors)</li>
-<li>(Bi)CG iteration with <span class="math">\(K\omega\)</span> library</li>
-<li>Output results (Green&#8217;s function, residual vectors, <span class="math">\(\alpha\)</span>, <span class="math">\(\beta\)</span>)</li>
+<li><p>Read a input file for the numerical condition.</p></li>
+<li><p>(Optional) Read input files for the Hamiltonian and the right hand side vector.</p></li>
+<li><p>(Optional) Read a file for the restart (<span class="math notranslate nohighlight">\(\alpha\)</span>, <span class="math notranslate nohighlight">\(\beta\)</span>, residual vectors)</p></li>
+<li><p>(Bi)CG iteration with <span class="math notranslate nohighlight">\(K\omega\)</span> library</p></li>
+<li><p>Output results (Green’s function, residual vectors, <span class="math notranslate nohighlight">\(\alpha\)</span>, <span class="math notranslate nohighlight">\(\beta\)</span>)</p></li>
 </ol>
-<div class="figure" id="calcflow">
-<img alt="_images/flow.png" src="_images/flow.png" />
-<p class="caption">Schematic flow of the calculation of this program.</p>
+<div class="figure align-default" id="id6">
+<span id="calcflow"></span><a class="reference internal image-reference" href="_images/flow_en.png"><img alt="_images/flow_en.png" src="_images/flow_en.png" style="width: 8cm;" /></a>
+<p class="caption"><span class="caption-text">Figure 4: Schematic flow of the calculation of this program.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 <p>We introduce the detailed procedure as follows.
-The format of each file is written in <a class="reference internal" href="shiftk_format_en.html#fileformat"><em>Format of files</em></a>.</p>
+The format of each file is written in <a class="reference internal" href="shiftk_format_en.html#fileformat"><span class="std std-ref">Format of files</span></a>.</p>
 <div class="section" id="calculation-from-scratch">
 <h2>Calculation from scratch<a class="headerlink" href="#calculation-from-scratch" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="prepare-input-file">
@@ -73,46 +64,46 @@ The format of each file is written in <a class="reference internal" href="shiftk
 <p>In this input file, we specify the frequency grid,
 the maximum number of iteration, etc.</p>
 <p>A example of this input file is shown as follow.</p>
-<div class="highlight-python"><div class="highlight"><pre>&amp;filename
-  inham = &quot;&quot;
-  invec = &quot;&quot;
-/
-&amp;ham
-nsite = 4
-Jx = 1d0
-Jy = 1d0
-Jz = 1d0
-Dz = 0d0
-/
-&amp;cg
-  maxloops = 100
-  convfactor = 6
-/
-&amp;dyn
-  calctype = &quot;normal&quot;
-  nomega = 100
-  omegamin = (-2d0, 0.1d0)
-  omegamax = ( 1d0, 0.1d0)
-  outrestart = .TRUE.
-/
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">filename</span>
+  <span class="n">inham</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+  <span class="n">invec</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">ham</span>
+<span class="n">nsite</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">Jx</span> <span class="o">=</span> <span class="mi">1</span><span class="n">d0</span>
+<span class="n">Jy</span> <span class="o">=</span> <span class="mi">1</span><span class="n">d0</span>
+<span class="n">Jz</span> <span class="o">=</span> <span class="mi">1</span><span class="n">d0</span>
+<span class="n">Dz</span> <span class="o">=</span> <span class="mi">0</span><span class="n">d0</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">cg</span>
+  <span class="n">maxloops</span> <span class="o">=</span> <span class="mi">100</span>
+  <span class="n">convfactor</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">dyn</span>
+  <span class="n">calctype</span> <span class="o">=</span> <span class="s2">&quot;normal&quot;</span>
+  <span class="n">nomega</span> <span class="o">=</span> <span class="mi">100</span>
+  <span class="n">omegamin</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="n">d0</span><span class="p">,</span> <span class="mf">0.1</span><span class="n">d0</span><span class="p">)</span>
+  <span class="n">omegamax</span> <span class="o">=</span> <span class="p">(</span> <span class="mi">1</span><span class="n">d0</span><span class="p">,</span> <span class="mf">0.1</span><span class="n">d0</span><span class="p">)</span>
+  <span class="n">outrestart</span> <span class="o">=</span> <span class="o">.</span><span class="n">TRUE</span><span class="o">.</span>
+<span class="o">/</span>
 </pre></div>
 </div>
-<p>where <tt class="docutils literal"><span class="pre">InHam</span></tt> is the file-name for the Hamiltonian in the MatrixMarket format,
-<tt class="docutils literal"><span class="pre">InVec</span></tt> is the file-name of the right hand side vector,
-<tt class="docutils literal"><span class="pre">NOmega</span></tt> is the number of frequencies where the dynamical Green&#8217;s function
+<p>where <code class="docutils literal notranslate"><span class="pre">InHam</span></code> is the file-name for the Hamiltonian in the MatrixMarket format,
+<code class="docutils literal notranslate"><span class="pre">InVec</span></code> is the file-name of the right hand side vector,
+<code class="docutils literal notranslate"><span class="pre">NOmega</span></code> is the number of frequencies where the dynamical Green’s function
 is computed.
-<tt class="docutils literal"><span class="pre">OmegaMin</span></tt> is the lower limit of the frequency <span class="math">\(z\)</span>,
-<tt class="docutils literal"><span class="pre">OmegaMax</span></tt> is the upper limit of the frequency <span class="math">\(z\)</span>.
-These complex frequencies must be written as &#8220;<tt class="docutils literal"><span class="pre">({Real</span> <span class="pre">part},</span> <span class="pre">{Imaginaly</span> <span class="pre">part})</span></tt>&#8221;.
+<code class="docutils literal notranslate"><span class="pre">OmegaMin</span></code> is the lower limit of the frequency <span class="math notranslate nohighlight">\(z\)</span>,
+<code class="docutils literal notranslate"><span class="pre">OmegaMax</span></code> is the upper limit of the frequency <span class="math notranslate nohighlight">\(z\)</span>.
+These complex frequencies must be written as “<code class="docutils literal notranslate"><span class="pre">({Real</span> <span class="pre">part},</span> <span class="pre">{Imaginaly</span> <span class="pre">part})</span></code>”.
 The frequency grid is defined as</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{align}
 \omega_n =  {\tt OmegaMin}
 + \frac{n-1}{{\tt NOmega}-1}({\tt OmegaMax} - {\tt OmegaMin}).
 \end{align}\]</div>
-<p><tt class="docutils literal"><span class="pre">MaxLoops</span></tt> is the maximum number of iterations.
-For the details of this input file, see <a class="reference internal" href="shiftk_format_en.html#modpara"><em>&#8220;Namelist&#8221; file</em></a>.
-The string variable must be specified with two <tt class="docutils literal"><span class="pre">'</span></tt> or <tt class="docutils literal"><span class="pre">&quot;</span></tt>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">MaxLoops</span></code> is the maximum number of iterations.
+For the details of this input file, see <a class="reference internal" href="shiftk_format_en.html#modpara"><span class="std std-ref">“Namelist” file</span></a>.
+The string variable must be specified with two <code class="docutils literal notranslate"><span class="pre">'</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;</span></code>.</p>
 </div>
 <div class="section" id="optional-prepare-input-file-for-the-hamiltonian-and-rhs-vector">
 <h3>(Optional) Prepare input file for the Hamiltonian and RHS vector<a class="headerlink" href="#optional-prepare-input-file-for-the-hamiltonian-and-rhs-vector" title="Permalink to this headline">¶</a></h3>
@@ -120,58 +111,58 @@ The string variable must be specified with two <tt class="docutils literal"><spa
 and right hand side vector.</p>
 <p>An example of the file of the right hand side vector
 is shown as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre>256
-0.01    0.0
-0.05    0.0
-0.1     0.0
-(continue ...)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">256</span>
+<span class="mf">0.01</span>    <span class="mf">0.0</span>
+<span class="mf">0.05</span>    <span class="mf">0.0</span>
+<span class="mf">0.1</span>     <span class="mf">0.0</span>
+<span class="p">(</span><span class="k">continue</span> <span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Details of the file format is written in
-<a class="reference internal" href="shiftk_format_en.html#ham"><em>&#8220;InHam&#8221; file</em></a> and <a class="reference internal" href="shiftk_format_en.html#vec"><em>&#8220;InVec&#8221; file</em></a>.</p>
+<a class="reference internal" href="shiftk_format_en.html#ham"><span class="std std-ref">“InHam” file</span></a> and <a class="reference internal" href="shiftk_format_en.html#vec"><span class="std std-ref">“InVec” file</span></a>.</p>
 </div>
 <div class="section" id="launch">
 <h3>Launch<a class="headerlink" href="#launch" title="Permalink to this headline">¶</a></h3>
-<p>Execute a program <tt class="docutils literal"><span class="pre">ShiftK.out</span></tt> with a namelist file <tt class="docutils literal"><span class="pre">namelist.def</span></tt>
+<p>Execute a program <code class="docutils literal notranslate"><span class="pre">ShiftK.out</span></code> with a namelist file <code class="docutils literal notranslate"><span class="pre">namelist.def</span></code>
 as follows:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>ShiftK.out namelist.def
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ShiftK.out namelist.def
 </pre></div>
 </div>
 </div>
 <div class="section" id="output">
 <h3>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h3>
-<p>The following files are generated in <tt class="docutils literal"><span class="pre">output/</span></tt> directory (this directory is
+<p>The following files are generated in <code class="docutils literal notranslate"><span class="pre">output/</span></code> directory (this directory is
 also generated by this program).</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">TriDiagComp</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="n">ResVec</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="n">dynamicalG</span><span class="o">.</span><span class="n">dat</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TriDiagComp</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="n">ResVec</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="n">dynamicalG</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
 <p>where
-<tt class="docutils literal"><span class="pre">TriDiagComp.dat</span></tt> contains the parameters for the restart,
-<tt class="docutils literal"><span class="pre">ResVec.dat</span></tt> contains the residual vector,
-<tt class="docutils literal"><span class="pre">dynamicalG.dat</span></tt> contains the dynamical Green&#8217;s function.
+<code class="docutils literal notranslate"><span class="pre">TriDiagComp.dat</span></code> contains the parameters for the restart,
+<code class="docutils literal notranslate"><span class="pre">ResVec.dat</span></code> contains the residual vector,
+<code class="docutils literal notranslate"><span class="pre">dynamicalG.dat</span></code> contains the dynamical Green’s function.
 The format of these file is written in
-<a class="reference internal" href="shiftk_format_en.html#revec"><em>Residual vector</em></a> - <a class="reference internal" href="shiftk_format_en.html#dynamicalg"><em>Dynamical Green&#8217;s function</em></a>.</p>
+<a class="reference internal" href="shiftk_format_en.html#revec"><span class="std std-ref">Residual vector</span></a> - <a class="reference internal" href="shiftk_format_en.html#dynamicalg"><span class="std std-ref">Dynamical Green’s function</span></a>.</p>
 </div>
 </div>
 <div class="section" id="catch-up">
 <h2>Catch up<a class="headerlink" href="#catch-up" title="Permalink to this headline">¶</a></h2>
-<p>Compute the Green&#8217;s function at the different frequency by using the information
-of <tt class="docutils literal"><span class="pre">output/TriDiagComp.dat</span></tt> that are generated in the previous run.
+<p>Compute the Green’s function at the different frequency by using the information
+of <code class="docutils literal notranslate"><span class="pre">output/TriDiagComp.dat</span></code> that are generated in the previous run.
 This calculation does not require the matrix-vector product.</p>
 <div class="section" id="modify-the-namelist-file">
 <h3>Modify the namelist file<a class="headerlink" href="#modify-the-namelist-file" title="Permalink to this headline">¶</a></h3>
-<p>Change <tt class="docutils literal"><span class="pre">calctype</span></tt> parameter in the file <tt class="docutils literal"><span class="pre">namelist.def</span></tt>
-from <tt class="docutils literal"><span class="pre">&quot;normal&quot;</span></tt> to <tt class="docutils literal"><span class="pre">&quot;recalc&quot;</span></tt>.
-<tt class="docutils literal"><span class="pre">OmegaMin</span></tt>, <tt class="docutils literal"><span class="pre">OmegaMax</span></tt>, etc. can be modified.</p>
+<p>Change <code class="docutils literal notranslate"><span class="pre">calctype</span></code> parameter in the file <code class="docutils literal notranslate"><span class="pre">namelist.def</span></code>
+from <code class="docutils literal notranslate"><span class="pre">&quot;normal&quot;</span></code> to <code class="docutils literal notranslate"><span class="pre">&quot;recalc&quot;</span></code>.
+<code class="docutils literal notranslate"><span class="pre">OmegaMin</span></code>, <code class="docutils literal notranslate"><span class="pre">OmegaMax</span></code>, etc. can be modified.</p>
 </div>
 <div class="section" id="id1">
 <h3>Launch<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p>Execute a program <tt class="docutils literal"><span class="pre">ShiftK.out</span></tt> with a namelist file <tt class="docutils literal"><span class="pre">namelist.def</span></tt>
+<p>Execute a program <code class="docutils literal notranslate"><span class="pre">ShiftK.out</span></code> with a namelist file <code class="docutils literal notranslate"><span class="pre">namelist.def</span></code>
 as follows:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>ShiftK.out namelist.def
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ShiftK.out namelist.def
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">output/dynamicalG.dat</span></tt> will be overwritten.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">output/dynamicalG.dat</span></code> will be overwritten.</p>
 </div>
 <div class="section" id="id2">
 <h3>Output<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
@@ -180,38 +171,38 @@ as follows:</p>
 </div>
 <div class="section" id="restart">
 <h2>Restart<a class="headerlink" href="#restart" title="Permalink to this headline">¶</a></h2>
-<p>Compute the Green&#8217;s function at the different frequency by using the information
-of <tt class="docutils literal"><span class="pre">output/TriDiagComp.dat</span></tt> and <tt class="docutils literal"><span class="pre">output/ResVec.dat</span></tt>
+<p>Compute the Green’s function at the different frequency by using the information
+of <code class="docutils literal notranslate"><span class="pre">output/TriDiagComp.dat</span></code> and <code class="docutils literal notranslate"><span class="pre">output/ResVec.dat</span></code>
 that are generated in the previous run.</p>
 <div class="section" id="id3">
 <h3>Modify the namelist file<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-<p>Change <tt class="docutils literal"><span class="pre">calctype</span></tt> parameter in the file <tt class="docutils literal"><span class="pre">namelist.def</span></tt>
-from <tt class="docutils literal"><span class="pre">&quot;normal&quot;</span></tt> to <tt class="docutils literal"><span class="pre">&quot;restart&quot;</span></tt>.
-<tt class="docutils literal"><span class="pre">OmegaMin</span></tt>, <tt class="docutils literal"><span class="pre">OmegaMax</span></tt>, etc. can be modified.
-Parameters <tt class="docutils literal"><span class="pre">InHam</span></tt> ,  <tt class="docutils literal"><span class="pre">InVec</span></tt>, and the files of the Hamiltonian
+<p>Change <code class="docutils literal notranslate"><span class="pre">calctype</span></code> parameter in the file <code class="docutils literal notranslate"><span class="pre">namelist.def</span></code>
+from <code class="docutils literal notranslate"><span class="pre">&quot;normal&quot;</span></code> to <code class="docutils literal notranslate"><span class="pre">&quot;restart&quot;</span></code>.
+<code class="docutils literal notranslate"><span class="pre">OmegaMin</span></code>, <code class="docutils literal notranslate"><span class="pre">OmegaMax</span></code>, etc. can be modified.
+Parameters <code class="docutils literal notranslate"><span class="pre">InHam</span></code> ,  <code class="docutils literal notranslate"><span class="pre">InVec</span></code>, and the files of the Hamiltonian
 and RHS vector can not be modified.</p>
 </div>
 <div class="section" id="id4">
 <h3>Launch<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
-<p>Execute a program <tt class="docutils literal"><span class="pre">ShiftK.out</span></tt> with a namelist file <tt class="docutils literal"><span class="pre">namelist.def</span></tt>
+<p>Execute a program <code class="docutils literal notranslate"><span class="pre">ShiftK.out</span></code> with a namelist file <code class="docutils literal notranslate"><span class="pre">namelist.def</span></code>
 as follows:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>ShiftK.out namelist.def
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ ShiftK.out namelist.def
 </pre></div>
 </div>
-<p>The <tt class="docutils literal"><span class="pre">output/dynamicalG.dat</span></tt> will be overwritten.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">output/dynamicalG.dat</span></code> will be overwritten.</p>
 </div>
 <div class="section" id="id5">
 <h3>Output<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
-<p>The following files are generated (or are overwritten) in <tt class="docutils literal"><span class="pre">output/</span></tt> directory.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">TriDiagComp</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="n">ResVec</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="n">dynamicalG</span><span class="o">.</span><span class="n">dat</span>
+<p>The following files are generated (or are overwritten) in <code class="docutils literal notranslate"><span class="pre">output/</span></code> directory.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TriDiagComp</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="n">ResVec</span><span class="o">.</span><span class="n">dat</span><span class="p">,</span> <span class="n">dynamicalG</span><span class="o">.</span><span class="n">dat</span>
 </pre></div>
 </div>
 <p>where
-<tt class="docutils literal"><span class="pre">TriDiagComp.dat</span></tt> contains the parameters for the restart,
-<tt class="docutils literal"><span class="pre">ResVec.dat</span></tt> contains the residual vector,
-<tt class="docutils literal"><span class="pre">dynamicalG.dat</span></tt> contains the dynamical Green&#8217;s function.
+<code class="docutils literal notranslate"><span class="pre">TriDiagComp.dat</span></code> contains the parameters for the restart,
+<code class="docutils literal notranslate"><span class="pre">ResVec.dat</span></code> contains the residual vector,
+<code class="docutils literal notranslate"><span class="pre">dynamicalG.dat</span></code> contains the dynamical Green’s function.
 The format of these file is written in
-<a class="reference internal" href="shiftk_format_en.html#revec"><em>Residual vector</em></a> - <a class="reference internal" href="shiftk_format_en.html#dynamicalg"><em>Dynamical Green&#8217;s function</em></a>.</p>
+<a class="reference internal" href="shiftk_format_en.html#revec"><span class="std std-ref">Residual vector</span></a> - <a class="reference internal" href="shiftk_format_en.html#dynamicalg"><span class="std std-ref">Dynamical Green’s function</span></a>.</p>
 </div>
 </div>
 </div>
@@ -220,12 +211,12 @@ The format of these file is written in
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/komega.png" alt="Logo"/>
             </a></p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Overall procedure</a><ul>
 <li><a class="reference internal" href="#calculation-from-scratch">Calculation from scratch</a><ul>
@@ -257,29 +248,28 @@ The format of these file is written in
   <h4>Next topic</h4>
   <p class="topless"><a href="shiftk_format_en.html"
                         title="next chapter">Format of files</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/shiftk_flow_en.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/shiftk_flow_en.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -291,12 +281,12 @@ The format of these file is written in
         <li class="right" >
           <a href="shiftk_env_en.html" title="Prerequisite"
              >previous</a> |</li>
-        <li><a href="index.html">shiftk 2.0.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">shiftk 2.0.0 documentation</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2017, kawamura.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, kawamura.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
     </div>
   </body>
 </html>

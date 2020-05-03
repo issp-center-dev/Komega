@@ -1,5 +1,5 @@
-This is mendex version 2.6f [14-Aug-2009] (utf8.euc).
-Warning: Couldn't find dictionary file shiftk.dic.
-Scanning input file shiftk.idx....done (0 entries accepted, 0 rejected).
-0 entries accepted, 0 rejected.
-Nothing written in output file.
+This is makeindex, version 2.15 [TeX Live 2019] (kpathsea + Thai support).
+Scanning style file ./python.ist.......done (7 attributes redefined, 0 ignored).
+Scanning input file shiftk.idx...done (0 entries accepted, 0 rejected).
+Nothing written in shiftk.ind.
+Transcript written in shiftk.ilg.

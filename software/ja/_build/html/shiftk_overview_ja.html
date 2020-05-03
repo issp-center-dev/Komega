@@ -1,36 +1,27 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>概要 &mdash; shiftk 2.0.0 ドキュメント</title>
-    
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <meta charset="utf-8" />
+    <title>概要 &#8212; shiftk 2.0.0 ドキュメント</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '2.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/translations.js"></script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="shiftk 2.0.0 ドキュメント" href="index.html" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="_static/translations.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="検索" href="search.html" />
     <link rel="next" title="ライセンス" href="shiftk_copy_ja.html" />
-    <link rel="prev" title="Welcome to \(K\omega\)-sample program’s documentation!" href="index.html" /> 
-  </head>
-  <body>
-    <div class="related">
+    <link rel="prev" title="Welcome to \(K\omega\)-sample program&#39;s documentation!" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -40,27 +31,27 @@
           <a href="shiftk_copy_ja.html" title="ライセンス"
              accesskey="N">次へ</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to \(K\omega\)-sample program’s documentation!"
+          <a href="index.html" title="Welcome to \(K\omega\)-sample program&#39;s documentation!"
              accesskey="P">前へ</a> |</li>
-        <li><a href="index.html">shiftk 2.0.0 ドキュメント</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">shiftk 2.0.0 ドキュメント</a> &#187;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="id1">
 <h1>概要<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h1>
 <p>本資料はISSP Math
 Libraryの内の, Krylov部分空間法に基づくシフト線形方程式群ライブラリ
-<span class="math">\(K\omega\)</span> を用いた Green関数計算用ミニアプリのマニュアルです.
-ライブラリに関する使用方法については, &#8221; <span class="math">\(K\omega\)</span> マニュアル&#8221;に記載しました.</p>
+<span class="math notranslate nohighlight">\(K\omega\)</span> を用いた Green関数計算用ミニアプリのマニュアルです.
+ライブラリに関する使用方法については, &quot; <span class="math notranslate nohighlight">\(K\omega\)</span> マニュアル&quot;に記載しました.</p>
 <div class="section" id="id2">
 <h2>ソフトウェア概要<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>本ソフトウェアでは, Green関数</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{align}
 G_{i}(z) =
 \langle i | (z-{\hat H})^{-1}| i \rangle
@@ -68,20 +59,20 @@ G_{i}(z) =
 {\boldsymbol \varphi}_i^{*} \cdot (z-{\hat H})^{-1} {\boldsymbol \varphi}_i
 \end{align}\]</div>
 <p>の計算を行います.
-ここで <span class="math">\(| i \rangle\)</span> はベクトル, <span class="math">\({\cal H}\)</span> はハミルトニアン,
-<span class="math">\(z\)</span> は複素数シフトを表します.</p>
-<p>なお <span class="math">\({\cal H}\)</span> については,</p>
+ここで <span class="math notranslate nohighlight">\(| i \rangle\)</span> はベクトル, <span class="math notranslate nohighlight">\({\cal H}\)</span> はハミルトニアン,
+<span class="math notranslate nohighlight">\(z\)</span> は複素数シフトを表します.</p>
+<p>なお <span class="math notranslate nohighlight">\({\cal H}\)</span> については,</p>
 <ul class="simple">
-<li><span class="math">\({\cal H}\)</span> をMatrixMarket形式の入力ファイルとして与えるモード</li>
-<li>Heisenberg模型の <span class="math">\({\cal H}\)</span> を内部で与えるモード</li>
+<li><p><span class="math notranslate nohighlight">\({\cal H}\)</span> をMatrixMarket形式の入力ファイルとして与えるモード</p></li>
+<li><p>Heisenberg模型の <span class="math notranslate nohighlight">\({\cal H}\)</span> を内部で与えるモード</p></li>
 </ul>
 <p>を用意します.
-またグリーン関数の計算では, <span class="math">\({\hat H}\)</span> と <span class="math">\(z\)</span> が複素数もしくは実数かに応じ,</p>
+またグリーン関数の計算では, <span class="math notranslate nohighlight">\({\hat H}\)</span> と <span class="math notranslate nohighlight">\(z\)</span> が複素数もしくは実数かに応じ,</p>
 <ul class="simple">
-<li><span class="math">\({\hat H}\)</span> も <span class="math">\(z\)</span> も両方複素数の場合 : Shifted
-Bi-Conjugate Gradient(BiCG)法</li>
-<li><span class="math">\({\hat H}\)</span> が実数で <span class="math">\(z\)</span> が複素数の場合 : Shifted
-Conjugate Orthogonal Conjugate Gradient(COCG)法</li>
+<li><p><span class="math notranslate nohighlight">\({\hat H}\)</span> も <span class="math notranslate nohighlight">\(z\)</span> も両方複素数の場合 : Shifted
+Bi-Conjugate Gradient(BiCG)法</p></li>
+<li><p><span class="math notranslate nohighlight">\({\hat H}\)</span> が実数で <span class="math notranslate nohighlight">\(z\)</span> が複素数の場合 : Shifted
+Conjugate Orthogonal Conjugate Gradient(COCG)法</p></li>
 </ul>
 <p>の手法を用意しています.</p>
 </div>
@@ -91,7 +82,7 @@ Conjugate Orthogonal Conjugate Gradient(COCG)法</li>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/komega.png" alt="Logo"/>
@@ -106,33 +97,32 @@ Conjugate Orthogonal Conjugate Gradient(COCG)法</li>
 
   <h4>前のトピックへ</h4>
   <p class="topless"><a href="index.html"
-                        title="前の章へ">Welcome to <span class="math">\(K\omega\)</span>-sample program&#8217;s documentation!</a></p>
+                        title="前の章へ">Welcome to <span class="math notranslate nohighlight">\(K\omega\)</span>-sample program's documentation!</a></p>
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="shiftk_copy_ja.html"
                         title="次の章へ">ライセンス</a></p>
-  <h3>このページ</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/shiftk_overview_ja.txt"
-           rel="nofollow">ソースコードを表示</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>クイック検索</h3>
+  <div role="note" aria-label="source link">
+    <h3>このページ</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/shiftk_overview_ja.rst.txt"
+            rel="nofollow">ソースコードを表示</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">クイック検索</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="検索" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    モジュール、クラス、または関数名を入力してください
-    </p>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -142,14 +132,14 @@ Conjugate Orthogonal Conjugate Gradient(COCG)法</li>
           <a href="shiftk_copy_ja.html" title="ライセンス"
              >次へ</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Welcome to \(K\omega\)-sample program’s documentation!"
+          <a href="index.html" title="Welcome to \(K\omega\)-sample program&#39;s documentation!"
              >前へ</a> |</li>
-        <li><a href="index.html">shiftk 2.0.0 ドキュメント</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">shiftk 2.0.0 ドキュメント</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2017, kawamura.
-      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2 で生成しました。
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, kawamura.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4 で生成しました。
     </div>
   </body>
 </html>
