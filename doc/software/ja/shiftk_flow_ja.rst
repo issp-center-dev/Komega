@@ -10,14 +10,15 @@
 #. 計算結果ファイル出力(係数, 残差ベクトル, 動的グリーン関数)
 
 の流れで計算を行います
-(図 :num:`calcflow_ja` ). 
+(図 :num:`calcflow` ). 
 使用の流れおよび各ファイルの詳細については, :ref:`usage` ,
 :ref:`fileformat` にそれぞれ記載してあります. 
 
 .. _calcflow:
      
-.. figure:: ../figs/flow.png
-
+.. figure:: ../figs/flow_ja.png
+	    :width: 8cm
+            
             計算の流れ.
 
 .. _usage:
