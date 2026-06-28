@@ -18,3 +18,19 @@ solve_cc.o : solve_cc.F90 mathlib.o
 solve_cr.o : solve_cr.F90 mathlib.o
 solve_rc.o : solve_rc.F90 mathlib.o
 solve_rr.o : solve_rr.F90 mathlib.o
+
+# Helper sources compiled via the explicit rules below (used by the drivers),
+# and the regression tests run by "make check" (see run_tests.sh). All must be
+# distributed so the test directory builds and "make check" works from a
+# release tarball.
+EXTRA_DIST = mathlib.F90 make_ham.F90 diagonalize.F90 \
+             run_tests.sh test_lzconv.F90 \
+             regression_real.in regression_complex.in \
+             check_configure_zdot.sh
+
+check-local: all-am
+	srcdir='$(srcdir)' top_builddir='$(top_builddir)' \
+	FC='$(FC)' FCFLAGS='$(FCFLAGS)' \
+	LAPACK_LIBS='$(LAPACK_LIBS)' BLAS_LIBS='$(BLAS_LIBS)' \
+	LIBTOOL='$(top_builddir)/libtool' \
+	$(SHELL) $(srcdir)/run_tests.sh

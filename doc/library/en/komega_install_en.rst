@@ -27,7 +27,18 @@ please type
 
    $ make
 
-to build libraries. Then please type
+to build libraries.
+
+You can optionally run the regression tests with
+
+.. code-block:: bash
+
+   $ make check
+
+which runs the sample solvers and checks that they converge to within a
+tolerance (it returns a non-zero status on failure).
+
+Then please type
 
 .. code-block:: bash
 
@@ -84,11 +95,23 @@ We show a part of them as follows:
    Default: ``--enable-static``.
    Whether generate static library.
 
-``--disable-zdot``
+``--enable-zdot`` / ``--disable-zdot``
 
-   Default: ``--enable-zdot``.
-   When ZDOTC and ZDOTU in BLAS do not work correctly (e.g. standard BLAS in MacOSX),
-   please use this option to be disable these functions.
+   Default: autodetection.
+   Controls whether the BLAS ``ZDOTC`` / ``ZDOTU`` functions are used.
+   With some BLAS libraries (notably the standard BLAS and the Accelerate
+   framework on macOS) these functions return their complex result through a
+   hidden first argument (the ``f2c``/``g77`` calling convention) instead of in
+   registers as :math:`K\omega` expects, which makes the program crash.
+   By default ``configure`` autodetects this by compiling and running a small
+   test program: if the BLAS ``ZDOTC`` works it is used, otherwise the library
+   falls back to the Fortran intrinsics ``DOT_PRODUCT`` / ``SUM`` (equivalent to
+   defining the ``-D__NO_ZDOT`` macro).
+   Pass ``--enable-zdot`` to force the use of the BLAS functions, or
+   ``--disable-zdot`` to force the intrinsic fallback; either choice bypasses
+   the autodetection.
+   When cross-compiling (the test program cannot be run) the safe fallback
+   (``--disable-zdot``) is chosen automatically.
 
 ``--enable-threadsafe``
 

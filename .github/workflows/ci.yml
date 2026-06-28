@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: serial (gfortran)
+            fc: gfortran
+            configure_flags: ""
+            fcflags: "-O2 -g"
+          # MPI leg: builds and links the library with -D__MPI and runs the
+          # drivers via "make check". The bundled drivers do not pass an MPI
+          # communicator, so this validates the MPI build/link and the serial
+          # code paths (a multi-rank runtime test is left as a follow-up).
+          # -fallow-argument-mismatch is required because komega_math.F90 calls
+          # MPI_Allreduce with both COMPLEX(8) and REAL(8) buffers, which
+          # gfortran >= 10 rejects as a hard error without it.
+          - name: mpi build (mpif90, __MPI)
+            fc: mpif90
+            configure_flags: "--with-mpi=yes"
+            fcflags: "-O2 -g -fallow-argument-mismatch"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gfortran libopenblas-dev liblapack-dev
+          if [ "${{ matrix.fc }}" = "mpif90" ]; then
+            sudo apt-get install -y libopenmpi-dev openmpi-bin
+          fi
+
+      # The repository ships the generated configure / Makefile.in. Make sure
+      # they are newer than configure.ac / Makefile.am so make does not try to
+      # re-run the (absent) autotools via the maintainer rebuild rules.
+      - name: Refresh generated build files
+        run: |
+          touch aclocal.m4
+          touch configure config.h.in Makefile.in \
+                src/Makefile.in test/Makefile.in app/src/Makefile.in
+
+      - name: Configure
+        run: ./configure FC=${{ matrix.fc }} ${{ matrix.configure_flags }}
+        env:
+          FCFLAGS: ${{ matrix.fcflags }}
+
+      - name: Build
+        run: make
+
+      - name: Run regression tests (make check)
+        run: make check
+
+  configure-zdot-smoke:
+    name: configure zdot autodetect smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gfortran libopenblas-dev liblapack-dev
+
+      # check_configure_zdot.sh exports pristine trees via "git archive" (which
+      # gives all files a uniform mtime), so no maintainer-rebuild refresh is
+      # needed here. OpenBLAS uses the register-return complex ABI, so the bare
+      # autodetect must NOT define -D__NO_ZDOT here.
+      - name: configure --disable-zdot / --enable-zdot / bare smoke test
+        run: sh test/check_configure_zdot.sh
+        env:
+          KOMEGA_EXPECT_BARE: "no"
+          # OpenBLAS is register-return, so the forced --enable-zdot build can
+          # also be exercised end-to-end (make check) here.
+          KOMEGA_RUN_ENABLE: "1"
