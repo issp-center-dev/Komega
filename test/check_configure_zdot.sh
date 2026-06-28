@@ -31,17 +31,22 @@
 #
 set -u
 
-srcroot=${srcroot:-$(git rev-parse --show-toplevel 2>/dev/null)}
-if [ -z "${srcroot}" ] || [ ! -d "${srcroot}/.git" ]; then
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "check_configure_zdot: must be run inside the Komega git work tree" >&2
   exit 2
 fi
+srcroot=${srcroot:-$(git rev-parse --show-toplevel)}
 
 FC=${FC:-gfortran}
 MAKE=${MAKE:-make}
 KOMEGA_EXPECT_BARE=${KOMEGA_EXPECT_BARE:-auto}
+case "${KOMEGA_EXPECT_BARE}" in
+  yes|no|auto) ;;
+  *) echo "check_configure_zdot: KOMEGA_EXPECT_BARE must be yes, no or auto (got '${KOMEGA_EXPECT_BARE}')" >&2
+     exit 2 ;;
+esac
 work=$(mktemp -d 2>/dev/null || mktemp -d -t komega_zdot)
-trap 'rm -rf "${work}"' EXIT
+trap 'rm -rf "${work}"' 0
 
 fail=0
 
@@ -67,7 +72,7 @@ run_mode() {
   echo "----- mode: ${label} (configure ${flag:-<bare>}) -----"
 
   if ! ( cd "${dir}" && ./configure FC="${FC}" ${flag} ) >"${dir}/configure.log" 2>&1; then
-    echo "FAIL ${label}: configure failed"; tail -15 "${dir}/configure.log"; fail=1; return
+    echo "FAIL ${label}: configure failed"; tail -n 15 "${dir}/configure.log"; fail=1; return
   fi
 
   if [ "${label}" = "bare" ]; then
@@ -86,13 +91,13 @@ run_mode() {
   echo "  -D__NO_ZDOT defined: ${macro} (expected: ${expect})"
 
   if ! ( cd "${dir}" && ${MAKE} ) >"${dir}/make.log" 2>&1; then
-    echo "FAIL ${label}: build failed"; tail -15 "${dir}/make.log"; fail=1; return
+    echo "FAIL ${label}: build failed"; tail -n 15 "${dir}/make.log"; fail=1; return
   fi
   echo "  build: ok"
 
   if [ "${label}" = "bare" ]; then
     if ! ( cd "${dir}" && ${MAKE} check ) >"${dir}/check.log" 2>&1; then
-      echo "FAIL ${label}: make check failed"; tail -20 "${dir}/check.log"; fail=1; return
+      echo "FAIL ${label}: make check failed"; tail -n 20 "${dir}/check.log"; fail=1; return
     fi
     echo "  make check: pass"
   fi

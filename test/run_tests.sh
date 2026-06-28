@@ -71,13 +71,13 @@ run_driver() {
   rc=$?
   if [ $rc -ne 0 ]; then
     note "FAIL ${drv}: nonzero exit (${rc})"
-    note "${out}" | tail -5
+    note "${out}" | tail -n 5
     fail=1
     return
   fi
   if ! printf '%s\n' "${out}" | grep -q "Converged in iteration"; then
     note "FAIL ${drv}: did not converge"
-    note "${out}" | tail -5
+    note "${out}" | tail -n 5
     fail=1
     return
   fi
