@@ -71,3 +71,6 @@ jobs:
         run: sh test/check_configure_zdot.sh
         env:
           KOMEGA_EXPECT_BARE: "no"
+          # OpenBLAS is register-return, so the forced --enable-zdot build can
+          # also be exercised end-to-end (make check) here.
+          KOMEGA_RUN_ENABLE: "1"

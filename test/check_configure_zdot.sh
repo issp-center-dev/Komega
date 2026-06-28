@@ -11,9 +11,12 @@
 #   * --disable-zdot  : autodetection is skipped, -D__NO_ZDOT IS defined,
 #                       and the build succeeds.
 #   * --enable-zdot   : autodetection is skipped, -D__NO_ZDOT is NOT defined,
-#                       and the build succeeds.  (The complex-dot drivers are
-#                       only exercised where the BLAS ABI permits, e.g. Linux;
-#                       this mode only asserts the configure decision + build.)
+#                       and the build succeeds.  The complex-dot drivers are
+#                       only valid where the BLAS uses the register-return ABI,
+#                       so "make check" is additionally run for this mode only
+#                       when KOMEGA_RUN_ENABLE=1 (set by the Linux CI job);
+#                       otherwise this mode asserts the configure decision +
+#                       build only.
 #   * bare configure  : autodetection runs (the "checking whether BLAS zdotc
 #                       uses the register-return ABI" line appears), the build
 #                       succeeds, and -- because the bare default always picks
@@ -95,7 +98,15 @@ run_mode() {
   fi
   echo "  build: ok"
 
-  if [ "${label}" = "bare" ]; then
+  # Run the drivers end-to-end where the BLAS ABI permits.  The bare default
+  # always picks a working configuration, so "make check" is run for it.  The
+  # forced --enable-zdot path only works when the BLAS uses the register-return
+  # ABI (e.g. OpenBLAS/MKL on Linux), so it is exercised only when the caller
+  # opts in via KOMEGA_RUN_ENABLE=1 (set by the Linux CI job).
+  run_check=no
+  [ "${label}" = "bare" ] && run_check=yes
+  [ "${label}" = "enable" ] && [ "${KOMEGA_RUN_ENABLE:-0}" = "1" ] && run_check=yes
+  if [ "${run_check}" = yes ]; then
     if ! ( cd "${dir}" && ${MAKE} check ) >"${dir}/check.log" 2>&1; then
       echo "FAIL ${label}: make check failed"; tail -n 20 "${dir}/check.log"; fail=1; return
     fi
