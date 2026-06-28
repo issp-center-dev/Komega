@@ -54,12 +54,21 @@ fail=0
 note() { printf '%s\n' "$*"; }
 
 # Largest absolute value in the "Residual Vector" block of a driver's stdout.
+# Only genuine numeric tokens (Fortran "e" exponent form) are counted; prints
+# "none" if the block is missing or contains no numbers, so a truncated or
+# malformed output cannot be mistaken for a zero residual.
 max_residual() {
   awk '
     /Residual Vector/ {f=1; next}
     /#####/           {f=0}
-    f { for (i=1;i<=NF;i++){ v=$i+0; if (v<0) v=-v; if (v>m) m=v } }
-    END { printf "%.6e", m+0 }
+    f {
+      for (i=1;i<=NF;i++) {
+        if ($i ~ /^[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?$/) {
+          v=$i+0; if (v<0) v=-v; if (!seen || v>m) m=v; seen=1
+        }
+      }
+    }
+    END { if (seen) printf "%.6e", m; else printf "none" }
   '
 }
 
@@ -75,13 +84,27 @@ run_driver() {
     fail=1
     return
   fi
+  # "Not Converged in iteration" contains "Converged in iteration" as a
+  # substring, so reject the failure / abnormal-termination cases first.
+  if printf '%s\n' "${out}" | grep -q "Not Converged in iteration"; then
+    note "FAIL ${drv}: solver reported NOT converged"
+    note "${out}" | tail -n 5
+    fail=1
+    return
+  fi
   if ! printf '%s\n' "${out}" | grep -q "Converged in iteration"; then
-    note "FAIL ${drv}: did not converge"
+    note "FAIL ${drv}: did not converge (no convergence report)"
     note "${out}" | tail -n 5
     fail=1
     return
   fi
   res=$(printf '%s\n' "${out}" | max_residual)
+  if [ "${res}" = "none" ]; then
+    note "FAIL ${drv}: no residual vector found in output"
+    note "${out}" | tail -n 5
+    fail=1
+    return
+  fi
   ok=$(awk -v r="${res}" -v t="${RESIDUAL_TOL}" 'BEGIN{ print (r+0 <= t+0) ? "yes" : "no" }')
   if [ "${ok}" != "yes" ]; then
     note "FAIL ${drv}: residual ${res} > tol ${RESIDUAL_TOL}"
