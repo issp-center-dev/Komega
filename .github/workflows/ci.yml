@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: serial (gfortran)
+            fc: gfortran
+            configure_flags: ""
+          - name: mpi (mpif90)
+            fc: mpif90
+            configure_flags: "--with-mpi=yes"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gfortran libopenblas-dev liblapack-dev
+          if [ "${{ matrix.fc }}" = "mpif90" ]; then
+            sudo apt-get install -y libopenmpi-dev openmpi-bin
+          fi
+
+      # The repository ships the generated configure / Makefile.in. Make sure
+      # they are newer than configure.ac / Makefile.am so make does not try to
+      # re-run the (absent) autotools via the maintainer rebuild rules.
+      - name: Refresh generated build files
+        run: |
+          touch aclocal.m4
+          touch configure config.h.in Makefile.in \
+                src/Makefile.in test/Makefile.in app/src/Makefile.in
+
+      - name: Configure
+        run: ./configure FC=${{ matrix.fc }} ${{ matrix.configure_flags }}
+
+      - name: Build
+        run: make
+
+      - name: Run regression tests (make check)
+        run: make check
+
+  configure-zdot-smoke:
+    name: configure zdot autodetect smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gfortran libopenblas-dev liblapack-dev
+
+      # check_configure_zdot.sh exports pristine trees via "git archive" (which
+      # gives all files a uniform mtime), so no maintainer-rebuild refresh is
+      # needed here.
+      - name: configure --disable-zdot / --enable-zdot / bare smoke test
+        run: sh test/check_configure_zdot.sh
