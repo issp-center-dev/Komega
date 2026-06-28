@@ -19,6 +19,13 @@
 #                       succeeds, and -- because the bare default always picks
 #                       the safe/correct path -- "make check" passes.
 #
+# The expected bare-mode autodetect outcome is platform dependent (a
+# register-return BLAS such as OpenBLAS/MKL -> no -D__NO_ZDOT; the f2c-ABI
+# standard BLAS / Accelerate on macOS -> -D__NO_ZDOT).  Set the environment
+# variable KOMEGA_EXPECT_BARE to "no" or "yes" to assert a specific outcome
+# (recommended on CI, where the BLAS ABI is known); the default "auto" accepts
+# either, so the build still has to succeed but the decision is not pinned.
+#
 # This script must be run from inside the git work tree (CI checks out the repo
 # before invoking it).  It does not touch the live build tree.
 #
@@ -32,6 +39,7 @@ fi
 
 FC=${FC:-gfortran}
 MAKE=${MAKE:-make}
+KOMEGA_EXPECT_BARE=${KOMEGA_EXPECT_BARE:-auto}
 work=$(mktemp -d 2>/dev/null || mktemp -d -t komega_zdot)
 trap 'rm -rf "${work}"' EXIT
 
@@ -45,8 +53,10 @@ export_tree() {
 }
 
 # Does the configured tree define -D__NO_ZDOT?  Read the generated src/Makefile.
+# Use "grep -e" (POSIX) so the leading '-' in the pattern is not parsed as an
+# option.
 has_no_zdot() {
-  grep -q -- '-D__NO_ZDOT' "$1/src/Makefile"
+  grep -q -e '-D__NO_ZDOT' "$1/src/Makefile"
 }
 
 run_mode() {
@@ -91,9 +101,10 @@ run_mode() {
 }
 
 echo "===== configure zdot-autodetect smoke test ====="
+echo "(bare-mode expected autodetect outcome: ${KOMEGA_EXPECT_BARE})"
 run_mode disable "--disable-zdot" yes
 run_mode enable  "--enable-zdot"  no
-run_mode bare    ""               auto
+run_mode bare    ""               "${KOMEGA_EXPECT_BARE}"
 echo "==============================================="
 
 if [ ${fail} -ne 0 ]; then

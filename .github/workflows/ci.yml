@@ -16,7 +16,11 @@ jobs:
           - name: serial (gfortran)
             fc: gfortran
             configure_flags: ""
-          - name: mpi (mpif90)
+          # MPI leg: builds and links the library with -D__MPI and runs the
+          # drivers via "make check". The bundled drivers do not pass an MPI
+          # communicator, so this validates the MPI build/link and the serial
+          # code paths (a multi-rank runtime test is left as a follow-up).
+          - name: mpi build (mpif90, __MPI)
             fc: mpif90
             configure_flags: "--with-mpi=yes"
     steps:
@@ -61,6 +65,9 @@ jobs:
 
       # check_configure_zdot.sh exports pristine trees via "git archive" (which
       # gives all files a uniform mtime), so no maintainer-rebuild refresh is
-      # needed here.
+      # needed here. OpenBLAS uses the register-return complex ABI, so the bare
+      # autodetect must NOT define -D__NO_ZDOT here.
       - name: configure --disable-zdot / --enable-zdot / bare smoke test
         run: sh test/check_configure_zdot.sh
+        env:
+          KOMEGA_EXPECT_BARE: "no"
