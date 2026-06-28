@@ -8,8 +8,10 @@
 # It exports a pristine copy of the repository (git archive) into a temporary
 # directory and runs ./configure three times, asserting:
 #
-#   * --disable-zdot  : autodetection is skipped, -D__NO_ZDOT IS defined,
-#                       and the build succeeds.
+#   * --disable-zdot  : autodetection is skipped, -D__NO_ZDOT IS defined, the
+#                       build succeeds, and "make check" passes (the Fortran
+#                       intrinsic fallback works with any BLAS, so this gives
+#                       runtime coverage of the -D__NO_ZDOT path).
 #   * --enable-zdot   : autodetection is skipped, -D__NO_ZDOT is NOT defined,
 #                       and the build succeeds.  The complex-dot drivers are
 #                       only valid where the BLAS uses the register-return ABI,
@@ -99,12 +101,15 @@ run_mode() {
   echo "  build: ok"
 
   # Run the drivers end-to-end where the BLAS ABI permits.  The bare default
-  # always picks a working configuration, so "make check" is run for it.  The
-  # forced --enable-zdot path only works when the BLAS uses the register-return
-  # ABI (e.g. OpenBLAS/MKL on Linux), so it is exercised only when the caller
-  # opts in via KOMEGA_RUN_ENABLE=1 (set by the Linux CI job).
+  # always picks a working configuration and the --disable-zdot fallback uses
+  # the Fortran intrinsics (DOT_PRODUCT/SUM), which work with any BLAS, so
+  # "make check" is run for both -- this gives runtime coverage of the
+  # -D__NO_ZDOT fallback path.  The forced --enable-zdot path only works when
+  # the BLAS uses the register-return ABI (e.g. OpenBLAS/MKL on Linux), so it is
+  # exercised only when the caller opts in via KOMEGA_RUN_ENABLE=1 (Linux CI).
   run_check=no
   [ "${label}" = "bare" ] && run_check=yes
+  [ "${label}" = "disable" ] && run_check=yes
   [ "${label}" = "enable" ] && [ "${KOMEGA_RUN_ENABLE:-0}" = "1" ] && run_check=yes
   if [ "${run_check}" = yes ]; then
     if ! ( cd "${dir}" && ${MAKE} check ) >"${dir}/check.log" 2>&1; then
