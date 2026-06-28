@@ -18,3 +18,14 @@ solve_cc.o : solve_cc.F90 mathlib.o
 solve_cr.o : solve_cr.F90 mathlib.o
 solve_rc.o : solve_rc.F90 mathlib.o
 solve_rr.o : solve_rr.F90 mathlib.o
+
+# Regression tests run by "make check" (see run_tests.sh).
+EXTRA_DIST = run_tests.sh test_lzconv.F90 \
+             regression_real.in regression_complex.in
+
+check-local: all-am
+	srcdir='$(srcdir)' top_builddir='$(top_builddir)' \
+	FC='$(FC)' FCFLAGS='$(FCFLAGS)' \
+	LAPACK_LIBS='$(LAPACK_LIBS)' BLAS_LIBS='$(BLAS_LIBS)' \
+	LIBTOOL='$(top_builddir)/libtool' \
+	$(SHELL) $(srcdir)/run_tests.sh

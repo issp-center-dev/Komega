@@ -486,7 +486,14 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
+check-local: all-am
+	srcdir='$(srcdir)' top_builddir='$(top_builddir)' \
+	FC='$(FC)' FCFLAGS='$(FCFLAGS)' \
+	LAPACK_LIBS='$(LAPACK_LIBS)' BLAS_LIBS='$(BLAS_LIBS)' \
+	LIBTOOL='$(top_builddir)/libtool' \
+	$(SHELL) $(srcdir)/run_tests.sh
 all-am: Makefile $(PROGRAMS)
 installdirs:
 install: install-am
@@ -591,7 +598,7 @@ uninstall-am:
 
 .MAKE: install-am install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
+.PHONY: CTAGS GTAGS TAGS all all-am check check-am check-local clean clean-generic \
 	clean-libtool clean-noinstPROGRAMS cscopelist-am ctags \
 	ctags-am distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \

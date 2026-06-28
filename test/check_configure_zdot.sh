@@ -1,0 +1,102 @@
+#!/bin/sh
+#
+# ISSP Math Library - A library for solving linear systems in materials science
+# Copyright (C) 2016 Mitsuaki Kawamura
+#
+# Smoke test for the configure-time zdot (BLAS complex-return ABI) handling.
+#
+# It exports a pristine copy of the repository (git archive) into a temporary
+# directory and runs ./configure three times, asserting:
+#
+#   * --disable-zdot  : autodetection is skipped, -D__NO_ZDOT IS defined,
+#                       and the build succeeds.
+#   * --enable-zdot   : autodetection is skipped, -D__NO_ZDOT is NOT defined,
+#                       and the build succeeds.  (The complex-dot drivers are
+#                       only exercised where the BLAS ABI permits, e.g. Linux;
+#                       this mode only asserts the configure decision + build.)
+#   * bare configure  : autodetection runs (the "checking whether BLAS zdotc
+#                       uses the register-return ABI" line appears), the build
+#                       succeeds, and -- because the bare default always picks
+#                       the safe/correct path -- "make check" passes.
+#
+# This script must be run from inside the git work tree (CI checks out the repo
+# before invoking it).  It does not touch the live build tree.
+#
+set -u
+
+srcroot=${srcroot:-$(git rev-parse --show-toplevel 2>/dev/null)}
+if [ -z "${srcroot}" ] || [ ! -d "${srcroot}/.git" ]; then
+  echo "check_configure_zdot: must be run inside the Komega git work tree" >&2
+  exit 2
+fi
+
+FC=${FC:-gfortran}
+MAKE=${MAKE:-make}
+work=$(mktemp -d 2>/dev/null || mktemp -d -t komega_zdot)
+trap 'rm -rf "${work}"' EXIT
+
+fail=0
+
+# Export a pristine tree for one configure run.
+export_tree() {
+  dest=$1
+  mkdir -p "${dest}"
+  ( cd "${srcroot}" && git archive HEAD ) | tar -x -C "${dest}"
+}
+
+# Does the configured tree define -D__NO_ZDOT?  Read the generated src/Makefile.
+has_no_zdot() {
+  grep -q -- '-D__NO_ZDOT' "$1/src/Makefile"
+}
+
+run_mode() {
+  # $1 = label, $2 = configure flag ("" for bare), $3 = expect macro (yes/no/auto)
+  label=$1; flag=$2; expect=$3
+  dir="${work}/${label}"
+  export_tree "${dir}"
+  echo "----- mode: ${label} (configure ${flag:-<bare>}) -----"
+
+  if ! ( cd "${dir}" && ./configure FC="${FC}" ${flag} ) >"${dir}/configure.log" 2>&1; then
+    echo "FAIL ${label}: configure failed"; tail -15 "${dir}/configure.log"; fail=1; return
+  fi
+
+  if [ "${label}" = "bare" ]; then
+    if ! grep -q "whether BLAS zdotc uses the register-return ABI" "${dir}/configure.log"; then
+      echo "FAIL ${label}: autodetection check did not run"; fail=1; return
+    fi
+    echo "  autodetect: $(grep 'whether BLAS zdotc' "${dir}/configure.log" | sed 's/^.*\.\.\. //')"
+  fi
+
+  if has_no_zdot "${dir}"; then macro=yes; else macro=no; fi
+  case "${expect}" in
+    yes) if [ "${macro}" != yes ]; then echo "FAIL ${label}: expected -D__NO_ZDOT, absent"; fail=1; return; fi ;;
+    no)  if [ "${macro}" != no  ]; then echo "FAIL ${label}: -D__NO_ZDOT unexpectedly defined"; fail=1; return; fi ;;
+    auto) : ;;  # bare: decision is platform-dependent, accept either
+  esac
+  echo "  -D__NO_ZDOT defined: ${macro} (expected: ${expect})"
+
+  if ! ( cd "${dir}" && ${MAKE} ) >"${dir}/make.log" 2>&1; then
+    echo "FAIL ${label}: build failed"; tail -15 "${dir}/make.log"; fail=1; return
+  fi
+  echo "  build: ok"
+
+  if [ "${label}" = "bare" ]; then
+    if ! ( cd "${dir}" && ${MAKE} check ) >"${dir}/check.log" 2>&1; then
+      echo "FAIL ${label}: make check failed"; tail -20 "${dir}/check.log"; fail=1; return
+    fi
+    echo "  make check: pass"
+  fi
+
+  echo "PASS ${label}"
+}
+
+echo "===== configure zdot-autodetect smoke test ====="
+run_mode disable "--disable-zdot" yes
+run_mode enable  "--enable-zdot"  no
+run_mode bare    ""               auto
+echo "==============================================="
+
+if [ ${fail} -ne 0 ]; then
+  echo "RESULT: FAIL"; exit 1
+fi
+echo "RESULT: PASS"; exit 0
