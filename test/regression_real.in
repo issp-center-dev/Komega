@@ -6,8 +6,8 @@
  threshold = 1d-12
   rnd_seed = 100
 /
--2d0
 -1d0
-0d0
-1d0
-2d0
+-2d0
+-3d0
+-4d0
+-5d0

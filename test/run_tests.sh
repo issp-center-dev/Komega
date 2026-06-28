@@ -23,6 +23,12 @@
 #      solver converges to machine precision: the worst residual observed over
 #      hundreds of runs is ~1e-12, so the 1e-8 tolerance keeps a >=4 orders of
 #      magnitude safety margin against the random matrix.
+#      The random Hamiltonian is positive semi-definite (A^T A / A^H A, real
+#      eigenvalues >= 0).  For the real-frequency drivers the shifts in
+#      regression_real.in are therefore all negative, so (z - H) can never be
+#      singular (no shift collides with the spectrum); the complex-frequency
+#      inputs already keep Im(z) = 1, which bounds the conditioning.  This is
+#      what makes convergence reliable regardless of the (unseeded) matrix.
 #
 #   2. The komega_CG_R lz_conv itermax==0 lifecycle regression (test_lzconv),
 #      compiled with -fcheck=all and required to run to completion.
