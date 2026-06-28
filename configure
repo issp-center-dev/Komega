@@ -1438,7 +1438,9 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-threadsafe     Thread-safe mode (experimental).
-  --disable-zdot          Do not use ZDOTC and ZDOTU in BLAS.
+  --enable-zdot, --disable-zdot
+                          Use (yes) or do not use (no) ZDOTC and ZDOTU from
+                          BLAS. Default: autodetect the BLAS ABI.
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -21524,17 +21526,75 @@ if test x"$enable_threadsafe" != xno; then
   FCFLAGS="$FCFLAGS -D__KOMEGA_THREAD"
 fi
 #
-# zdotc and adotu
+# zdotc and zdotu
 #
+# The reference (f2c/g77) BLAS returns a COMPLEX result through a hidden first
+# pointer argument, whereas komega_math.F90 declares zdotc/zdotu as ordinary
+# register-return COMPLEX(8) FUNCTIONs. When --enable-zdot or --disable-zdot is
+# given explicitly we honor it; otherwise we autodetect the BLAS complex-return
+# ABI and define -D__NO_ZDOT (use Fortran intrinsics) when the BLAS zdotc does
+# not use the register-return convention. zdotu shares the same complex-return
+# convention as zdotc, so probing zdotc alone is sufficient.
 # Check whether --enable-zdot was given.
 if test "${enable_zdot+set}" = set; then :
-  enableval=$enable_zdot;
+  enableval=$enable_zdot; zdot_explicit=yes
 else
-  enable_zdot=yes
+  zdot_explicit=no; enable_zdot=yes
 fi
 
-if test x"$enable_zdot" != xyes; then
-  FCFLAGS="$FCFLAGS -D__NO_ZDOT"
+if test x"$zdot_explicit" = xyes; then
+  if test x"$enable_zdot" != xyes; then
+    FCFLAGS="$FCFLAGS -D__NO_ZDOT"
+  fi
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether BLAS zdotc uses the register-return ABI" >&5
+$as_echo_n "checking whether BLAS zdotc uses the register-return ABI... " >&6; }
+  cat > conftestzdot.f90 <<'_KOMEGAEOF'
+      program conftest_zdotc
+      implicit none
+      complex(8) :: zx(2), zy(2), res
+      complex(8) :: zdotc
+      external zdotc
+      zx(1) = (1d0, 0d0)
+      zx(2) = (0d0, 1d0)
+      zy(1) = (1d0, 0d0)
+      zy(2) = (0d0, 1d0)
+      res = zdotc(2, zx, 1, zy, 1)
+      if (abs(dble(res) - 2d0) < 1d-8 .and. abs(aimag(res)) < 1d-8) then
+        stop 0
+      else
+        stop 1
+      end if
+      end program conftest_zdotc
+_KOMEGAEOF
+  zdot_abi_ok=no
+  if { echo "$as_me:${as_lineno-$LINENO}: $FC $FCFLAGS $LDFLAGS -o conftestzdot$ac_exeext conftestzdot.f90 $LAPACK_LIBS $BLAS_LIBS $LIBS" >&5
+       $FC $FCFLAGS $LDFLAGS -o conftestzdot$ac_exeext conftestzdot.f90 $LAPACK_LIBS $BLAS_LIBS $LIBS >&5 2>&5; }; then
+    if test "$cross_compiling" = yes; then
+      zdot_abi_ok=cross
+    elif sh -c "./conftestzdot$ac_exeext; exit \$?" >&5 2>&5; then
+      zdot_abi_ok=yes
+    else
+      zdot_abi_ok=no
+    fi
+  else
+    zdot_abi_ok=no
+  fi
+  rm -f conftestzdot.f90 conftestzdot$ac_exeext conftestzdot.o conftest_zdotc.mod
+  if test x"$zdot_abi_ok" = xyes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  elif test x"$zdot_abi_ok" = xcross; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: assuming no (cross-compiling)" >&5
+$as_echo "assuming no (cross-compiling)" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cannot run a test program while cross-compiling; assuming the BLAS zdotc/zdotu are unusable and defining -D__NO_ZDOT. Pass --enable-zdot to force use of the BLAS routines." >&5
+$as_echo "$as_me: WARNING: cannot run a test program while cross-compiling; assuming the BLAS zdotc/zdotu are unusable and defining -D__NO_ZDOT. Pass --enable-zdot to force use of the BLAS routines." >&2;}
+    FCFLAGS="$FCFLAGS -D__NO_ZDOT"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    FCFLAGS="$FCFLAGS -D__NO_ZDOT"
+  fi
 fi
 echo ""
 echo "  Output files"
