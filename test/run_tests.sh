@@ -54,9 +54,12 @@ fail=0
 note() { printf '%s\n' "$*"; }
 
 # Largest absolute value in the "Residual Vector" block of a driver's stdout.
-# Only genuine numeric tokens (Fortran "e" exponent form) are counted; prints
-# "none" if the block is missing or contains no numbers, so a truncated or
-# malformed output cannot be mistaken for a zero residual.
+# Every token in the block must be a finite number (Fortran "e" exponent form):
+#   - prints "bad"  if any token is non-finite/garbage (NaN, Inf, ...),
+#   - prints "none" if the block is missing or contains no numbers,
+#   - otherwise prints the largest absolute value.
+# so a NaN/Inf or a truncated/malformed output cannot be mistaken for a small
+# residual.
 max_residual() {
   awk '
     /Residual Vector/ {f=1; next}
@@ -65,10 +68,12 @@ max_residual() {
       for (i=1;i<=NF;i++) {
         if ($i ~ /^[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?$/) {
           v=$i+0; if (v<0) v=-v; if (!seen || v>m) m=v; seen=1
+        } else {
+          bad=1
         }
       }
     }
-    END { if (seen) printf "%.6e", m; else printf "none" }
+    END { if (bad) printf "bad"; else if (seen) printf "%.6e", m; else printf "none" }
   '
 }
 
@@ -105,6 +110,12 @@ run_driver() {
     fail=1
     return
   fi
+  if [ "${res}" = "bad" ]; then
+    note "FAIL ${drv}: non-finite value (NaN/Inf) in residual vector"
+    note "${out}" | tail -n 5
+    fail=1
+    return
+  fi
   ok=$(awk -v r="${res}" -v t="${RESIDUAL_TOL}" 'BEGIN{ print (r+0 <= t+0) ? "yes" : "no" }')
   if [ "${ok}" != "yes" ]; then
     note "FAIL ${drv}: residual ${res} > tol ${RESIDUAL_TOL}"
@@ -127,9 +138,19 @@ rm -f restart.dat
 run_driver solve_cc regression_complex.in
 rm -f restart.dat
 
-# 2. lz_conv itermax==0 lifecycle regression (built with -fcheck=all).
+# 2. lz_conv itermax==0 lifecycle regression.
+# Prefer runtime checking flags (so a reintroduced "already allocated" bug
+# aborts loudly), but only if the compiler accepts them -- keep make check
+# usable with non-GNU Fortran compilers.
+CHECK_FCFLAGS=""
+printf '      end\n' > conftest_flag.f90
+if ${FC} -fcheck=all -fbacktrace -c conftest_flag.f90 -o conftest_flag.o >/dev/null 2>&1; then
+  CHECK_FCFLAGS="-fcheck=all -fbacktrace"
+fi
+rm -f conftest_flag.f90 conftest_flag.o
+
 note "----- komega_CG_R lz_conv itermax==0 regression -----"
-if "${LIBTOOL}" --mode=link --tag=FC ${FC} ${FCFLAGS} -fcheck=all -fbacktrace \
+if "${LIBTOOL}" --mode=link --tag=FC ${FC} ${FCFLAGS} ${CHECK_FCFLAGS} \
      -I"${top_builddir}/src" -o test_lzconv.x "${srcdir}/test_lzconv.F90" \
      "${top_builddir}/src/libkomega.la" ${LAPACK_LIBS} ${BLAS_LIBS} \
      >test_lzconv_build.log 2>&1; then
